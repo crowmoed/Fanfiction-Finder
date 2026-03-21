@@ -13,7 +13,7 @@ import {
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
-import type { FicResult, PlatformFilter, StatusFilter, RatingFilter } from '@/lib/schema/types';
+import type { FicResult, PlatformFilter, StatusFilter, RatingFilter, WordCountFilter } from '@/lib/schema/types';
 import PlatformBadge from './PlatformBadge';
 import RatingBadge from './RatingBadge';
 import ScoreBar from './ScoreBar';
@@ -32,18 +32,46 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
   const [platformFilter, setPlatformFilter] = useState<PlatformFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [ratingFilter, setRatingFilter] = useState<RatingFilter>('all');
+  const [wordCountFilter, setWordCountFilter] = useState<WordCountFilter>('all');
+  const [tagFilter, setTagFilter] = useState<string[]>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
+  // Unique tags from all results with counts, sorted by frequency
+  const availableTags = useMemo(() => {
+    const freq = new Map<string, number>();
+    for (const r of results) {
+      for (const t of r.tags) {
+        freq.set(t, (freq.get(t) ?? 0) + 1);
+      }
+    }
+    return Array.from(freq.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([tag, count]) => ({ tag, count }));
+  }, [results]);
+
+  // Word count range bounds
+  const wordCountBounds: Record<WordCountFilter, [number, number]> = {
+    all:        [0, Infinity],
+    under50k:   [0, 49_999],
+    '50k-150k': [50_000, 149_999],
+    '150k-400k':[150_000, 399_999],
+    over400k:   [400_000, Infinity],
+  };
+
   // Client-side filter
   const filtered = useMemo(() => {
+    const [wcMin, wcMax] = wordCountBounds[wordCountFilter];
+
     return results.filter((r) => {
       if (platformFilter !== 'all' && r.platform !== platformFilter) return false;
       if (statusFilter !== 'all' && r.status !== statusFilter) return false;
       if (ratingFilter !== 'all' && r.rating !== ratingFilter) return false;
+      if (r.wordCount < wcMin || r.wordCount > wcMax) return false;
+      if (tagFilter.length > 0 && !tagFilter.every((sel) => r.tags.includes(sel))) return false;
       return true;
     });
-  }, [results, platformFilter, statusFilter, ratingFilter]);
+  }, [results, platformFilter, statusFilter, ratingFilter, wordCountFilter, tagFilter]);
 
   // Sorted filtered results with rank
   const rankedFiltered = useMemo(() => {
@@ -287,9 +315,14 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
         platformFilter={platformFilter}
         statusFilter={statusFilter}
         ratingFilter={ratingFilter}
+        wordCountFilter={wordCountFilter}
+        tagFilter={tagFilter}
+        availableTags={availableTags}
         onPlatformChange={setPlatformFilter}
         onStatusChange={setStatusFilter}
         onRatingChange={setRatingFilter}
+        onWordCountChange={setWordCountFilter}
+        onTagFilterChange={setTagFilter}
         isMobile={isMobile}
       />
 

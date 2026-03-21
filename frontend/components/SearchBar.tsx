@@ -159,8 +159,8 @@ export default function SearchBar({
         </button>
       </div>
 
-      {/* Fandom selector */}
-      <div className="flex items-center gap-2">
+      {/* Fandom selector — hidden in compact/header mode */}
+      {!compact && <div className="flex items-center gap-2">
         <label
           className="text-sm shrink-0"
           style={{ color: 'var(--text-secondary)' }}
@@ -183,7 +183,7 @@ export default function SearchBar({
             <option key={f} value={f}>{f}</option>
           ))}
         </select>
-      </div>
+      </div>}
     </div>
   );
 }
