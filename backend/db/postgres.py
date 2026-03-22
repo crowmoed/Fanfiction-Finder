@@ -97,6 +97,13 @@ def get_fic_count(fandom: str = None) -> int:
             query = query.filter(FicRecord.fandom == fandom)
         return query.count()
 
+def get_indexed_fandoms() -> set[str]:
+    """Return the set of fandoms that have at least one fic indexed."""
+    with Session(engine) as session:
+        rows = session.query(FicRecord.fandom).distinct().all()
+    return {r.fandom for r in rows if r.fandom}
+
+
 def clear_fandom(fandom: str):
     """Delete all fics for a fandom so it can be re-indexed."""
     with Session(engine) as session:

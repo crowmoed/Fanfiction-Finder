@@ -19,7 +19,7 @@ type AppState = 'empty' | 'loading' | 'results';
 export default function HomePage() {
   const [appState, setAppState] = useState<AppState>('empty');
   const [currentQuery, setCurrentQuery] = useState('');
-  const [currentFandom, setCurrentFandom] = useState<Fandom>('Harry Potter');
+  const [currentFandom, setCurrentFandom] = useState<Fandom>('');
   const [showHistory, setShowHistory] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
 

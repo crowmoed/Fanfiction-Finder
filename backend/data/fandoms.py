@@ -34,9 +34,3 @@ FANDOMS = {
     "Avatar":               {"ao3": "Avatar: The Last Airbender",           "ffn": "cartoon/avatar-last-airbender"},
     "Steven Universe":      {"ao3": "Steven Universe",                      "ffn": "cartoon/steven-universe"},
 }
-
-# Fandoms whose fics have been collected and indexed
-COLLECTED: set[str] = {
-    "Naruto",
-    "Hunter x Hunter",
-}
