@@ -12,8 +12,7 @@ import random
 
 load_dotenv()
 
-MIN_WORDS = 40000
-
+MIN_WORDS = 5000
 
 def scrape_and_embed_ao3(fandom_name: str, sb, first_fandom: bool = False) -> int:
     from scrapers.ao3 import build_search_url, parse_results

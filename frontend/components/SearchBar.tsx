@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { FANDOMS, type Fandom } from '@/lib/schema/types';
+import { type Fandom, type FandomInfo } from '@/lib/schema/types';
 
 const EXAMPLES = [
   'enemies to lovers slow burn over 100k words',
@@ -24,10 +24,11 @@ export default function SearchBar({
   isSearching,
   compact = false,
   initialPrompt = '',
-  initialFandom = 'Harry Potter',
+  initialFandom = '',
 }: SearchBarProps) {
   const [prompt, setPrompt] = useState(initialPrompt);
   const [fandom, setFandom] = useState<Fandom>(initialFandom);
+  const [fandoms, setFandoms] = useState<FandomInfo[]>([]);
   const [focused, setFocused] = useState(false);
   const [placeholder, setPlaceholder] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -35,6 +36,21 @@ export default function SearchBar({
   const charIndexRef = useRef(0);
   const directionRef = useRef<'type' | 'erase'>('type');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Fetch fandom list from backend
+  useEffect(() => {
+    fetch('/api/fandoms')
+      .then((r) => r.json())
+      .then((data: { fandoms: FandomInfo[] }) => {
+        setFandoms(data.fandoms);
+        if (!fandom) {
+          const first = data.fandoms.find((f) => f.collected) ?? data.fandoms[0];
+          if (first) setFandom(first.name);
+        }
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Typewriter animation for placeholder
   useEffect(() => {
@@ -179,9 +195,22 @@ export default function SearchBar({
             borderColor: 'var(--border-default)',
           }}
         >
-          {FANDOMS.map((f) => (
-            <option key={f} value={f}>{f}</option>
-          ))}
+          {fandoms.length === 0 ? (
+            <option value="">Loading...</option>
+          ) : (
+            <>
+              <optgroup label="Available">
+                {fandoms.filter((f) => f.collected).map((f) => (
+                  <option key={f.name} value={f.name}>{f.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Coming Soon">
+                {fandoms.filter((f) => !f.collected).map((f) => (
+                  <option key={f.name} value={f.name} disabled>{f.name}</option>
+                ))}
+              </optgroup>
+            </>
+          )}
         </select>
       </div>}
     </div>

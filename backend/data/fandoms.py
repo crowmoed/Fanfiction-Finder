@@ -13,6 +13,7 @@ FANDOMS = {
     "My Hero Academia":     {"ao3": "Boku no Hero Academia | My Hero Academia", "ffn": "anime/my-hero-academia"},
     "Fullmetal Alchemist":  {"ao3": "Fullmetal Alchemist",                  "ffn": "anime/fullmetal-alchemist"},
     "Death Note":           {"ao3": "Death Note",                           "ffn": "anime/death-note"},
+    "Hunter x Hunter":      {"ao3": "Hunter X Hunter",                      "ffn": "anime/hunter-x-hunter"},
 
     # TV
     "Supernatural":         {"ao3": "Supernatural",                         "ffn": "tv/supernatural"},
@@ -32,4 +33,10 @@ FANDOMS = {
     # Cartoons
     "Avatar":               {"ao3": "Avatar: The Last Airbender",           "ffn": "cartoon/avatar-last-airbender"},
     "Steven Universe":      {"ao3": "Steven Universe",                      "ffn": "cartoon/steven-universe"},
+}
+
+# Fandoms whose fics have been collected and indexed
+COLLECTED: set[str] = {
+    "Naruto",
+    "Hunter x Hunter",
 }

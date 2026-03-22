@@ -2,7 +2,7 @@ from fastapi import FastAPI, Query, HTTPException
 from typing import Optional
 
 from data.schema import Fic
-from data.fandoms import FANDOMS
+from data.fandoms import FANDOMS, COLLECTED
 from ai.embedder import embed_query
 from ai.ranker import rank
 from db.postgres import search_similar, get_fic_count
@@ -12,11 +12,13 @@ app = FastAPI(title="FicFinder API")
 
 @app.get("/fandoms")
 def get_fandoms():
-    """Returns supported fandoms and how many fics are indexed per fandom."""
-    result = {}
-    for fandom in FANDOMS:
-        result[fandom] = get_fic_count(fandom)
-    return {"fandoms": result}
+    """Returns supported fandoms with their collection status."""
+    return {
+        "fandoms": [
+            {"name": fandom, "collected": fandom in COLLECTED}
+            for fandom in FANDOMS
+        ]
+    }
 
 
 @app.get("/search", response_model=list[Fic])

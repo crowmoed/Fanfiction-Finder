@@ -64,27 +64,9 @@ export type SearchEvent =
   | { type: 'done'; totalMs: number }
   | { type: 'error'; message: string };
 
-export const FANDOMS = [
-  'Harry Potter',
-  'Percy Jackson',
-  'Twilight',
-  'The Hunger Games',
-  'Naruto',
-  'Attack on Titan',
-  'My Hero Academia',
-  'Fullmetal Alchemist',
-  'Death Note',
-  'Supernatural',
-  'Sherlock',
-  'Doctor Who',
-  'The 100',
-  'Marvel',
-  'Star Wars',
-  'Undertale',
-  'The Legend of Zelda',
-  'Minecraft',
-  'Avatar',
-  'Steven Universe',
-] as const;
+export interface FandomInfo {
+  name: string;
+  collected: boolean;
+}
 
-export type Fandom = typeof FANDOMS[number];
+export type Fandom = string;
