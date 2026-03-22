@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query, HTTPException
 from typing import Optional
 
@@ -5,9 +6,22 @@ from data.schema import Fic
 from data.fandoms import FANDOMS
 from ai.embedder import embed_query
 from ai.ranker import rank
-from db.postgres import search_similar, get_fic_count, get_indexed_fandoms, get_admin_stats
+from db.postgres import search_similar, get_fic_count, get_indexed_fandoms, get_admin_stats, engine
+from sqlalchemy import text
 
-app = FastAPI(title="FicFinder API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Safe migration — adds indexed_at column if it doesn't exist yet
+    with engine.connect() as conn:
+        conn.execute(text(
+            "ALTER TABLE fics ADD COLUMN IF NOT EXISTS indexed_at TIMESTAMPTZ DEFAULT NOW()"
+        ))
+        conn.commit()
+    yield
+
+
+app = FastAPI(title="FicFinder API", lifespan=lifespan)
 
 
 @app.get("/fandoms")
