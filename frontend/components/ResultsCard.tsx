@@ -58,20 +58,8 @@ export default function ResultsCard({ fic, rank }: ResultsCardProps) {
         {fic.title}
       </h3>
 
-      {/* Author + meta */}
+      {/* Meta */}
       <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>
-        by{' '}
-        <a
-          href={fic.authorUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="hover:underline"
-          style={{ color: 'var(--text-secondary)' }}
-        >
-          {fic.author}
-        </a>
-        {' · '}
         {formatWordCount(fic.wordCount)} words
         {' · '}
         <span style={{ color: fic.status === 'complete' ? 'var(--status-complete)' : 'var(--status-wip)' }}>

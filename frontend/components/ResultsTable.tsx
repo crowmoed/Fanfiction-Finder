@@ -159,25 +159,6 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
         cell: ({ getValue }) => <PlatformBadge platform={getValue<'ao3' | 'ffn'>()} />,
       },
       {
-        id: 'author',
-        header: 'Author',
-        accessorKey: 'author',
-        size: 120,
-        enableSorting: true,
-        cell: ({ row }) => (
-          <a
-            href={row.original.authorUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="text-sm hover:underline"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            {row.original.author}
-          </a>
-        ),
-      },
-      {
         id: 'rating',
         header: 'Rating',
         accessorKey: 'rating',

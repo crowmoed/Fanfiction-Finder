@@ -24,7 +24,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'FicFinder — Semantic Fanfiction Search',
+  title: 'FanFiction Finder — Semantic Fanfiction Search',
   description: 'Find fanfiction using natural language. Powered by AI ranking across AO3 and FanFiction.net.',
 };
 

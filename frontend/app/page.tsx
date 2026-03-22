@@ -98,13 +98,13 @@ export default function HomePage() {
         <button
           onClick={() => setAppState('empty')}
           className="flex items-baseline gap-2 group"
-          aria-label="FicFinder home"
+          aria-label="FanFiction Finder home"
         >
           <span
             className="font-serif text-2xl leading-none"
             style={{ color: 'var(--text-primary)' }}
           >
-            FicFinder
+            FanFiction Finder
           </span>
           {appState !== 'empty' && (
             <span className="text-xs font-mono" style={{ color: 'var(--text-tertiary)' }}>
@@ -157,7 +157,7 @@ export default function HomePage() {
                 className="font-serif mb-2"
                 style={{ fontSize: '48px', color: 'var(--text-primary)', lineHeight: 1.1 }}
               >
-                FicFinder
+                FanFiction Finder
               </h1>
               <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
                 Find fanfiction with natural language. Ranked by AI.
