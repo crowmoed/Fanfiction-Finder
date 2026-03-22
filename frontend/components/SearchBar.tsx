@@ -42,9 +42,10 @@ export default function SearchBar({
     fetch('/api/fandoms')
       .then((r) => r.json())
       .then((data: { fandoms: FandomInfo[] }) => {
-        setFandoms(data.fandoms);
+        const list = Array.isArray(data.fandoms) ? data.fandoms : [];
+        setFandoms(list);
         if (!fandom) {
-          const first = data.fandoms.find((f) => f.collected) ?? data.fandoms[0];
+          const first = list.find((f) => f.collected) ?? list[0];
           if (first) setFandom(first.name);
         }
       })
