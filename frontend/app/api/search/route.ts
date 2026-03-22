@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import type { FicResult } from '@/lib/schema/types';
 
 const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:8000';
-
+console.log('[DEBUG] BACKEND_URL:', BACKEND_URL);
 // Backend Fic type (from backend/data/schema.py)
 interface BackendFic {
   title: string;
