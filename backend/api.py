@@ -5,7 +5,7 @@ from data.schema import Fic
 from data.fandoms import FANDOMS
 from ai.embedder import embed_query
 from ai.ranker import rank
-from db.postgres import search_similar, get_fic_count, get_indexed_fandoms
+from db.postgres import search_similar, get_fic_count, get_indexed_fandoms, get_admin_stats
 
 app = FastAPI(title="FicFinder API")
 
@@ -50,3 +50,11 @@ async def search(
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/admin/stats")
+def admin_stats():
+    """Internal endpoint — per-fandom DB stats for the ops dashboard."""
+    stats = get_admin_stats()
+    stats["supported_fandoms"] = list(FANDOMS.keys())
+    return stats
