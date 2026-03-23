@@ -41,17 +41,18 @@ export default function QuickFilters({ onSelectionChange }: QuickFiltersProps) {
   }
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+    <div className="flex items-stretch gap-2 overflow-x-auto pb-1 scrollbar-hide">
       {FILTERS.map((filter) => {
         const isSelected = selected.has(filter.label);
         return (
           <button
             key={filter.label}
             onClick={() => toggle(filter)}
-            className="shrink-0 px-3 py-1.5 rounded-md text-sm font-mono transition-all duration-150 whitespace-nowrap"
+            className="shrink-0 flex flex-col items-start px-3 py-2 rounded-md transition-all duration-150 text-left"
             style={{
               backgroundColor: isSelected ? 'var(--accent)' : 'var(--bg-secondary)',
               color: isSelected ? 'white' : 'var(--text-secondary)',
+              maxWidth: '160px',
             }}
             onMouseEnter={(e) => {
               if (!isSelected) {
@@ -66,7 +67,13 @@ export default function QuickFilters({ onSelectionChange }: QuickFiltersProps) {
               }
             }}
           >
-            {filter.label}
+            <span className="text-sm font-mono font-medium leading-snug">{filter.label}</span>
+            <span
+              className="text-xs leading-snug mt-0.5 line-clamp-2"
+              style={{ opacity: isSelected ? 0.8 : 0.6 }}
+            >
+              {filter.query}
+            </span>
           </button>
         );
       })}
