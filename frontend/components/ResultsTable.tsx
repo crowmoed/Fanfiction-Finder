@@ -25,15 +25,14 @@ interface ResultsTableProps {
   results: FicResult[];
   isRanked: boolean;
   isMobile?: boolean;
-  wordCountFilter: WordCountFilter;
-  onWordCountChange: (v: WordCountFilter) => void;
 }
 
-export default function ResultsTable({ results, isRanked, isMobile, wordCountFilter, onWordCountChange }: ResultsTableProps) {
+export default function ResultsTable({ results, isRanked, isMobile }: ResultsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([{ id: 'matchScore', desc: true }]);
   const [platformFilter, setPlatformFilter] = useState<PlatformFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [ratingFilter, setRatingFilter] = useState<RatingFilter>('all');
+  const [wordCountFilter, setWordCountFilter] = useState<WordCountFilter>('all');
   const [updatedFilter, setUpdatedFilter] = useState<UpdatedFilter>('all');
   const [kudosFilter, setKudosFilter] = useState<KudosFilter>('all');
   const [tagFilter, setTagFilter] = useState<string[]>([]);
@@ -53,12 +52,25 @@ export default function ResultsTable({ results, isRanked, isMobile, wordCountFil
       .map(([tag, count]) => ({ tag, count }));
   }, [results]);
 
+  // Word count minimum thresholds
+  const wordCountMin: Record<WordCountFilter, number> = {
+    all:    0,
+    '10k+': 10_000,
+    '20k+': 20_000,
+    '40k+': 40_000,
+    '75k+': 75_000,
+    '100k+':100_000,
+    '200k+':200_000,
+    '400k+':400_000,
+  };
+
   const kudosMin: Record<KudosFilter, number> = {
     'all': 0, '100+': 100, '500+': 500, '1k+': 1_000, '5k+': 5_000,
   };
 
-  // Client-side filter (word count is handled server-side)
+  // Client-side filter
   const filtered = useMemo(() => {
+    const wcMin = wordCountMin[wordCountFilter];
     const minKudos = kudosMin[kudosFilter];
 
     let cutoffDate: Date | null = null;
@@ -73,6 +85,7 @@ export default function ResultsTable({ results, isRanked, isMobile, wordCountFil
       if (platformFilter !== 'all' && r.platform !== platformFilter) return false;
       if (statusFilter !== 'all' && r.status !== statusFilter) return false;
       if (ratingFilter !== 'all' && r.rating !== ratingFilter) return false;
+      if (r.wordCount < wcMin) return false;
       if (cutoffDate && new Date(r.updatedAt) < cutoffDate) return false;
       if (minKudos > 0) {
         const pop = r.stats.kudos ?? r.stats.favs ?? 0;
@@ -81,7 +94,7 @@ export default function ResultsTable({ results, isRanked, isMobile, wordCountFil
       if (tagFilter.length > 0 && !tagFilter.every((sel) => r.tags.includes(sel))) return false;
       return true;
     });
-  }, [results, platformFilter, statusFilter, ratingFilter, updatedFilter, kudosFilter, tagFilter]);
+  }, [results, platformFilter, statusFilter, ratingFilter, wordCountFilter, updatedFilter, kudosFilter, tagFilter]);
 
   // Sorted filtered results with rank
   const rankedFiltered = useMemo(() => {
@@ -314,7 +327,7 @@ export default function ResultsTable({ results, isRanked, isMobile, wordCountFil
         onPlatformChange={setPlatformFilter}
         onStatusChange={setStatusFilter}
         onRatingChange={setRatingFilter}
-        onWordCountChange={onWordCountChange}
+        onWordCountChange={setWordCountFilter}
         onUpdatedChange={setUpdatedFilter}
         onKudosChange={setKudosFilter}
         onTagFilterChange={setTagFilter}
@@ -322,7 +335,7 @@ export default function ResultsTable({ results, isRanked, isMobile, wordCountFil
           setPlatformFilter('all');
           setStatusFilter('all');
           setRatingFilter('all');
-          onWordCountChange('all');
+          setWordCountFilter('all');
           setUpdatedFilter('all');
           setKudosFilter('all');
           setTagFilter([]);

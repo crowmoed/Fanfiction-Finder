@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 interface QuickFilter {
   label: string;
   query: string;
@@ -12,36 +14,62 @@ const FILTERS: QuickFilter[] = [
   { label: '100k+ Words', query: 'long epic fic over 100k words' },
   { label: 'Enemies to Lovers', query: 'enemies to lovers trope' },
   { label: 'Time Travel', query: 'time travel fic where characters go back to change events' },
+  { label: 'Hurt/Comfort', query: 'hurt/comfort with emotional healing' },
+  { label: 'Angst', query: 'angsty emotional fic' },
+  { label: 'Fluff', query: 'fluffy feel-good fic' },
+  { label: 'AU', query: 'alternate universe AU' },
 ];
 
 interface QuickFiltersProps {
-  onSelect: (query: string) => void;
+  onSelectionChange: (selectedQueries: string[]) => void;
 }
 
-export default function QuickFilters({ onSelect }: QuickFiltersProps) {
+export default function QuickFilters({ onSelectionChange }: QuickFiltersProps) {
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  function toggle(filter: QuickFilter) {
+    const next = new Set(selected);
+    if (next.has(filter.label)) {
+      next.delete(filter.label);
+    } else {
+      next.add(filter.label);
+    }
+    setSelected(next);
+    onSelectionChange(
+      FILTERS.filter((f) => next.has(f.label)).map((f) => f.query)
+    );
+  }
+
   return (
     <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-      {FILTERS.map((filter) => (
-        <button
-          key={filter.label}
-          onClick={() => onSelect(filter.query)}
-          className="shrink-0 px-3 py-1.5 rounded-md text-sm font-mono transition-all duration-150 whitespace-nowrap"
-          style={{
-            backgroundColor: 'var(--bg-secondary)',
-            color: 'var(--text-secondary)',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-hover)';
-            (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-secondary)';
-            (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)';
-          }}
-        >
-          {filter.label}
-        </button>
-      ))}
+      {FILTERS.map((filter) => {
+        const isSelected = selected.has(filter.label);
+        return (
+          <button
+            key={filter.label}
+            onClick={() => toggle(filter)}
+            className="shrink-0 px-3 py-1.5 rounded-md text-sm font-mono transition-all duration-150 whitespace-nowrap"
+            style={{
+              backgroundColor: isSelected ? 'var(--accent)' : 'var(--bg-secondary)',
+              color: isSelected ? 'white' : 'var(--text-secondary)',
+            }}
+            onMouseEnter={(e) => {
+              if (!isSelected) {
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-hover)';
+                (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isSelected) {
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-secondary)';
+                (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)';
+              }
+            }}
+          >
+            {filter.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

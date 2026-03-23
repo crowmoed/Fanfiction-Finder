@@ -52,7 +52,7 @@ function delay(ms: number): Promise<void> {
 }
 
 export async function POST(req: NextRequest) {
-  const { prompt, fandom, minWords = 0 } = await req.json();
+  const { prompt, fandom } = await req.json();
 
   if (!prompt || !fandom) {
     return new Response(JSON.stringify({ error: 'prompt and fandom are required' }), {
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
 
       // Call the Python backend
       const backendResp = await fetch(
-        `${BACKEND_URL}/search?q=${encodeURIComponent(prompt)}&fandom=${encodeURIComponent(fandom)}&limit=50&min_words=${minWords}`,
+        `${BACKEND_URL}/search?q=${encodeURIComponent(prompt)}&fandom=${encodeURIComponent(fandom)}&limit=50`,
         { signal: AbortSignal.timeout(60_000) }
       );
 

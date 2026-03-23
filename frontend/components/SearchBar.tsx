@@ -16,7 +16,7 @@ interface SearchBarProps {
   compact?: boolean;
   initialPrompt?: string;
   initialFandom?: Fandom;
-  onQuickFilter?: (query: string) => void;
+  appendToPrompt?: string;
 }
 
 export default function SearchBar({
@@ -25,6 +25,7 @@ export default function SearchBar({
   compact = false,
   initialPrompt = '',
   initialFandom = '',
+  appendToPrompt = '',
 }: SearchBarProps) {
   const [prompt, setPrompt] = useState(initialPrompt);
   const [fandom, setFandom] = useState<Fandom>(initialFandom);
@@ -92,8 +93,11 @@ export default function SearchBar({
 
   const handleSubmit = useCallback(() => {
     if (!prompt.trim() || isSearching) return;
-    onSearch(prompt.trim(), fandom);
-  }, [prompt, fandom, isSearching, onSearch]);
+    const full = appendToPrompt
+      ? `${prompt.trim()}, ${appendToPrompt}`
+      : prompt.trim();
+    onSearch(full, fandom);
+  }, [prompt, fandom, isSearching, onSearch, appendToPrompt]);
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter') handleSubmit();
