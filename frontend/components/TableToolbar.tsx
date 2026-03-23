@@ -1,7 +1,15 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import type { PlatformFilter, StatusFilter, RatingFilter, WordCountFilter } from '@/lib/schema/types';
+import type {
+  PlatformFilter,
+  StatusFilter,
+  RatingFilter,
+  WordCountFilter,
+  ChapterFilter,
+  UpdatedFilter,
+  KudosFilter,
+} from '@/lib/schema/types';
 
 interface TableToolbarProps {
   totalCount: number;
@@ -9,13 +17,20 @@ interface TableToolbarProps {
   statusFilter: StatusFilter;
   ratingFilter: RatingFilter;
   wordCountFilter: WordCountFilter;
+  chapterFilter: ChapterFilter;
+  updatedFilter: UpdatedFilter;
+  kudosFilter: KudosFilter;
   tagFilter: string[];
   availableTags: { tag: string; count: number }[];
   onPlatformChange: (v: PlatformFilter) => void;
   onStatusChange: (v: StatusFilter) => void;
   onRatingChange: (v: RatingFilter) => void;
   onWordCountChange: (v: WordCountFilter) => void;
+  onChapterChange: (v: ChapterFilter) => void;
+  onUpdatedChange: (v: UpdatedFilter) => void;
+  onKudosChange: (v: KudosFilter) => void;
   onTagFilterChange: (v: string[]) => void;
+  onClearAll: () => void;
   isMobile?: boolean;
   viewMode?: 'table' | 'card';
   onViewModeChange?: (v: 'table' | 'card') => void;
@@ -33,13 +48,20 @@ export default function TableToolbar({
   statusFilter,
   ratingFilter,
   wordCountFilter,
+  chapterFilter,
+  updatedFilter,
+  kudosFilter,
   tagFilter,
   availableTags,
   onPlatformChange,
   onStatusChange,
   onRatingChange,
   onWordCountChange,
+  onChapterChange,
+  onUpdatedChange,
+  onKudosChange,
   onTagFilterChange,
+  onClearAll,
   isMobile,
   viewMode,
   onViewModeChange,
@@ -71,6 +93,9 @@ export default function TableToolbar({
     statusFilter !== 'all',
     ratingFilter !== 'all',
     wordCountFilter !== 'all',
+    chapterFilter !== 'all',
+    updatedFilter !== 'all',
+    kudosFilter !== 'all',
     tagFilter.length > 0,
   ].filter(Boolean).length;
 
@@ -78,17 +103,29 @@ export default function TableToolbar({
     <div className="flex flex-col gap-2 mb-3">
       {/* Row 1: count + primary filters */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <span className="text-sm shrink-0" style={{ color: 'var(--text-secondary)' }}>
-          {totalCount} result{totalCount !== 1 ? 's' : ''}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            {totalCount} result{totalCount !== 1 ? 's' : ''}
+          </span>
           {activeFilterCount > 0 && (
-            <span
-              className="ml-2 px-1.5 py-0.5 rounded-md text-xs font-mono"
-              style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}
-            >
-              {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''}
-            </span>
+            <>
+              <span
+                className="px-1.5 py-0.5 rounded-md text-xs font-mono"
+                style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}
+              >
+                {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''}
+              </span>
+              <button
+                type="button"
+                onClick={onClearAll}
+                className="text-xs hover:underline"
+                style={{ color: 'var(--text-tertiary)' }}
+              >
+                Clear all
+              </button>
+            </>
           )}
-        </span>
+        </div>
 
         <div className="flex items-center gap-3 flex-wrap">
           {/* Platform */}
@@ -179,7 +216,7 @@ export default function TableToolbar({
         </div>
       </div>
 
-      {/* Row 2: word count + tag search */}
+      {/* Row 2: word count + chapters + updated + kudos */}
       <div className="flex items-center gap-3 flex-wrap">
         {/* Word count */}
         <label className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -191,14 +228,65 @@ export default function TableToolbar({
             style={selectStyle}
           >
             <option value="all">Any length</option>
-            <option value="under50k">Under 50k</option>
-            <option value="50k-150k">50k – 150k</option>
-            <option value="150k-400k">150k – 400k</option>
-            <option value="over400k">400k+</option>
+            <option value="under10k">Short (&lt; 10k)</option>
+            <option value="10k-50k">Medium (10k – 50k)</option>
+            <option value="50k-150k">Long (50k – 150k)</option>
+            <option value="150k-400k">Very Long (150k – 400k)</option>
+            <option value="over400k">Epic (400k+)</option>
           </select>
         </label>
 
-        {/* Tag chip picker */}
+        {/* Chapters */}
+        <label className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
+          Chapters:
+          <select
+            value={chapterFilter}
+            onChange={(e) => onChapterChange(e.target.value as ChapterFilter)}
+            className="border rounded-md px-2 py-1 text-sm focus:outline-none"
+            style={selectStyle}
+          >
+            <option value="all">Any</option>
+            <option value="oneshot">One-shot</option>
+            <option value="multi">Multi-chapter</option>
+          </select>
+        </label>
+
+        {/* Last updated */}
+        <label className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
+          Updated:
+          <select
+            value={updatedFilter}
+            onChange={(e) => onUpdatedChange(e.target.value as UpdatedFilter)}
+            className="border rounded-md px-2 py-1 text-sm focus:outline-none"
+            style={selectStyle}
+          >
+            <option value="all">Any time</option>
+            <option value="1yr">Last year</option>
+            <option value="2yr">Last 2 years</option>
+            <option value="5yr">Last 5 years</option>
+          </select>
+        </label>
+
+        {/* Kudos / popularity */}
+        <label className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
+          Kudos/Favs:
+          <select
+            value={kudosFilter}
+            onChange={(e) => onKudosChange(e.target.value as KudosFilter)}
+            className="border rounded-md px-2 py-1 text-sm focus:outline-none"
+            style={selectStyle}
+          >
+            <option value="all">Any</option>
+            <option value="100+">100+</option>
+            <option value="500+">500+</option>
+            <option value="1k+">1k+</option>
+            <option value="5k+">5k+</option>
+          </select>
+        </label>
+      </div>
+
+      {/* Row 3: tag chip picker */}
+      <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex items-center gap-1.5 flex-wrap" ref={tagRef}>
           <span className="text-sm shrink-0" style={{ color: 'var(--text-secondary)' }}>Tags:</span>
 
@@ -248,7 +336,6 @@ export default function TableToolbar({
                 left: 0,
               }}
             >
-              {/* Search inside dropdown */}
               <input
                 type="text"
                 value={tagSearch}

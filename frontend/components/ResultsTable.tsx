@@ -13,7 +13,7 @@ import {
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
-import type { FicResult, PlatformFilter, StatusFilter, RatingFilter, WordCountFilter } from '@/lib/schema/types';
+import type { FicResult, PlatformFilter, StatusFilter, RatingFilter, WordCountFilter, ChapterFilter, UpdatedFilter, KudosFilter } from '@/lib/schema/types';
 import PlatformBadge from './PlatformBadge';
 import RatingBadge from './RatingBadge';
 import ScoreBar from './ScoreBar';
@@ -33,6 +33,9 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [ratingFilter, setRatingFilter] = useState<RatingFilter>('all');
   const [wordCountFilter, setWordCountFilter] = useState<WordCountFilter>('all');
+  const [chapterFilter, setChapterFilter] = useState<ChapterFilter>('all');
+  const [updatedFilter, setUpdatedFilter] = useState<UpdatedFilter>('all');
+  const [kudosFilter, setKudosFilter] = useState<KudosFilter>('all');
   const [tagFilter, setTagFilter] = useState<string[]>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -52,26 +55,47 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
 
   // Word count range bounds
   const wordCountBounds: Record<WordCountFilter, [number, number]> = {
-    all:        [0, Infinity],
-    under50k:   [0, 49_999],
-    '50k-150k': [50_000, 149_999],
-    '150k-400k':[150_000, 399_999],
-    over400k:   [400_000, Infinity],
+    all:          [0, Infinity],
+    under10k:     [0, 9_999],
+    '10k-50k':    [10_000, 49_999],
+    '50k-150k':   [50_000, 149_999],
+    '150k-400k':  [150_000, 399_999],
+    over400k:     [400_000, Infinity],
+  };
+
+  const kudosMin: Record<KudosFilter, number> = {
+    'all': 0, '100+': 100, '500+': 500, '1k+': 1_000, '5k+': 5_000,
   };
 
   // Client-side filter
   const filtered = useMemo(() => {
     const [wcMin, wcMax] = wordCountBounds[wordCountFilter];
+    const minKudos = kudosMin[kudosFilter];
+
+    let cutoffDate: Date | null = null;
+    if (updatedFilter !== 'all') {
+      cutoffDate = new Date();
+      if (updatedFilter === '1yr') cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
+      else if (updatedFilter === '2yr') cutoffDate.setFullYear(cutoffDate.getFullYear() - 2);
+      else if (updatedFilter === '5yr') cutoffDate.setFullYear(cutoffDate.getFullYear() - 5);
+    }
 
     return results.filter((r) => {
       if (platformFilter !== 'all' && r.platform !== platformFilter) return false;
       if (statusFilter !== 'all' && r.status !== statusFilter) return false;
       if (ratingFilter !== 'all' && r.rating !== ratingFilter) return false;
       if (r.wordCount < wcMin || r.wordCount > wcMax) return false;
+      if (chapterFilter === 'oneshot' && r.chapters !== '1') return false;
+      if (chapterFilter === 'multi' && r.chapters === '1') return false;
+      if (cutoffDate && new Date(r.updatedAt) < cutoffDate) return false;
+      if (minKudos > 0) {
+        const pop = r.stats.kudos ?? r.stats.favs ?? 0;
+        if (pop < minKudos) return false;
+      }
       if (tagFilter.length > 0 && !tagFilter.every((sel) => r.tags.includes(sel))) return false;
       return true;
     });
-  }, [results, platformFilter, statusFilter, ratingFilter, wordCountFilter, tagFilter]);
+  }, [results, platformFilter, statusFilter, ratingFilter, wordCountFilter, chapterFilter, updatedFilter, kudosFilter, tagFilter]);
 
   // Sorted filtered results with rank
   const rankedFiltered = useMemo(() => {
@@ -297,13 +321,29 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
         statusFilter={statusFilter}
         ratingFilter={ratingFilter}
         wordCountFilter={wordCountFilter}
+        chapterFilter={chapterFilter}
+        updatedFilter={updatedFilter}
+        kudosFilter={kudosFilter}
         tagFilter={tagFilter}
         availableTags={availableTags}
         onPlatformChange={setPlatformFilter}
         onStatusChange={setStatusFilter}
         onRatingChange={setRatingFilter}
         onWordCountChange={setWordCountFilter}
+        onChapterChange={setChapterFilter}
+        onUpdatedChange={setUpdatedFilter}
+        onKudosChange={setKudosFilter}
         onTagFilterChange={setTagFilter}
+        onClearAll={() => {
+          setPlatformFilter('all');
+          setStatusFilter('all');
+          setRatingFilter('all');
+          setWordCountFilter('all');
+          setChapterFilter('all');
+          setUpdatedFilter('all');
+          setKudosFilter('all');
+          setTagFilter([]);
+        }}
         isMobile={isMobile}
       />
 

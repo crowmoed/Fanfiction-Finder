@@ -54,8 +54,10 @@ export type SortField = 'matchScore' | 'wordCount' | 'title' | 'updatedAt';
 export type PlatformFilter = 'all' | 'ao3' | 'ffn';
 export type StatusFilter = 'all' | 'complete' | 'in-progress';
 export type RatingFilter = 'all' | 'G' | 'T' | 'M' | 'E';
-// min word count, max word count (undefined = no bound)
-export type WordCountFilter = 'all' | 'under50k' | '50k-150k' | '150k-400k' | 'over400k';
+export type WordCountFilter = 'all' | 'under10k' | '10k-50k' | '50k-150k' | '150k-400k' | 'over400k';
+export type ChapterFilter = 'all' | 'oneshot' | 'multi';
+export type UpdatedFilter = 'all' | '1yr' | '2yr' | '5yr';
+export type KudosFilter = 'all' | '100+' | '500+' | '1k+' | '5k+';
 
 export type SearchEvent =
   | { type: 'status'; step: string; status: 'active' | 'complete' | 'skipped' | 'error'; message?: string }
