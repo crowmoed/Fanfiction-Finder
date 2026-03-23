@@ -8,3 +8,7 @@ docker push 473157802304.dkr.ecr.us-east-1.amazonaws.com/fanficfinder-backend:la
 
 
 // update the frontend via github
+
+git add .
+git commit -m "small changes"
+git push

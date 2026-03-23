@@ -16,7 +16,8 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 def rank(fics: list[Fic], query: str) -> list[Fic]:
     if not fics:
         return []
-
+        
+    return fics
 
     fic_list = []
     for i, fic in enumerate(fics):
@@ -24,7 +25,7 @@ def rank(fics: list[Fic], query: str) -> list[Fic]:
             "index": i,
             "title": fic.title,
             "summary": fic.summary or "",
-            "tags": fic.tags[:10],  
+            "tags": fic.tags[:20],  
         })
 
     prompt = f"""You are a fanfiction recommendation engine.

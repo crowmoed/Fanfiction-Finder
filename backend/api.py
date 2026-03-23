@@ -57,7 +57,7 @@ async def search(
     print(f"[search] embedding ready ({len(query_embedding)} dims)", flush=True)
 
     # Vector search — get top 50 candidates
-    candidates = search_similar(query_embedding, fandom=fandom, limit=50)
+    candidates = search_similar(query_embedding, fandom=fandom, limit=200)
     print(f"[search] {len(candidates)} candidates from vector search", flush=True)
 
     # AI rank the candidates
