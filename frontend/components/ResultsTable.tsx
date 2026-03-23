@@ -9,7 +9,6 @@ import type {
   StatusFilter,
   RatingFilter,
   WordCountFilter,
-  UpdatedFilter,
   KudosFilter,
 } from '@/lib/schema/types';
 import PlatformBadge from './PlatformBadge';
@@ -58,7 +57,6 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [ratingFilter, setRatingFilter] = useState<RatingFilter>('all');
   const [wordCountFilter, setWordCountFilter] = useState<WordCountFilter>('all');
-  const [updatedFilter, setUpdatedFilter] = useState<UpdatedFilter>('all');
   const [kudosFilter, setKudosFilter] = useState<KudosFilter>('all');
   const [tagFilter, setTagFilter] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -78,20 +76,11 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
     const wcMin = WORD_COUNT_MIN[wordCountFilter];
     const minKudos = KUDOS_MIN[kudosFilter];
 
-    let cutoffDate: Date | null = null;
-    if (updatedFilter !== 'all') {
-      cutoffDate = new Date();
-      if (updatedFilter === '1yr') cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
-      else if (updatedFilter === '2yr') cutoffDate.setFullYear(cutoffDate.getFullYear() - 2);
-      else if (updatedFilter === '5yr') cutoffDate.setFullYear(cutoffDate.getFullYear() - 5);
-    }
-
     const filtered = results.filter((r) => {
       if (platformFilter !== 'all' && r.platform !== platformFilter) return false;
       if (statusFilter !== 'all' && r.status !== statusFilter) return false;
       if (ratingFilter !== 'all' && r.rating !== ratingFilter) return false;
       if (r.wordCount < wcMin) return false;
-      if (cutoffDate && new Date(r.updatedAt) < cutoffDate) return false;
       if (minKudos > 0 && (r.stats.kudos ?? r.stats.favs ?? 0) < minKudos) return false;
       if (tagFilter.length > 0 && !tagFilter.every((t) => r.tags.includes(t))) return false;
       return true;
@@ -108,12 +97,12 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
     });
 
     return filtered.map((fic, i) => ({ ...fic, _rank: i + 1 }));
-  }, [results, platformFilter, statusFilter, ratingFilter, wordCountFilter, updatedFilter, kudosFilter, tagFilter, sort]);
+  }, [results, platformFilter, statusFilter, ratingFilter, wordCountFilter, kudosFilter, tagFilter, sort]);
 
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => containerRef.current,
-    estimateSize: () => 56,
+    estimateSize: () => 80,
     overscan: 5,
   });
 
@@ -154,7 +143,6 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
         statusFilter={statusFilter}
         ratingFilter={ratingFilter}
         wordCountFilter={wordCountFilter}
-        updatedFilter={updatedFilter}
         kudosFilter={kudosFilter}
         tagFilter={tagFilter}
         availableTags={availableTags}
@@ -162,7 +150,6 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
         onStatusChange={setStatusFilter}
         onRatingChange={setRatingFilter}
         onWordCountChange={setWordCountFilter}
-        onUpdatedChange={setUpdatedFilter}
         onKudosChange={setKudosFilter}
         onTagFilterChange={setTagFilter}
         onClearAll={() => {
@@ -170,7 +157,6 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
           setStatusFilter('all');
           setRatingFilter('all');
           setWordCountFilter('all');
-          setUpdatedFilter('all');
           setKudosFilter('all');
           setTagFilter([]);
         }}
@@ -265,8 +251,8 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
                         {fic.title}
                       </a>
                       {fic.summary && (
-                        <p className="text-xs mt-0.5 line-clamp-1" style={{ color: 'var(--text-tertiary)' }}>
-                          {fic.summary.length > 100 ? fic.summary.slice(0, 100) + '…' : fic.summary}
+                        <p className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                          {fic.summary}
                         </p>
                       )}
                     </td>

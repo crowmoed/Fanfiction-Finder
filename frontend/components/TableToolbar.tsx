@@ -6,7 +6,6 @@ import type {
   StatusFilter,
   RatingFilter,
   WordCountFilter,
-  UpdatedFilter,
   KudosFilter,
 } from '@/lib/schema/types';
 
@@ -16,7 +15,6 @@ interface TableToolbarProps {
   statusFilter: StatusFilter;
   ratingFilter: RatingFilter;
   wordCountFilter: WordCountFilter;
-  updatedFilter: UpdatedFilter;
   kudosFilter: KudosFilter;
   tagFilter: string[];
   availableTags: { tag: string; count: number }[];
@@ -24,7 +22,6 @@ interface TableToolbarProps {
   onStatusChange: (v: StatusFilter) => void;
   onRatingChange: (v: RatingFilter) => void;
   onWordCountChange: (v: WordCountFilter) => void;
-  onUpdatedChange: (v: UpdatedFilter) => void;
   onKudosChange: (v: KudosFilter) => void;
   onTagFilterChange: (v: string[]) => void;
   onClearAll: () => void;
@@ -45,7 +42,6 @@ export default function TableToolbar({
   statusFilter,
   ratingFilter,
   wordCountFilter,
-  updatedFilter,
   kudosFilter,
   tagFilter,
   availableTags,
@@ -53,7 +49,6 @@ export default function TableToolbar({
   onStatusChange,
   onRatingChange,
   onWordCountChange,
-  onUpdatedChange,
   onKudosChange,
   onTagFilterChange,
   onClearAll,
@@ -88,7 +83,6 @@ export default function TableToolbar({
     statusFilter !== 'all',
     ratingFilter !== 'all',
     wordCountFilter !== 'all',
-    updatedFilter !== 'all',
     kudosFilter !== 'all',
     tagFilter.length > 0,
   ].filter(Boolean).length;
@@ -229,22 +223,6 @@ export default function TableToolbar({
             <option value="100k+">100k+ words</option>
             <option value="200k+">200k+ words</option>
             <option value="400k+">400k+ words</option>
-          </select>
-        </label>
-
-        {/* Last updated */}
-        <label className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Updated:
-          <select
-            value={updatedFilter}
-            onChange={(e) => onUpdatedChange(e.target.value as UpdatedFilter)}
-            className="border rounded-md px-2 py-1 text-sm focus:outline-none"
-            style={selectStyle}
-          >
-            <option value="all">Any time</option>
-            <option value="1yr">Last year</option>
-            <option value="2yr">Last 2 years</option>
-            <option value="5yr">Last 5 years</option>
           </select>
         </label>
 

@@ -67,9 +67,16 @@ export default function ResultsCard({ fic, rank }: ResultsCardProps) {
         </span>
       </p>
 
+      {/* Fic description */}
+      {fic.summary && (
+        <p className="text-xs mb-2 line-clamp-3" style={{ color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+          {fic.summary}
+        </p>
+      )}
+
       {/* Match reason */}
       {fic.matchReason && (
-        <p className="text-xs italic mb-2 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
+        <p className="text-xs italic mb-2 line-clamp-2" style={{ color: 'var(--text-tertiary)' }}>
           &ldquo;{fic.matchReason}&rdquo;
         </p>
       )}
