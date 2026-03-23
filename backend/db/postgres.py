@@ -72,16 +72,33 @@ def upsert_fic(fic: Fic, fandom: str, embedding: list[float]):
         session.commit()
 
 
-def search_similar(query_embedding: list[float], fandom: str, limit: int = 50) -> list[Fic]:
-    """Find fics whose embeddings are closest to the query embedding."""
+def search_similar(query_embedding: list[float], fandom: str, limit: int = 50, min_words: int = 0) -> list[Fic]:
+    """Find fics whose embeddings are closest to the query embedding.
+
+    If min_words is set, filters by word count and tops up with the longest
+    matching fics if there aren't enough semantic matches to fill limit."""
     with Session(engine) as session:
-        results = (
-            session.query(FicRecord)
-            .filter(FicRecord.fandom == fandom)
-            .order_by(FicRecord.embedding.cosine_distance(query_embedding))
+        q = session.query(FicRecord).filter(FicRecord.fandom == fandom)
+        if min_words > 0:
+            q = q.filter(FicRecord.word_count >= min_words)
+
+        results = list(
+            q.order_by(FicRecord.embedding.cosine_distance(query_embedding))
             .limit(limit)
             .all()
         )
+
+        # Top up with longest word-count-matching fics if we fell short
+        if min_words > 0 and len(results) < limit:
+            seen_ids = {r.id for r in results}
+            extra_q = (
+                session.query(FicRecord)
+                .filter(FicRecord.fandom == fandom, FicRecord.word_count >= min_words)
+            )
+            if seen_ids:
+                extra_q = extra_q.filter(FicRecord.id.notin_(seen_ids))
+            extra = extra_q.order_by(FicRecord.word_count.desc()).limit(limit - len(results)).all()
+            results = results + list(extra)
 
     fics = []
     for r in results:

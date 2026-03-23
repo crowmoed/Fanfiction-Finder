@@ -40,7 +40,8 @@ def get_fandoms():
 async def search(
     q: str = Query(..., description="Natural language search query"),
     fandom: Optional[str] = Query(None, description="Fandom name from /fandoms"),
-    limit: int = Query(20, ge=1, le=100, description="Number of results to return")
+    limit: int = Query(20, ge=1, le=100, description="Number of results to return"),
+    min_words: int = Query(0, ge=0, description="Minimum word count filter"),
 ):
     if not fandom:
         raise HTTPException(status_code=400, detail="Fandom is required.")
@@ -52,8 +53,8 @@ async def search(
     # Embed the query
     query_embedding = embed_query(q)
 
-    # Vector search — get top 50 candidates
-    candidates = search_similar(query_embedding, fandom=fandom, limit=50)
+    # Vector search — get top 50 candidates matching the word count constraint
+    candidates = search_similar(query_embedding, fandom=fandom, limit=50, min_words=min_words)
 
     # AI rank the candidates
     ranked = rank(fics=candidates, query=q)

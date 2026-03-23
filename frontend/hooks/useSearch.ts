@@ -35,7 +35,8 @@ export function useSearch() {
   const search = useCallback(async (
     prompt: string,
     fandom: string,
-    cachedResults?: FicResult[]
+    cachedResults?: FicResult[],
+    minWords: number = 0,
   ) => {
     // Abort any in-progress search
     abortRef.current?.abort();
@@ -68,7 +69,7 @@ export function useSearch() {
       const response = await fetch('/api/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, fandom }),
+        body: JSON.stringify({ prompt, fandom, minWords }),
         signal: controller.signal,
       });
 

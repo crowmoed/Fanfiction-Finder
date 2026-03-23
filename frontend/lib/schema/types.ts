@@ -54,8 +54,7 @@ export type SortField = 'matchScore' | 'wordCount' | 'title' | 'updatedAt';
 export type PlatformFilter = 'all' | 'ao3' | 'ffn';
 export type StatusFilter = 'all' | 'complete' | 'in-progress';
 export type RatingFilter = 'all' | 'G' | 'T' | 'M' | 'E';
-export type WordCountFilter = 'all' | 'under10k' | '10k-50k' | '50k-150k' | '150k-400k' | 'over400k';
-export type ChapterFilter = 'all' | 'oneshot' | 'multi';
+export type WordCountFilter = 'all' | '10k+' | '20k+' | '40k+' | '75k+' | '100k+' | '200k+' | '400k+';
 export type UpdatedFilter = 'all' | '1yr' | '2yr' | '5yr';
 export type KudosFilter = 'all' | '100+' | '500+' | '1k+' | '5k+';
 

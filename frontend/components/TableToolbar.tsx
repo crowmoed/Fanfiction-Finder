@@ -6,7 +6,6 @@ import type {
   StatusFilter,
   RatingFilter,
   WordCountFilter,
-  ChapterFilter,
   UpdatedFilter,
   KudosFilter,
 } from '@/lib/schema/types';
@@ -17,7 +16,6 @@ interface TableToolbarProps {
   statusFilter: StatusFilter;
   ratingFilter: RatingFilter;
   wordCountFilter: WordCountFilter;
-  chapterFilter: ChapterFilter;
   updatedFilter: UpdatedFilter;
   kudosFilter: KudosFilter;
   tagFilter: string[];
@@ -26,7 +24,6 @@ interface TableToolbarProps {
   onStatusChange: (v: StatusFilter) => void;
   onRatingChange: (v: RatingFilter) => void;
   onWordCountChange: (v: WordCountFilter) => void;
-  onChapterChange: (v: ChapterFilter) => void;
   onUpdatedChange: (v: UpdatedFilter) => void;
   onKudosChange: (v: KudosFilter) => void;
   onTagFilterChange: (v: string[]) => void;
@@ -48,7 +45,6 @@ export default function TableToolbar({
   statusFilter,
   ratingFilter,
   wordCountFilter,
-  chapterFilter,
   updatedFilter,
   kudosFilter,
   tagFilter,
@@ -57,7 +53,6 @@ export default function TableToolbar({
   onStatusChange,
   onRatingChange,
   onWordCountChange,
-  onChapterChange,
   onUpdatedChange,
   onKudosChange,
   onTagFilterChange,
@@ -93,7 +88,6 @@ export default function TableToolbar({
     statusFilter !== 'all',
     ratingFilter !== 'all',
     wordCountFilter !== 'all',
-    chapterFilter !== 'all',
     updatedFilter !== 'all',
     kudosFilter !== 'all',
     tagFilter.length > 0,
@@ -228,26 +222,13 @@ export default function TableToolbar({
             style={selectStyle}
           >
             <option value="all">Any length</option>
-            <option value="under10k">Short (&lt; 10k)</option>
-            <option value="10k-50k">Medium (10k – 50k)</option>
-            <option value="50k-150k">Long (50k – 150k)</option>
-            <option value="150k-400k">Very Long (150k – 400k)</option>
-            <option value="over400k">Epic (400k+)</option>
-          </select>
-        </label>
-
-        {/* Chapters */}
-        <label className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Chapters:
-          <select
-            value={chapterFilter}
-            onChange={(e) => onChapterChange(e.target.value as ChapterFilter)}
-            className="border rounded-md px-2 py-1 text-sm focus:outline-none"
-            style={selectStyle}
-          >
-            <option value="all">Any</option>
-            <option value="oneshot">One-shot</option>
-            <option value="multi">Multi-chapter</option>
+            <option value="10k+">10k+ words</option>
+            <option value="20k+">20k+ words</option>
+            <option value="40k+">40k+ words</option>
+            <option value="75k+">75k+ words</option>
+            <option value="100k+">100k+ words</option>
+            <option value="200k+">200k+ words</option>
+            <option value="400k+">400k+ words</option>
           </select>
         </label>
 

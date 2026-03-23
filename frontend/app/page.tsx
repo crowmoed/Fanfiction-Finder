@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import type { Fandom, FicResult } from '@/lib/schema/types';
+import type { Fandom, FicResult, WordCountFilter } from '@/lib/schema/types';
 import { useSearch } from '@/hooks/useSearch';
 import { useSearchHistory } from '@/hooks/useSearchHistory';
 import { useIsMobile } from '@/hooks/useMediaQuery';
@@ -20,8 +20,14 @@ export default function HomePage() {
   const [appState, setAppState] = useState<AppState>('empty');
   const [currentQuery, setCurrentQuery] = useState('');
   const [currentFandom, setCurrentFandom] = useState<Fandom>('');
+  const [wordCountFilter, setWordCountFilter] = useState<WordCountFilter>('all');
   const [showHistory, setShowHistory] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+
+  const minWordsMap: Record<WordCountFilter, number> = {
+    all: 0, '10k+': 10_000, '20k+': 20_000, '40k+': 40_000,
+    '75k+': 75_000, '100k+': 100_000, '200k+': 200_000, '400k+': 400_000,
+  };
 
   const { search, results, pipelineStatus, isSearching, isRanked, error } = useSearch();
   const { history, addEntry, clearHistory, getCachedEntry } = useSearchHistory();
@@ -37,20 +43,32 @@ export default function HomePage() {
   }, [isSearching, results.length]);
 
   const handleSearch = useCallback(
-    async (prompt: string, fandom: Fandom, cachedResults?: FicResult[]) => {
+    async (prompt: string, fandom: Fandom, cachedResults?: FicResult[], minWords?: number) => {
       setCurrentQuery(prompt);
       setCurrentFandom(fandom);
       setAppState('loading');
 
-      // Check for cached results if not already provided
-      if (!cachedResults) {
+      const effectiveMinWords = minWords ?? 0;
+
+      // Only use cache when there's no word count filter
+      if (!cachedResults && effectiveMinWords === 0) {
         const cached = await getCachedEntry(prompt, fandom);
         cachedResults = cached?.cachedResults;
       }
 
-      await search(prompt, fandom, cachedResults);
+      await search(prompt, fandom, cachedResults, effectiveMinWords);
     },
     [search, getCachedEntry]
+  );
+
+  const handleWordCountChange = useCallback(
+    (filter: WordCountFilter) => {
+      setWordCountFilter(filter);
+      if (currentQuery && currentFandom) {
+        handleSearch(currentQuery, currentFandom, undefined, minWordsMap[filter]);
+      }
+    },
+    [currentQuery, currentFandom, handleSearch, minWordsMap]
   );
 
   // Save to history when search completes
@@ -321,6 +339,8 @@ export default function HomePage() {
                   results={results}
                   isRanked={isRanked}
                   isMobile={isMobile}
+                  wordCountFilter={wordCountFilter}
+                  onWordCountChange={handleWordCountChange}
                 />
               )}
 
