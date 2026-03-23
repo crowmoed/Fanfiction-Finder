@@ -50,13 +50,19 @@ async def search(
         raise HTTPException(status_code=404, detail=f"No fics indexed for '{fandom}'. Run the indexer first.")
 
     # Embed the query
+    print(f"\n[search] ── new request ──────────────────", flush=True)
+    print(f"[search] fandom : {fandom!r}", flush=True)
+    print(f"[search] query  : {q!r}", flush=True)
     query_embedding = embed_query(q)
+    print(f"[search] embedding ready ({len(query_embedding)} dims)", flush=True)
 
     # Vector search — get top 50 candidates
     candidates = search_similar(query_embedding, fandom=fandom, limit=50)
+    print(f"[search] {len(candidates)} candidates from vector search", flush=True)
 
     # AI rank the candidates
     ranked = rank(fics=candidates, query=q)
+    print(f"[search] ranking done, returning {min(limit, len(ranked))} results", flush=True)
 
     return ranked[:limit]
 

@@ -29,6 +29,7 @@ def embed_fic(title: str, summary: str, tags: list[str]) -> list[float]:
 
 def embed_query(query: str) -> list[float]:
     """Generate an embedding for a user search query."""
+    print(f"[embedder] sending to Gemini ({EMBEDDING_MODEL}): {query!r}", flush=True)
     return embed_text(query)
 
 

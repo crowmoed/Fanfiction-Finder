@@ -50,7 +50,9 @@ export default function SearchBar({
           if (first) setFandom(first.name);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setFandoms([]);
+      });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -96,6 +98,9 @@ export default function SearchBar({
     const full = appendToPrompt
       ? `${prompt.trim()}, ${appendToPrompt}`
       : prompt.trim();
+    console.log('[SearchBar] User prompt:', prompt.trim());
+    if (appendToPrompt) console.log('[SearchBar] Appended filters:', appendToPrompt);
+    console.log('[SearchBar] Full prompt sent to search:', full);
     onSearch(full, fandom);
   }, [prompt, fandom, isSearching, onSearch, appendToPrompt]);
 
@@ -201,7 +206,7 @@ export default function SearchBar({
           }}
         >
           {fandoms.length === 0 ? (
-            <option value="">Loading...</option>
+            <option value="">Backend unavailable</option>
           ) : (
             <>
               <optgroup label="Available">

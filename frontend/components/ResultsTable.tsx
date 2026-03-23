@@ -32,15 +32,16 @@ type SortId = 'matchScore' | 'wordCount' | 'title' | 'updatedAt';
 interface Sort { id: SortId; desc: boolean }
 
 const COLUMNS = [
-  { id: '_rank',       label: '#',      width: 48,  minWidth: undefined, sortId: 'matchScore' as SortId, sortable: true  },
-  { id: 'title',       label: 'Title',  width: undefined, minWidth: 200, sortId: 'title'      as SortId, sortable: true  },
-  { id: 'platform',    label: 'Source', width: 72,  minWidth: undefined, sortId: null,                   sortable: false },
-  { id: 'rating',      label: 'Rating', width: 56,  minWidth: undefined, sortId: null,                   sortable: false },
-  { id: 'wordCount',   label: 'Words',  width: 80,  minWidth: undefined, sortId: 'wordCount'  as SortId, sortable: true  },
-  { id: 'status',      label: 'Status', width: 80,  minWidth: undefined, sortId: null,                   sortable: false },
-  { id: 'tags',        label: 'Tags',   width: 180, minWidth: undefined, sortId: null,                   sortable: false },
-  { id: 'matchScore',  label: 'Match',  width: 72,  minWidth: undefined, sortId: 'matchScore' as SortId, sortable: true  },
-  { id: 'matchReason', label: 'Why',    width: 180, minWidth: undefined, sortId: null,                   sortable: false },
+  { id: '_rank',       label: '#',           width: 48,  minWidth: undefined, sortId: 'matchScore' as SortId, sortable: true  },
+  { id: 'title',       label: 'Title',       width: undefined, minWidth: 160, sortId: 'title'      as SortId, sortable: true  },
+  { id: 'description', label: 'Description', width: undefined, minWidth: 300, sortId: null,                   sortable: false },
+  { id: 'platform',    label: 'Source',      width: 72,  minWidth: undefined, sortId: null,                   sortable: false },
+  { id: 'rating',      label: 'Rating',      width: 56,  minWidth: undefined, sortId: null,                   sortable: false },
+  { id: 'wordCount',   label: 'Words',       width: 80,  minWidth: undefined, sortId: 'wordCount'  as SortId, sortable: true  },
+  { id: 'status',      label: 'Status',      width: 80,  minWidth: undefined, sortId: null,                   sortable: false },
+  { id: 'tags',        label: 'Tags',        width: 160, minWidth: undefined, sortId: null,                   sortable: false },
+  { id: 'matchScore',  label: 'Match',       width: 72,  minWidth: undefined, sortId: 'matchScore' as SortId, sortable: true  },
+  { id: 'matchReason', label: 'Why',         width: 200, minWidth: undefined, sortId: null,                   sortable: false },
 ];
 
 interface ResultsTableProps {
@@ -102,7 +103,7 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => containerRef.current,
-    estimateSize: () => 80,
+    estimateSize: () => 100,
     overscan: 5,
   });
 
@@ -176,7 +177,7 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
           className="overflow-auto"
           style={{ maxHeight: '70vh' }}
         >
-          <table className="w-full border-collapse text-sm" style={{ minWidth: '900px' }}>
+          <table className="w-full border-collapse text-sm" style={{ minWidth: '1100px' }}>
             <thead className="sticky top-0 z-10" style={{ backgroundColor: 'var(--bg-secondary)' }}>
               <tr>
                 {COLUMNS.map((col) => {
@@ -239,7 +240,7 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
                     </td>
 
                     {/* Title */}
-                    <td style={{ ...TD, minWidth: 200 }}>
+                    <td style={{ ...TD, minWidth: 160 }}>
                       <a
                         href={fic.url}
                         target="_blank"
@@ -250,11 +251,13 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
                       >
                         {fic.title}
                       </a>
-                      {fic.summary && (
-                        <p className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                          {fic.summary}
-                        </p>
-                      )}
+                    </td>
+
+                    {/* Description */}
+                    <td style={{ ...TD, minWidth: 300 }}>
+                      <p className="text-xs line-clamp-5" style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                        {fic.summary || '—'}
+                      </p>
                     </td>
 
                     {/* Platform */}

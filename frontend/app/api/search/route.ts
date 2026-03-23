@@ -87,6 +87,7 @@ export async function POST(req: NextRequest) {
       await send({ type: 'status', step: 'ffn-fetch', status: 'active' });
 
       // Call the Python backend
+      console.log(`[API/search] prompt="${prompt}" fandom="${fandom}"`);
       const backendResp = await fetch(
         `${BACKEND_URL}/search?q=${encodeURIComponent(prompt)}&fandom=${encodeURIComponent(fandom)}&limit=50`,
         { signal: AbortSignal.timeout(60_000) }
