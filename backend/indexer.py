@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from dotenv import load_dotenv
 from data.fandoms import FANDOMS
 from ai.embedder import embed_fics_batch
-from db.postgres import upsert_fic, get_fic_count, init_db, clear_fandom
+from db.postgres import upsert_fic, get_fic_count, init_db, clear_fandom, migrate_embedding_dimensions
 from seleniumbase import SB
 import random
 
@@ -45,7 +45,7 @@ def scrape_and_embed_ao3(fandom_name: str, sb, first_fandom: bool = False) -> in
             break
 
         print(f"[AO3] Page {page}: scraped {len(fics)} fics — embedding now...")
-        embeddings = embed_fics_batch(fics)
+        embeddings = embed_fics_batch(fics, fandom=fandom_name)
         for fic, embedding in zip(fics, embeddings):
             try:
                 upsert_fic(fic=fic, fandom=fandom_name, embedding=embedding)
@@ -95,7 +95,7 @@ def scrape_and_embed_ffn(fandom_name: str, sb, first_fandom: bool = False) -> in
                 break
 
             print(f"[FFN] Page {page} ({label}): scraped {len(fics)} fics — embedding now...")
-            embeddings = embed_fics_batch(fics)
+            embeddings = embed_fics_batch(fics, fandom=fandom_name)
             for fic, embedding in zip(fics, embeddings):
                 try:
                     upsert_fic(fic=fic, fandom=fandom_name, embedding=embedding)
@@ -138,6 +138,7 @@ def index_fandom(fandom_name: str, clear: bool = False):
 
 def index_all(clear: bool = False):
     init_db()
+    migrate_embedding_dimensions()
     total = 0
 
     with SB(uc=True, headless=False) as sb:
@@ -171,6 +172,7 @@ def index_one(fandom_name: str, clear: bool = False):
         print(f"Available: {list(FANDOMS.keys())}")
         return
     init_db()
+    migrate_embedding_dimensions()
     index_fandom(fandom_name, clear=clear)
 
 

@@ -14,6 +14,8 @@ load_dotenv()
 Base = declarative_base()
 engine = create_engine(os.getenv("DATABASE_URL"))
 
+EMBEDDING_DIMS = 768  # Must match embedder.py
+
 
 class FicRecord(Base):
     __tablename__ = "fics"
@@ -28,7 +30,7 @@ class FicRecord(Base):
     kudos = Column(Integer)
     hits = Column(Integer)
     fandom = Column(String)
-    embedding = Column(Vector(3072))            # pgvector column
+    embedding = Column(Vector(EMBEDDING_DIMS))   # pgvector column — 768 dims
     indexed_at = Column(DateTime(timezone=True), server_default=sqlfunc.now())
 
 
@@ -45,6 +47,47 @@ def init_db():
         ))
         conn.commit()
     print("Database initialized.")
+
+
+def migrate_embedding_dimensions():
+    """Migrate embedding column from old dimensions (e.g. 3072) to EMBEDDING_DIMS.
+    
+    This is DESTRUCTIVE — all existing embeddings are lost and fics must be re-indexed.
+    Only runs if the current column dimensions don't match EMBEDDING_DIMS.
+    """
+    with engine.connect() as conn:
+        # Check current column type
+        result = conn.execute(text(
+            "SELECT udt_name, character_maximum_length "
+            "FROM information_schema.columns "
+            "WHERE table_name = 'fics' AND column_name = 'embedding'"
+        )).fetchone()
+
+        if result is None:
+            print(f"[migrate] No embedding column found — init_db will create it.")
+            return
+
+        # pgvector stores dimension in the type modifier; check via pg_attribute
+        dim_result = conn.execute(text(
+            "SELECT atttypmod FROM pg_attribute "
+            "WHERE attrelid = 'fics'::regclass AND attname = 'embedding'"
+        )).fetchone()
+
+        if dim_result:
+            current_dims = dim_result[0]
+            if current_dims == EMBEDDING_DIMS:
+                print(f"[migrate] Embedding column already {EMBEDDING_DIMS} dims — no migration needed.")
+                return
+            print(f"[migrate] Current dims: {current_dims} → migrating to {EMBEDDING_DIMS}")
+        else:
+            print(f"[migrate] Could not detect current dims — forcing migration.")
+
+        # Drop and recreate the column
+        conn.execute(text("ALTER TABLE fics DROP COLUMN IF EXISTS embedding"))
+        conn.execute(text(f"ALTER TABLE fics ADD COLUMN embedding vector({EMBEDDING_DIMS})"))
+        conn.commit()
+        print(f"[migrate] Embedding column recreated as vector({EMBEDDING_DIMS}).")
+        print(f"[migrate] ⚠️  ALL existing embeddings are now NULL — re-index all fandoms!")
 
 
 def upsert_fic(fic: Fic, fandom: str, embedding: list[float]):
@@ -78,6 +121,7 @@ def search_similar(query_embedding: list[float], fandom: str, limit: int = 50) -
         results = (
             session.query(FicRecord)
             .filter(FicRecord.fandom == fandom)
+            .filter(FicRecord.embedding.isnot(None))  # skip un-embedded rows
             .order_by(FicRecord.embedding.cosine_distance(query_embedding))
             .limit(limit)
             .all()
@@ -153,7 +197,6 @@ def get_admin_stats() -> dict:
         fandom_map[key]["total"] += count
         fandom_map[key]["total_kudos"] += kudos
 
-        # Keep the most recent last_indexed across platforms
         if last and (fandom_map[key]["last_indexed"] is None or last > fandom_map[key]["last_indexed"]):
             fandom_map[key]["last_indexed"] = last
 
@@ -172,6 +215,7 @@ def clear_fandom(fandom: str):
         deleted = session.query(FicRecord).filter(FicRecord.fandom == fandom).delete()
         session.commit()
         print(f"Cleared {deleted} fics for '{fandom}'")
+
         
 if __name__ == "__main__":
     init_db()
