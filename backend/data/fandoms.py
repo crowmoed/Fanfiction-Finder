@@ -8,7 +8,7 @@ FANDOMS = {
     "The Hunger Games":     {"ao3": "Hunger Games",                         "ffn": "book/hunger-games"},
 
     # Anime
-    "Naruto":               {"ao3": "Naruto",                               "ffn": "anime/naruto"},
+    "Naruto":               {"ao3": "Naruto (Anime & Manga)",               "ffn": "anime/naruto"},
     "Attack on Titan":      {"ao3": "Shingeki no Kyojin | Attack on Titan", "ffn": "anime/attack-on-titan"},
     "My Hero Academia":     {"ao3": "Boku no Hero Academia | My Hero Academia", "ffn": "anime/my-hero-academia"},
     "Fullmetal Alchemist":  {"ao3": "Fullmetal Alchemist",                  "ffn": "anime/fullmetal-alchemist"},

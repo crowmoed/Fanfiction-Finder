@@ -7,29 +7,34 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data.schema import Fic
 from data.fandoms import FANDOMS
-
+from urllib.parse import urlencode, quote, quote_plus
 
 def build_search_url(query: str, fandom: Optional[str] = None, page: int = 1, min_words: int = 0) -> str:
     ao3_tag = FANDOMS[fandom]["ao3"]
     encoded_tag = ao3_tag.replace(" ", "+").replace("&", "*a*")
-    params = {
-        "commit": "Sort+and+Filter",
-        "work_search[sort_column]": "kudos_count",
-        "work_search[words_from]": str(min_words),
-        "tag_id": encoded_tag,
-        "page": str(page)
-    }
-    param_string = "&".join(f"{k}={v}" for k, v in params.items())
+    
+    params = [
+        ("commit", "Sort and Filter"),
+        ("work_search[sort_column]", "kudos_count"),
+        ("work_search[other_tag_names]", ""),
+        ("work_search[excluded_tag_names]", ""),
+        ("work_search[crossover]", ""),
+        ("work_search[complete]", ""),
+        ("work_search[words_from]", str(min_words)),
+        ("work_search[words_to]", ""),
+        ("work_search[date_from]", ""),
+        ("work_search[date_to]", ""),
+        ("work_search[query]", ""),
+        ("work_search[language_id]", ""),
+        ("page", str(page)),
+    ]
+
+    param_string = urlencode(
+        params,
+        quote_via=quote_plus
+    ) + f"&tag_id={encoded_tag}"
+
     return f"https://archiveofourown.org/works?{param_string}"
-
-
-def parse_int(text: Optional[str]) -> Optional[int]:
-    if not text:
-        return None
-    try:
-        return int(text.strip().replace(",", ""))
-    except ValueError:
-        return None
 
 
 def parse_results(html: str) -> list[Fic]:
@@ -91,7 +96,14 @@ def search(query: str, fandom: Optional[str] = None, pages: int = 1) -> list[Fic
                 time.sleep(0)
     return results
 
-
+def parse_int(text: Optional[str]) -> Optional[int]:
+    if not text:
+        return None
+    try:
+        return int(text.strip().replace(",", ""))
+    except ValueError:
+        return None
+        
 if __name__ == "__main__":
     fics = search("enemies to lovers slow burn", fandom="Harry Potter", pages=2)
     for fic in fic:
