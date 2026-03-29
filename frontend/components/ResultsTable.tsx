@@ -41,7 +41,6 @@ const COLUMNS = [
   { id: 'status',      label: 'Status',      width: 80,  minWidth: undefined, sortId: null,                   sortable: false },
   { id: 'tags',        label: 'Tags',        width: 160, minWidth: undefined, sortId: null,                   sortable: false },
   { id: 'matchScore',  label: 'Match',       width: 72,  minWidth: undefined, sortId: 'matchScore' as SortId, sortable: true  },
-  { id: 'matchReason', label: 'Why',         width: 200, minWidth: undefined, sortId: null,                   sortable: false },
 ];
 
 interface ResultsTableProps {
@@ -299,17 +298,6 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
                       <ScoreBar score={fic.matchScore} />
                     </td>
 
-                    {/* Why */}
-                    <td style={{ ...TD, width: 180 }}>
-                      {fic.matchReason ? (
-                        <p className="text-xs italic truncate" style={{ color: 'var(--text-secondary)' }}
-                          title={fic.matchReason}>
-                          {fic.matchReason}
-                        </p>
-                      ) : (
-                        <div className="h-3 w-full rounded shimmer-bar" />
-                      )}
-                    </td>
                   </tr>
                 );
               })}

@@ -74,13 +74,6 @@ export default function ResultsCard({ fic, rank }: ResultsCardProps) {
         </p>
       )}
 
-      {/* Match reason */}
-      {fic.matchReason && (
-        <p className="text-xs italic mb-2 line-clamp-2" style={{ color: 'var(--text-tertiary)' }}>
-          &ldquo;{fic.matchReason}&rdquo;
-        </p>
-      )}
-
       {/* Tags */}
       <TagList tags={fic.tags} limit={3} />
     </article>

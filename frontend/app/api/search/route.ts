@@ -41,7 +41,6 @@ function mapToFicResult(fic: BackendFic): FicResult {
       hits: fic.hits ?? undefined,
     },
     matchScore: fic.match_score ?? null,
-    matchReason: fic.match_reason ?? null,
     // Backend doesn't return updated date
     updatedAt: new Date().toISOString(),
   };

@@ -20,7 +20,6 @@ export interface FicResult {
     follows?: number;
   };
   matchScore: number | null;
-  matchReason: string | null;
   updatedAt: string;
 }
 

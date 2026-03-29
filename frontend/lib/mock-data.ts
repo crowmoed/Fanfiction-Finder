@@ -16,7 +16,6 @@ export const MOCK_RESULTS: FicResult[] = [
     summary: 'A coming-of-age story following Remus Lupin and his friends through their years at Hogwarts, dealing with werewolves, war, and love.',
     stats: { kudos: 89241, hits: 4200000, bookmarks: 18000 },
     matchScore: 94,
-    matchReason: 'Iconic marauders-era found-family story with deep emotional resonance and slow-burn relationships.',
     updatedAt: '2018-11-10T00:00:00Z',
   },
   {
@@ -34,7 +33,6 @@ export const MOCK_RESULTS: FicResult[] = [
     summary: 'Years after the war, Harry and Draco are forced to work together on a Ministry assignment neither of them wanted.',
     stats: { kudos: 22300, hits: 890000, bookmarks: 4100 },
     matchScore: 89,
-    matchReason: 'Classic enemies-to-lovers dynamic with slow-burn pacing and post-war healing themes.',
     updatedAt: '2019-04-22T00:00:00Z',
   },
   {
@@ -52,7 +50,6 @@ export const MOCK_RESULTS: FicResult[] = [
     summary: "Petunia married a biochemist, and Harry grew up reading science and science fiction. Now Hogwarts meets scientific rationalism.",
     stats: { favs: 42100, follows: 18300, reviews: 84000 },
     matchScore: 82,
-    matchReason: 'Massively celebrated AU that deconstructs canon with scientific rigor; complete and extensively reviewed.',
     updatedAt: '2015-03-14T00:00:00Z',
   },
   {
@@ -70,7 +67,6 @@ export const MOCK_RESULTS: FicResult[] = [
     summary: "Draco Malfoy is determined to understand Muggle culture after the war. Hermione Granger is reluctantly his guide.",
     stats: { kudos: 14200, hits: 420000, bookmarks: 2800 },
     matchScore: 76,
-    matchReason: 'Cultural collision slow-burn with well-developed character growth on both sides.',
     updatedAt: '2021-07-03T00:00:00Z',
   },
   {
@@ -88,7 +84,6 @@ export const MOCK_RESULTS: FicResult[] = [
     summary: 'Ron and Hermione navigate their first Christmas together as a couple, dealing with family expectations and their own awkward hearts.',
     stats: { favs: 3400, follows: 1200, reviews: 6700 },
     matchScore: 71,
-    matchReason: 'Warm holiday romance with natural character voices and satisfying emotional payoff.',
     updatedAt: '2020-12-25T00:00:00Z',
   },
   {
@@ -106,7 +101,6 @@ export const MOCK_RESULTS: FicResult[] = [
     summary: 'Harry and Draco work as Auror partners and slowly, reluctantly fall in love over the course of a very long year.',
     stats: { kudos: 31200, hits: 1100000, bookmarks: 7400 },
     matchScore: 88,
-    matchReason: 'One of the most beloved Drarry epics; slow-burn across a sweeping multi-part series.',
     updatedAt: '2017-09-14T00:00:00Z',
   },
   {
@@ -124,7 +118,6 @@ export const MOCK_RESULTS: FicResult[] = [
     summary: 'In a world where the Battle of Hogwarts went differently, survivors must rebuild—including people you never expected to survive.',
     stats: { favs: 8900, follows: 3400, reviews: 12000 },
     matchScore: 68,
-    matchReason: 'Compelling dark fix-it with well-handled redemption arcs and post-war moral complexity.',
     updatedAt: '2022-11-01T00:00:00Z',
   },
   {
@@ -142,7 +135,6 @@ export const MOCK_RESULTS: FicResult[] = [
     summary: "There's a magical bond. Harry is oblivious. Draco is suffering. Draco is always suffering.",
     stats: { kudos: 27800, hits: 780000, bookmarks: 5600 },
     matchScore: 85,
-    matchReason: 'Classic trope done brilliantly by one of the most celebrated HP fanfiction authors.',
     updatedAt: '2016-06-20T00:00:00Z',
   },
   {
@@ -160,7 +152,6 @@ export const MOCK_RESULTS: FicResult[] = [
     summary: 'Harry Potter dies and wakes up at the beginning again. And again. And again. He is very tired.',
     stats: { kudos: 19400, hits: 650000, bookmarks: 4200 },
     matchScore: 79,
-    matchReason: 'Inventive time-loop premise with darkly funny execution and satisfying character growth.',
     updatedAt: '2023-02-14T00:00:00Z',
   },
   {
@@ -178,7 +169,6 @@ export const MOCK_RESULTS: FicResult[] = [
     summary: 'What if the Sorting Hat had listened to Harry? A cunning, ambitious Harry navigates Slytherin politics and a very different war.',
     stats: { favs: 15600, follows: 7800, reviews: 24000 },
     matchScore: 74,
-    matchReason: 'Gripping Slytherin!Harry AU with strong political plotting and morally complex protagonist.',
     updatedAt: '2019-08-30T00:00:00Z',
   },
 ];

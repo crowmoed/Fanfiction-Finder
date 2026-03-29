@@ -20,7 +20,6 @@ function toRow(fic: FicResult, index: number) {
     Tags: fic.tags.join(', '),
     Summary: fic.summary,
     'Match Score': fic.matchScore ?? '',
-    'Match Reason': fic.matchReason ?? '',
     'Last Updated': fic.updatedAt,
     Kudos: fic.stats.kudos ?? '',
     Hits: fic.stats.hits ?? '',
