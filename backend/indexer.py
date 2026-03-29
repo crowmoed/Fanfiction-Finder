@@ -12,12 +12,12 @@ import random
 
 load_dotenv()
 
-MIN_WORDS = 5000
+MIN_WORDS = 20000
 
-def scrape_and_embed_ao3(fandom_name: str, sb, first_fandom: bool = False) -> int:
+def scrape_and_embed_ao3(fandom_name: str, sb, first_fandom: bool = False, start_page: int = 1) -> int:
     from scrapers.ao3 import build_search_url, parse_results
     stored = 0
-    page = 1
+    page = start_page
 
     while True:
         url = build_search_url("", fandom=fandom_name, page=page, min_words=MIN_WORDS)
@@ -110,7 +110,7 @@ def scrape_and_embed_ffn(fandom_name: str, sb, first_fandom: bool = False) -> in
     return stored
 
 
-def index_fandom(fandom_name: str, clear: bool = False):
+def index_fandom(fandom_name: str, clear: bool = False, start_page: int = 1):
     print(f"\n{'='*50}")
     print(f"Indexing: {fandom_name}")
     print(f"{'='*50}")
@@ -121,7 +121,7 @@ def index_fandom(fandom_name: str, clear: bool = False):
     total_stored = 0
 
     with SB(uc=True, headless=False) as sb:
-        ao3_stored = scrape_and_embed_ao3(fandom_name, sb, first_fandom=True)
+        ao3_stored = scrape_and_embed_ao3(fandom_name, sb, first_fandom=True, start_page=start_page)
         print(f"\n[AO3] Done: {ao3_stored} fics stored")
 
         print("\nSwitching to FFN in 15s...")
@@ -166,21 +166,42 @@ def index_all(clear: bool = False):
     print(f"Indexing complete. Total fics stored: {total}")
 
 
-def index_one(fandom_name: str, clear: bool = False):
+def index_ffn_only(fandom_name: str):
     if fandom_name not in FANDOMS:
         print(f"Unknown fandom: '{fandom_name}'")
         print(f"Available: {list(FANDOMS.keys())}")
         return
     init_db()
     migrate_embedding_dimensions()
-    index_fandom(fandom_name, clear=clear)
+    print(f"\n{'='*50}")
+    print(f"Indexing FFN: {fandom_name}")
+    print(f"{'='*50}")
+    with SB(uc=True, headless=False) as sb:
+        stored = scrape_and_embed_ffn(fandom_name, sb, first_fandom=True)
+        print(f"\n[FFN] Done: {stored} fics stored")
+
+
+def index_one(fandom_name: str, clear: bool = False, start_page: int = 1):
+    if fandom_name not in FANDOMS:
+        print(f"Unknown fandom: '{fandom_name}'")
+        print(f"Available: {list(FANDOMS.keys())}")
+        return
+    init_db()
+    migrate_embedding_dimensions()
+    index_fandom(fandom_name, clear=clear, start_page=start_page)
 
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] != "--clear":
         fandom = sys.argv[1]
         should_clear = "--clear" in sys.argv
-        index_one(fandom, clear=should_clear)
+
+        start_page = int(sys.argv[sys.argv.index("--start-page") + 1]) if "--start-page" in sys.argv else 1
+
+        if "--ffn-only" in sys.argv:
+            index_ffn_only(fandom)
+        else:
+            index_one(fandom, clear=should_clear, start_page=start_page)
     else:
         should_clear = "--clear" in sys.argv
         index_all(clear=should_clear)
