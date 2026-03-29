@@ -101,6 +101,35 @@ Example output:
 }"""
 
 
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _clean_schema(schema: dict) -> dict:
+    """Recursively strip keys Gemini's API doesn't support."""
+    REMOVE_KEYS = {"additionalProperties", "title", "$schema", "$defs"}
+
+    # Inline any $defs references
+    if "$defs" in schema:
+        defs = schema.pop("$defs")
+        schema_str = json.dumps(schema)
+        for def_name, def_schema in defs.items():
+            ref = f'"$ref": "#/$defs/{def_name}"'
+            replacement = json.dumps(def_schema)[1:-1]
+            schema_str = schema_str.replace(ref, replacement)
+        schema = json.loads(schema_str)
+
+    for key in REMOVE_KEYS:
+        schema.pop(key, None)
+
+    for value in schema.values():
+        if isinstance(value, dict):
+            _clean_schema(value)
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict):
+                    _clean_schema(item)
+    return schema
+
+
 # ── Main function ─────────────────────────────────────────────────────────────
 
 def enhance_query(user_query: str, fandom: str = None) -> EnrichedQuery:
@@ -124,7 +153,7 @@ def enhance_query(user_query: str, fandom: str = None) -> EnrichedQuery:
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
                 response_mime_type="application/json",
-                response_schema=EnrichedQuery.model_json_schema(),
+                response_schema=_clean_schema(EnrichedQuery.model_json_schema()),
                 temperature=0.1,
             )
         )

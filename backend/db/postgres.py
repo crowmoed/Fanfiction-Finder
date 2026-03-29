@@ -12,7 +12,13 @@ from data.schema import Fic
 load_dotenv()
 
 Base = declarative_base()
-engine = create_engine(os.getenv("DATABASE_URL"))
+engine = create_engine(
+    os.getenv("DATABASE_URL"),
+    pool_pre_ping=True,    # test connection before using it
+    pool_recycle=300,      # recycle connections every 5 minutes
+    pool_size=5,
+    max_overflow=2,
+)
 
 EMBEDDING_DIMS = 768  # Must match embedder.py
 

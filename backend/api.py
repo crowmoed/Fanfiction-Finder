@@ -82,7 +82,7 @@ async def search(
     print(f"[search] blended embedding ready ({len(query_embedding)} dims)", flush=True)
 
     # Step 3: Vector search — get top candidates
-    candidates = search_similar(query_embedding, fandom=fandom, limit=200)
+    candidates = search_similar(query_embedding, fandom=fandom, limit=50)
     print(f"[search] {len(candidates)} candidates from vector search", flush=True)
 
     # Step 4: AI rank the candidates
