@@ -16,8 +16,6 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 def rank(fics: list[Fic], query: str) -> list[Fic]:
     if not fics:
         return []
-        
-    return fics
 
     fic_list = []
     for i, fic in enumerate(fics):
@@ -25,7 +23,7 @@ def rank(fics: list[Fic], query: str) -> list[Fic]:
             "index": i,
             "title": fic.title,
             "summary": fic.summary or "",
-            "tags": fic.tags[:20],  
+            "tags": fic.tags[:20],
         })
 
     prompt = f"""You are a fanfiction recommendation engine.
@@ -33,12 +31,14 @@ def rank(fics: list[Fic], query: str) -> list[Fic]:
     A user is looking for: "{query}"
 
     Below is a list of fanfics. Score each one from 0-100 based on how well it matches what the user is looking for.
+    Use absolute scores — if most fics are a strong match, most should score 70-90. If most are weak, most should score low.
+    Do NOT spread scores artificially across the full range. Ties are fine.
     Consider the title, summary, and tags when scoring.
 
     Return ONLY a JSON array with no explanation, no markdown, no backticks. Format:
     [
-    {{"index": 0, "score": 85, "reason": "one line explanation"}},
-    {{"index": 1, "score": 42, "reason": "one line explanation"}},
+    {{"index": 0, "score": 85}},
+    {{"index": 1, "score": 42}},
     ...
     ]
 
@@ -61,14 +61,9 @@ def rank(fics: list[Fic], query: str) -> list[Fic]:
 
         scores = json.loads(raw)
 
-        score_map = {item["index"]: item for item in scores}
+        score_map = {item["index"]: item["score"] for item in scores}
         for i, fic in enumerate(fics):
-            if i in score_map:
-                fic.match_score = score_map[i]["score"]
-                fic.match_reason = score_map[i]["reason"]
-            else:
-                fic.match_score = 0
-                fic.match_reason = "Not scored"
+            fic.match_score = score_map.get(i, 0)
 
         fics.sort(key=lambda f: f.match_score, reverse=True)
         return fics
