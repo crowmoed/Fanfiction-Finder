@@ -1,11 +1,11 @@
 """
-Query enhancer for FicFinder — HyDE-style expansion via Gemini Flash.
+Query enhancer for FicFinder — HyDE-style expansion via Claude 3.5 Haiku (Bedrock).
 
 Takes a short user query like "Drarry angst no MCD" and produces:
   1. A semantic_description (hypothetical fic summary) → gets embedded for vector search
   2. Structured tags/filters/ships/characters → for future BM25 / metadata filtering
 
-This is a single Gemini Flash call using structured JSON output.
+This is a single Claude 3.5 Haiku call via AWS Bedrock.
 """
 
 import os
@@ -14,15 +14,13 @@ import json
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from google import genai
-from google.genai import types
+import boto3
 from pydantic import BaseModel
-from dotenv import load_dotenv
 
-load_dotenv()
+# ── Client setup ──────────────────────────────────────────────────────────────
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-FLASH_MODEL = "gemini-2.5-flash"
+bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
+HAIKU_MODEL = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
 
 
 # ── Schema ────────────────────────────────────────────────────────────────────
@@ -98,43 +96,16 @@ Example output:
   "detected_ships": ["Draco Malfoy/Harry Potter"],
   "detected_characters": ["Draco Malfoy", "Harry Potter"],
   "excluded_tags": []
-}"""
+}
 
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
-def _clean_schema(schema: dict) -> dict:
-    """Recursively strip keys Gemini's API doesn't support."""
-    REMOVE_KEYS = {"additionalProperties", "title", "$schema", "$defs"}
-
-    # Inline any $defs references
-    if "$defs" in schema:
-        defs = schema.pop("$defs")
-        schema_str = json.dumps(schema)
-        for def_name, def_schema in defs.items():
-            ref = f'"$ref": "#/$defs/{def_name}"'
-            replacement = json.dumps(def_schema)[1:-1]
-            schema_str = schema_str.replace(ref, replacement)
-        schema = json.loads(schema_str)
-
-    for key in REMOVE_KEYS:
-        schema.pop(key, None)
-
-    for value in schema.values():
-        if isinstance(value, dict):
-            _clean_schema(value)
-        elif isinstance(value, list):
-            for item in value:
-                if isinstance(item, dict):
-                    _clean_schema(item)
-    return schema
+Respond ONLY with the JSON object. No markdown, no backticks, no preamble."""
 
 
 # ── Main function ─────────────────────────────────────────────────────────────
 
 def enhance_query(user_query: str, fandom: str = None) -> EnrichedQuery:
     """Expand a raw user query into a rich semantic description + structured filters.
-    
+
     Returns an EnrichedQuery with:
       - semantic_description: the HyDE paragraph to embed
       - structured fields: tags, filters, ships, characters, exclusions
@@ -147,18 +118,28 @@ def enhance_query(user_query: str, fandom: str = None) -> EnrichedQuery:
     print(f"[query_enhancer] enhancing: {query_text!r}", flush=True)
 
     try:
-        response = client.models.generate_content(
-            model=FLASH_MODEL,
-            contents=f'Enhance this fanfiction search query: "{query_text}"',
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                response_mime_type="application/json",
-                response_schema=_clean_schema(EnrichedQuery.model_json_schema()),
-                temperature=0.1,
-            )
+        payload = {
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 1024,
+            "temperature": 0.1,
+            "system": SYSTEM_PROMPT,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": f'Enhance this fanfiction search query: "{query_text}"',
+                }
+            ],
+        }
+
+        response = bedrock.invoke_model(
+            modelId=HAIKU_MODEL,
+            body=json.dumps(payload),
+            contentType="application/json",
+            accept="application/json",
         )
 
-        raw = response.text.strip()
+        body = json.loads(response["body"].read())
+        raw = body["content"][0]["text"].strip()
         data = json.loads(raw)
         enriched = EnrichedQuery(**data)
 
