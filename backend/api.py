@@ -71,21 +71,32 @@ async def search(
     print(f"[search] fandom : {fandom!r}", flush=True)
     print(f"[search] query  : {q!r}", flush=True)
 
-    # Step 1: Enhance the query (HyDE — generate hypothetical fic description)
+    # Step 1: Enhance the query (HyDE — generate 3 hypothetical fic descriptions at different angles)
     enriched = enhance_query(q, fandom=fandom)
-    print(f"[search] enhanced query ready", flush=True)
+    print(f"[search] enhanced query ready ({len(enriched.semantic_descriptions)} descriptions)", flush=True)
 
-    # Step 2: Embed both the HyDE description and raw query, then blend
-    hyde_embedding = embed_query(enriched.semantic_description)
+    # Step 2: Embed raw query once (shared across all angles)
     raw_embedding = embed_query(q)
-    query_embedding = _blend_embeddings(hyde_embedding, raw_embedding)
-    print(f"[search] blended embedding ready ({len(query_embedding)} dims)", flush=True)
+    print(f"[search] raw embedding ready ({len(raw_embedding)} dims)", flush=True)
 
-    # Step 3: Vector search — get top candidates
-    candidates = search_similar(query_embedding, fandom=fandom, limit=50)
-    print(f"[search] {len(candidates)} candidates from vector search", flush=True)
+    # Step 3: For each HyDE description, embed + blend + search; merge results
+    # fic_id -> (fic, best_position): lower position = higher cosine similarity
+    merged: dict[str, tuple] = {}
+    for angle_idx, description in enumerate(enriched.semantic_descriptions):
+        hyde_embedding = embed_query(description)
+        blended = _blend_embeddings(hyde_embedding, raw_embedding)
+        results = search_similar(blended, fandom=fandom, limit=50)
+        print(f"[search] angle {angle_idx + 1}/{len(enriched.semantic_descriptions)}: {len(results)} results", flush=True)
+        for pos, fic in enumerate(results):
+            fic_id = f"{fic.platform}:{fic.url}"
+            if fic_id not in merged or pos < merged[fic_id][1]:
+                merged[fic_id] = (fic, pos)
 
-    # Step 4: AI rank the candidates
+    # Deduplicated, sorted by best position across all angles, capped at 100
+    candidates = [fic for fic, _ in sorted(merged.values(), key=lambda x: x[1])][:100]
+    print(f"[search] {len(candidates)} unique candidates after merging {len(enriched.semantic_descriptions)} angle(s)", flush=True)
+
+    # Step 4: AI rank the candidates against the original user query
     ranked = rank(fics=candidates, query=q)
     print(f"[search] ranking done, returning {min(limit, len(ranked))} results", flush=True)
 

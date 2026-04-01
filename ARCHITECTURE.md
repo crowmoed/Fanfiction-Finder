@@ -249,43 +249,46 @@ User query: "Drarry angst slow burn no MCD"
 │ Step 1 — Query Enhancement                              │
 │ enhance_query(q, fandom)                                │
 │ → Claude Haiku 4.5 on Bedrock (IAM role, us-east-1)    │
-│ → EnrichedQuery.semantic_description (HyDE paragraph)  │
+│ → EnrichedQuery.semantic_descriptions (3 HyDE summaries)│
 │   + structured fields (tags, ships, excluded, etc.)    │
 └──────────────────────────┬──────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────┐
-│ Step 2 — Dual Embedding                                 │
-│ embed_query(semantic_description) → hyde_embedding      │
-│ embed_query(raw_query)            → raw_embedding       │
-│ Both: gemini-embedding-001, RETRIEVAL_QUERY task type   │
-│       768 dims, L2-normalized                           │
+│ Step 2 — Raw Query Embedding (once, shared)             │
+│ embed_query(raw_query) → raw_embedding                  │
+│ gemini-embedding-001, RETRIEVAL_QUERY, 768 dims         │
 └──────────────────────────┬──────────────────────────────┘
+                           │
+              ┌────────────┴──────────────┐
+              │  Loop over 3 descriptions  │
+              └────────────┬──────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────┐
-│ Step 3 — Embedding Blend                                │
+│ Step 3 — Per-Angle Embed + Blend + Search (×3)          │
+│ embed_query(description[i]) → hyde_embedding            │
 │ _blend_embeddings(hyde, raw, hyde_weight=0.7)           │
-│ = 0.7 × hyde + 0.3 × raw                               │
-│ → L2 renormalize the result                             │
-│ Protects against LLM expansion drifting from intent     │
+│ = 0.7 × hyde + 0.3 × raw, L2 renormalized              │
+│ search_similar(blended, fandom, limit=50)               │
+│ → top 50 candidates per angle (150 raw results total)   │
 └──────────────────────────┬──────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────┐
-│ Step 4 — pgvector Cosine Search                         │
-│ search_similar(blended_embedding, fandom, limit=200)    │
-│ → cosine_distance ORDER BY, filtered by fandom          │
-│ → top 200 candidates returned (api.py hardcodes 50)     │
+│ Step 4 — Merge & Deduplicate                            │
+│ Deduplicate by fic_id (platform:url)                    │
+│ Keep best position (lowest index = highest similarity)  │
+│ Sort by best position, cap at 100 unique candidates     │
 └──────────────────────────┬──────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────┐
 │ Step 5 — LLM Ranker                                     │
-│ rank(candidates, query)                                 │
-│ → Gemini 2.5 Flash scores each fic 0-100               │
+│ rank(candidates, original_raw_query)                    │
+│ → Bedrock Haiku scores each fic 0-100                   │
 │ → Sorted by match_score descending                      │
-│ → Currently intermittently disabled (see §14)           │
+│ → Ranker receives raw query, NOT HyDE descriptions      │
 │ → Fallback: sort by kudos                               │
 └──────────────────────────┬──────────────────────────────┘
                            │
@@ -293,7 +296,9 @@ User query: "Drarry angst slow burn no MCD"
                   Return ranked[:limit] as JSON
 ```
 
-**Code path**: `api.py:/search` → `enhance_query()` → `embed_query()×2` → `_blend_embeddings()` → `search_similar()` → `rank()` → response.
+**Code path**: `api.py:/search` → `enhance_query()` → `embed_query()` (raw, once) → loop over `semantic_descriptions`: `embed_query()` + `_blend_embeddings()` + `search_similar()` → merge/dedup → `rank()` → response.
+
+If `enhance_query()` falls back (any exception), `semantic_descriptions` will be a single-item list with the raw query — the loop runs once, same behavior as the old single-angle pipeline.
 
 The frontend calls `/search` via the Next.js proxy route (`/api/search/route.ts`) which wraps the response in an SSE stream and emits per-stage status events for the UI pipeline indicator.
 
@@ -334,7 +339,7 @@ bedrock.invoke_model(
 
 ```python
 class EnrichedQuery(BaseModel):
-    semantic_description: str        # 2-4 sentence hypothetical fic summary (the HyDE text)
+    semantic_descriptions: list[str]  # 3 hypothetical fic summaries at different angles (HyDE-style)
     ao3_tags: list[str]              # Canonical AO3 freeform tag suggestions
     ao3_filters: dict                # rating, warnings, category, completion_status, min/max word_count
     ffn_keywords: list[str]          # FFN-compatible keyword search terms
@@ -345,11 +350,12 @@ class EnrichedQuery(BaseModel):
     excluded_tags: list[str]         # Things to avoid ("Major Character Death", "Non-Consensual")
 ```
 
-Only `semantic_description` is consumed by the current search pipeline. The structured fields (`ao3_tags`, `ao3_filters`, `detected_ships`, etc.) are logged but not yet used for filtering.
+Only `semantic_descriptions` is consumed by the current search pipeline (one vector search per description). The structured fields (`ao3_tags`, `ao3_filters`, `detected_ships`, etc.) are logged but not yet used for filtering.
 
 ### System prompt approach
 
 The system prompt instructs Claude to:
+- Generate **3 different hypothetical fic summaries** (each 2-4 sentences), covering different tropes, tones, or narrative premises that could match the query
 - Expand portmanteau ship names: `"Drarry"` → `"Draco Malfoy/Harry Potter"`, `"Destiel"` → `"Dean Winchester/Castiel"`
 - Map informal tropes to canonical AO3 tags: `"coffee shop AU"` → `"Alternate Universe - Coffee Shops & Cafés"`, `"5+1"` → `"5+1 Things"`
 - Include adjacent/co-occurring tropes: `"enemies to lovers"` implies `"Slow Burn"`, `"Mutual Pining"`
@@ -358,7 +364,9 @@ The system prompt instructs Claude to:
 
 The prompt ends with: `"Respond ONLY with the JSON object. No markdown, no backticks, no preamble."` — this is what makes clean JSON parsing reliable without schema enforcement.
 
-Two few-shot examples are baked into the system prompt: `"hurt/comfort enemies to lovers"` and `"long completed Drarry slow burn explicit"`.
+Two few-shot examples are baked into the system prompt: `"hurt/comfort enemies to lovers"` and `"long completed Drarry slow burn explicit"`, each showing 3 descriptions as a JSON array.
+
+`max_tokens` is set to `2048` (up from `1024`) to accommodate the three descriptions.
 
 ### Fandom context injection
 
@@ -369,7 +377,7 @@ query_text = f"[Fandom: {fandom}] {user_query}"
 
 ### Fallback behavior
 
-On any exception (network error, malformed JSON, Bedrock throttle), returns a minimal `EnrichedQuery` with `semantic_description = user_query` and all list/dict fields empty. Search continues with the raw query embedded directly.
+On any exception (network error, malformed JSON, Bedrock throttle), returns a minimal `EnrichedQuery` with `semantic_descriptions = [user_query]` (single-item list) and all other fields empty. The search pipeline handles this gracefully — the loop runs once with the raw query as the HyDE text.
 
 ---
 
@@ -439,14 +447,14 @@ Applied to every embedding before storage and before search. Required for cosine
 
 ### Model
 
-- **Model**: `gemini-2.5-flash`
-- **Client**: `google.genai.Client(api_key=GEMINI_API_KEY)`
+- **Model**: `us.anthropic.claude-haiku-4-5-20251001-v1:0`
+- **Client**: `boto3.client("bedrock-runtime", region_name="us-east-1")` (IAM role auth, no API key)
 
 ### What it does
 
-Takes the top-50 vector search candidates and asks Gemini to score each 0-100 based on how well it matches the original user query. Returns fics sorted by `match_score` descending.
+Takes the top-50 vector search candidates and asks Claude Haiku to score each 0-100 based on how well it matches the original user query. Returns fics sorted by `match_score` descending.
 
-Input to Gemini per fic: `title`, `summary`, first 20 `tags`.
+Input to Claude per fic: `title`, `summary`, first 20 `tags`.
 
 The prompt explicitly instructs absolute scoring (not spread scores artificially across the range), so most strong matches score 70-90, weak matches score low.
 
@@ -781,13 +789,39 @@ Changing dims requires dropping and recreating the `embedding` column (`migrate_
 
 ## 16. Recent Changes Log
 
+### April 2026 — Multi-angle HyDE search pipeline
+
+**Before**: `enhance_query()` returned a single `semantic_description: str`. The pipeline embedded it once, blended 0.7/0.3 with the raw query embedding, ran one `search_similar()` call (top 50), then ranked those 50 candidates.
+
+**After**: `enhance_query()` returns `semantic_descriptions: list[str]` — exactly 3 hypothetical fic summaries, each exploring a different trope, tone, or narrative angle. The pipeline:
+
+1. Embeds the raw query once (shared).
+2. Loops over each description: embed → blend 0.7/0.3 with raw → `search_similar(limit=50)`.
+3. Merges all results, deduplicates by `fic_id` (`platform:url`), keeps the best position (lowest index = highest similarity) per fic.
+4. Caps at 100 unique candidates.
+5. Passes candidates to `rank()` with the **original raw query** (not the HyDE descriptions).
+
+Fallback behavior is unchanged — if enhancement fails, `semantic_descriptions` is a single-item list containing the raw query, and the loop runs once.
+
+`max_tokens` in the Bedrock payload was increased from `1024` to `2048` to accommodate three descriptions.
+
+---
+
+### April 2026 — Ranker migrated from Gemini Flash to Bedrock Haiku 4.5
+
+**Before**: `ranker.py` used `google.genai` with `gemini-2.5-flash` via `client.models.generate_content()`. Fics omitted from the LLM response defaulted to `match_score = 0`.
+
+**After**: Uses `boto3` `bedrock-runtime` client with model `us.anthropic.claude-haiku-4-5-20251001-v1:0`. System prompt instructs the model to return only a JSON array. `max_tokens: 4096` (needed for up to 200 scores), `temperature: 0.1`. Auth via IAM instance role. Fics omitted from the LLM response now get `match_score = None` (not 0) to avoid false scoring artifacts.
+
+---
+
 ### April 2026 — Query enhancer migrated from Gemini Flash to Bedrock Haiku 4.5
 
 **Before**: `query_enhancer.py` used `google.genai` with `gemini-2.5-flash` and structured JSON output via `response_schema`. This required the `_clean_schema()` helper to strip unsupported Pydantic schema keys before passing to the Gemini API.
 
 **After**: Uses `boto3` `bedrock-runtime` client with model `us.anthropic.claude-haiku-4-5-20251001-v1:0`. No structured output enforcement — clean JSON is elicited via the system prompt suffix `"Respond ONLY with the JSON object. No markdown, no backticks, no preamble."` Auth is via IAM instance role (no API key needed for Bedrock). The `_clean_schema()` helper and all `google.genai` imports were removed from `query_enhancer.py`.
 
-**Note**: `google-genai` is still in `requirements.txt` — it is still used by `embedder.py` (Gemini embeddings) and `ranker.py` (Gemini Flash ranking).
+**Note**: `google-genai` is still in `requirements.txt` — it is still used by `embedder.py` (Gemini embeddings).
 
 ### March 2026 — Database migrated from AWS RDS to Neon
 

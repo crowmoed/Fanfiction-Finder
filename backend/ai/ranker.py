@@ -1,16 +1,13 @@
 import os
 import json
-from dotenv import load_dotenv
+import boto3
 from typing import Optional
 import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data.schema import Fic
 
-load_dotenv()
-
-from google import genai
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
 
 def rank(fics: list[Fic], query: str) -> list[Fic]:
@@ -48,24 +45,25 @@ def rank(fics: list[Fic], query: str) -> list[Fic]:
 
     try:
         print(f"[ranker] ranking {len(fics)} fics for query: {query!r}", flush=True)
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
+        response = bedrock.invoke_model(
+            modelId="us.anthropic.claude-haiku-4-5-20251001-v1:0",
+            body=json.dumps({
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": 4096,
+                "temperature": 0.1,
+                "system": "You are a fanfiction recommendation engine. Return ONLY a JSON array. No markdown, no backticks, no explanation.",
+                "messages": [{"role": "user", "content": prompt}],
+            }),
         )
-        raw = response.text.strip()
+        body = json.loads(response["body"].read())
+        raw = body["content"][0]["text"].strip()
         print(f"[ranker] raw response: {raw[:200]}", flush=True)
-
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        raw = raw.strip()
 
         scores = json.loads(raw)
 
         score_map = {item["index"]: item["score"] for item in scores}
         for i, fic in enumerate(fics):
-            fic.match_score = score_map.get(i, 0)
+            fic.match_score = score_map.get(i, None)
 
         fics.sort(key=lambda f: f.match_score, reverse=True)
         return fics

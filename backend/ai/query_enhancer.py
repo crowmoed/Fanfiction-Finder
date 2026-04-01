@@ -26,7 +26,7 @@ HAIKU_MODEL = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
 # ── Schema ────────────────────────────────────────────────────────────────────
 
 class EnrichedQuery(BaseModel):
-    semantic_description: str        # Dense paragraph for embedding (HyDE-style)
+    semantic_descriptions: list[str]  # 3 hypothetical fic summaries at different angles (HyDE-style)
     ao3_tags: list[str]              # Canonical AO3 tag suggestions
     ao3_filters: dict                # Rating, warning, category, word count, etc.
     ffn_keywords: list[str]          # FFN-compatible search terms
@@ -43,7 +43,7 @@ SYSTEM_PROMPT = """You are a fanfiction search query enhancer for FicFinder. You
 
 For every query, you must produce a JSON object with these fields:
 
-1. "semantic_description": Write a 2-4 sentence hypothetical fanfiction summary that matches what the user is looking for. Write it as if describing an ideal search result — a fanfic summary paragraph covering the tropes, relationship dynamics, emotional tone, and narrative premise implied by the query. Use natural, descriptive prose. Include relevant AO3 trope names and common fanfiction terminology woven naturally into the text. Do NOT hallucinate specific titles, authors, or plot details.
+1. "semantic_descriptions": Write 3 different hypothetical fanfiction summaries, each exploring a different interpretation or angle of the user's query. Each should be 2-4 sentences. Cover different tropes, tones, or narrative premises that could match. Use natural, descriptive prose. Include relevant AO3 trope names and common fanfiction terminology woven naturally into the text. Do NOT hallucinate specific titles, authors, or plot details. Return them as a JSON array in the semantic_descriptions field.
 
 2. "ao3_tags": List of canonical AO3 freeform/relationship tags relevant to the query.
 
@@ -73,7 +73,11 @@ Key rules:
 Example input: "hurt/comfort enemies to lovers"
 Example output:
 {
-  "semantic_description": "A story where two characters who start as enemies or rivals are forced together by circumstance, and one is hurt or in emotional distress. Through vulnerability and reluctant caretaking, their antagonism slowly transforms into deep affection and eventually romance. Themes of hurt/comfort, emotional healing, trust-building, and the tension between hatred and attraction.",
+  "semantic_descriptions": [
+    "A story where two characters who start as enemies or rivals are forced together by circumstance, and one is hurt or in physical distress. Through reluctant caretaking — tending wounds, staying by a sickbed — their antagonism slowly cracks open, revealing something softer underneath. Hurt/Comfort and Enemies to Lovers, with slow-building trust earned through vulnerability.",
+    "Two people who despise each other are thrown into emotional crisis, and the only person available to offer comfort is the last one they would choose. The caretaker wrestles with their own feelings as they watch their enemy break down, and old grievances start to feel less important than the connection forming between them. Emotional Hurt/Comfort with Mutual Pining and Angst with a Happy Ending.",
+    "Former rivals who have spent years trading barbs find themselves stripped of their defenses when one of them is at their lowest. What begins as obligation or guilt slowly becomes genuine tenderness, as the other's suffering makes hatred impossible to sustain. A slow burn hurt/comfort arc where the transformation from antagonism to love is gradual and hard-won."
+  ],
   "ao3_tags": ["Hurt/Comfort", "Enemies to Lovers", "Slow Burn", "Emotional Hurt/Comfort", "Mutual Pining", "Angst with a Happy Ending"],
   "ao3_filters": {},
   "ffn_keywords": ["hurt comfort", "enemies to lovers", "rivals to romance"],
@@ -87,7 +91,11 @@ Example output:
 Example input: "long completed Drarry slow burn explicit"
 Example output:
 {
-  "semantic_description": "A lengthy, completed fanfiction featuring a slow-developing romantic and sexual relationship between Draco Malfoy and Harry Potter. The story builds tension gradually over many chapters, with the characters navigating their complicated history, mutual attraction, and eventual intimate relationship. A slow burn Drarry romance with explicit content and substantial narrative depth.",
+  "semantic_descriptions": [
+    "A lengthy, completed enemies-to-lovers fanfiction following Draco Malfoy and Harry Potter as they rebuild their relationship in the aftermath of the war. Over many chapters and years of shared history, their mutual hostility gradually gives way to reluctant alliance, then to undeniable attraction. A slow burn Drarry epic with explicit content, substantial emotional depth, and an Angst with a Happy Ending arc.",
+    "A completed, high-word-count fic in which Harry and Draco are thrown together by circumstance — shared work, proximity, or a forced truce — and neither can deny the tension between them for long. The story takes its time, savoring the slow dissolution of old hatred into something hungrier, with explicit scenes arriving only once trust has been genuinely earned. Mutual Pining and Enemies to Lovers with deliberate pacing.",
+    "A post-Hogwarts completed Drarry story built around the slow erosion of a years-long rivalry into obsession and then love. Draco and Harry circle each other across many chapters, neither willing to admit what they want, the narrative tension ratcheting up until the eventual explicit payoff feels inevitable. Slow Burn with Pining, Unresolved Sexual Tension, and a satisfying explicit resolution."
+  ],
   "ao3_tags": ["Slow Burn", "Draco Malfoy/Harry Potter", "Enemies to Lovers", "Sexual Content", "Romance", "Post-Hogwarts"],
   "ao3_filters": {"rating": "Explicit", "category": "M/M", "completion_status": "Complete", "min_word_count": 50000},
   "ffn_keywords": ["Draco Harry slow burn romance"],
@@ -120,7 +128,7 @@ def enhance_query(user_query: str, fandom: str = None) -> EnrichedQuery:
     try:
         payload = {
             "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 1024,
+            "max_tokens": 2048,
             "temperature": 0.1,
             "system": SYSTEM_PROMPT,
             "messages": [
@@ -143,7 +151,8 @@ def enhance_query(user_query: str, fandom: str = None) -> EnrichedQuery:
         data = json.loads(raw)
         enriched = EnrichedQuery(**data)
 
-        print(f"[query_enhancer] semantic_description: {enriched.semantic_description[:100]}...", flush=True)
+        for i, desc in enumerate(enriched.semantic_descriptions):
+            print(f"[query_enhancer] semantic_descriptions[{i}]: {desc[:80]}...", flush=True)
         print(f"[query_enhancer] ao3_tags: {enriched.ao3_tags}", flush=True)
         print(f"[query_enhancer] ships: {enriched.detected_ships}", flush=True)
         print(f"[query_enhancer] excluded: {enriched.excluded_tags}", flush=True)
@@ -154,7 +163,7 @@ def enhance_query(user_query: str, fandom: str = None) -> EnrichedQuery:
         print(f"[query_enhancer] ERROR: {e} — falling back to raw query", flush=True)
         # Fallback: return the raw query as the semantic description
         return EnrichedQuery(
-            semantic_description=user_query,
+            semantic_descriptions=[user_query],
             ao3_tags=[],
             ao3_filters={},
             ffn_keywords=[],
