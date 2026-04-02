@@ -79,22 +79,37 @@ async def search(
     raw_embedding = embed_query(q)
     print(f"[search] raw embedding ready ({len(raw_embedding)} dims)", flush=True)
 
-    # Step 3: For each HyDE description, embed + blend + search; merge results
+    # Step 3: Multi-angle HyDE search — 3 blended at varying ratios + 1 pure raw; merge results
     # fic_id -> (fic, best_position): lower position = higher cosine similarity
     merged: dict[str, tuple] = {}
-    for angle_idx, description in enumerate(enriched.semantic_descriptions):
+    descriptions = enriched.semantic_descriptions
+    is_fallback = len(descriptions) == 1
+
+    # Normal: desc1=0.8/0.2, desc2=0.7/0.3, desc3=0.5/0.5. Fallback: single desc at 0.7/0.3.
+    blend_ratios = [0.7] if is_fallback else [0.8, 0.7, 0.5]
+
+    for angle_idx, (description, hyde_weight) in enumerate(zip(descriptions, blend_ratios)):
         hyde_embedding = embed_query(description)
-        blended = _blend_embeddings(hyde_embedding, raw_embedding)
+        blended = _blend_embeddings(hyde_embedding, raw_embedding, hyde_weight=hyde_weight)
         results = search_similar(blended, fandom=fandom, limit=50)
-        print(f"[search] angle {angle_idx + 1}/{len(enriched.semantic_descriptions)}: {len(results)} results", flush=True)
+        print(f"[search] angle {angle_idx + 1}: blend {hyde_weight}/{round(1 - hyde_weight, 1)}, {len(results)} results", flush=True)
         for pos, fic in enumerate(results):
             fic_id = f"{fic.platform}:{fic.url}"
             if fic_id not in merged or pos < merged[fic_id][1]:
                 merged[fic_id] = (fic, pos)
 
-    # Deduplicated, sorted by best position across all angles, capped at 100
+    # Final search: pure raw query embedding, no blend
+    raw_results = search_similar(raw_embedding, fandom=fandom, limit=50)
+    print(f"[search] raw search: {len(raw_results)} results", flush=True)
+    for pos, fic in enumerate(raw_results):
+        fic_id = f"{fic.platform}:{fic.url}"
+        if fic_id not in merged or pos < merged[fic_id][1]:
+            merged[fic_id] = (fic, pos)
+
+    # Deduplicated by best position (proxy for highest similarity), capped at 100
     candidates = [fic for fic, _ in sorted(merged.values(), key=lambda x: x[1])][:100]
-    print(f"[search] {len(candidates)} unique candidates after merging {len(enriched.semantic_descriptions)} angle(s)", flush=True)
+    total_searches = len(blend_ratios) + 1
+    print(f"[search] {len(candidates)} unique candidates after {total_searches} search(es)", flush=True)
 
     # Step 4: AI rank the candidates against the original user query
     ranked = rank(fics=candidates, query=q)

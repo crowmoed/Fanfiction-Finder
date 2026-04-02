@@ -43,7 +43,7 @@ SYSTEM_PROMPT = """You are a fanfiction search query enhancer for FicFinder. You
 
 For every query, you must produce a JSON object with these fields:
 
-1. "semantic_descriptions": Write 3 different hypothetical fanfiction summaries, each exploring a different interpretation or angle of the user's query. Each should be 2-4 sentences. Cover different tropes, tones, or narrative premises that could match. Use natural, descriptive prose. Include relevant AO3 trope names and common fanfiction terminology woven naturally into the text. Do NOT hallucinate specific titles, authors, or plot details. Return them as a JSON array in the semantic_descriptions field.
+1. "semantic_descriptions": Write 3 different hypothetical fanfiction summaries, each exploring a different interpretation or angle of the user's query. Each should be 2-4 sentences. The three summaries MUST target different sub-audiences: one should focus on the primary/obvious interpretation, one should explore an unusual or niche angle, and one should emphasize the emotional tone or atmosphere rather than plot. Return them as a JSON array in the semantic_descriptions field.
 
 2. "ao3_tags": List of canonical AO3 freeform/relationship tags relevant to the query.
 

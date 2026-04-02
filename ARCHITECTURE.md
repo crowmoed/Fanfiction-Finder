@@ -260,25 +260,34 @@ User query: "Drarry angst slow burn no MCD"
 │ gemini-embedding-001, RETRIEVAL_QUERY, 768 dims         │
 └──────────────────────────┬──────────────────────────────┘
                            │
-              ┌────────────┴──────────────┐
-              │  Loop over 3 descriptions  │
-              └────────────┬──────────────┘
+         ┌─────────────────┴──────────────────┐
+         │  4 parallel searches (3 normal case)│
+         └─────────────────┬──────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────┐
-│ Step 3 — Per-Angle Embed + Blend + Search (×3)          │
-│ embed_query(description[i]) → hyde_embedding            │
-│ _blend_embeddings(hyde, raw, hyde_weight=0.7)           │
-│ = 0.7 × hyde + 0.3 × raw, L2 renormalized              │
-│ search_similar(blended, fandom, limit=50)               │
-│ → top 50 candidates per angle (150 raw results total)   │
+│ Step 3 — Multi-Angle HyDE Searches (×3) + Pure Raw      │
+│                                                         │
+│ Search 1: embed(desc[0]) → blend 0.8×hyde + 0.2×raw    │
+│           L2 renormalize → search_similar(limit=50)     │
+│                                                         │
+│ Search 2: embed(desc[1]) → blend 0.7×hyde + 0.3×raw    │
+│           L2 renormalize → search_similar(limit=50)     │
+│                                                         │
+│ Search 3: embed(desc[2]) → blend 0.5×hyde + 0.5×raw    │
+│           L2 renormalize → search_similar(limit=50)     │
+│                                                         │
+│ Search 4: raw_embedding (no blend) →                    │
+│           search_similar(limit=50)                      │
+│                                                         │
+│ → up to 200 raw results total                           │
 └──────────────────────────┬──────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────┐
 │ Step 4 — Merge & Deduplicate                            │
 │ Deduplicate by fic_id (platform:url)                    │
-│ Keep best position (lowest index = highest similarity)  │
+│ Keep highest similarity (lowest position) per fic       │
 │ Sort by best position, cap at 100 unique candidates     │
 └──────────────────────────┬──────────────────────────────┘
                            │
@@ -289,6 +298,7 @@ User query: "Drarry angst slow burn no MCD"
 │ → Bedrock Haiku scores each fic 0-100                   │
 │ → Sorted by match_score descending                      │
 │ → Ranker receives raw query, NOT HyDE descriptions      │
+│ → Fics omitted by LLM get match_score = None            │
 │ → Fallback: sort by kudos                               │
 └──────────────────────────┬──────────────────────────────┘
                            │
@@ -296,9 +306,11 @@ User query: "Drarry angst slow burn no MCD"
                   Return ranked[:limit] as JSON
 ```
 
-**Code path**: `api.py:/search` → `enhance_query()` → `embed_query()` (raw, once) → loop over `semantic_descriptions`: `embed_query()` + `_blend_embeddings()` + `search_similar()` → merge/dedup → `rank()` → response.
+**Code path**: `api.py:/search` → `enhance_query()` → `embed_query()` (raw, once) → 3 blended searches at varying ratios + 1 pure raw search → merge/dedup → `rank()` → response.
 
-If `enhance_query()` falls back (any exception), `semantic_descriptions` will be a single-item list with the raw query — the loop runs once, same behavior as the old single-angle pipeline.
+**Blend ratios**: Each HyDE description uses a different ratio to balance expansion quality vs. query fidelity: desc[0] uses 0.8/0.2 (trusts HyDE most), desc[1] uses 0.7/0.3 (balanced), desc[2] uses 0.5/0.5 (equal weight). The pure raw search acts as an anchor, ensuring the result set always includes high-similarity fics even if all three HyDE expansions drift.
+
+**Fallback behavior**: If `enhance_query()` fails, `semantic_descriptions` is a single-item list containing the raw query. In this case only 2 searches run: the single description blended at 0.7/0.3 and the pure raw search. The other two blended searches are skipped.
 
 The frontend calls `/search` via the Next.js proxy route (`/api/search/route.ts`) which wraps the response in an SSE stream and emits per-stage status events for the UI pipeline indicator.
 
@@ -355,12 +367,17 @@ Only `semantic_descriptions` is consumed by the current search pipeline (one vec
 ### System prompt approach
 
 The system prompt instructs Claude to:
-- Generate **3 different hypothetical fic summaries** (each 2-4 sentences), covering different tropes, tones, or narrative premises that could match the query
+- Generate **3 different hypothetical fic summaries** (each 2-4 sentences), each targeting a **different sub-audience**:
+  - Description 1: primary/obvious interpretation of the query
+  - Description 2: unusual or niche angle
+  - Description 3: emphasis on emotional tone or atmosphere rather than plot
 - Expand portmanteau ship names: `"Drarry"` → `"Draco Malfoy/Harry Potter"`, `"Destiel"` → `"Dean Winchester/Castiel"`
 - Map informal tropes to canonical AO3 tags: `"coffee shop AU"` → `"Alternate Universe - Coffee Shops & Cafés"`, `"5+1"` → `"5+1 Things"`
 - Include adjacent/co-occurring tropes: `"enemies to lovers"` implies `"Slow Burn"`, `"Mutual Pining"`
 - Interpret exclusions: `"no MCD"` → `excluded_tags: ["Major Character Death"]`
 - Respond **only** with the JSON object — no markdown, no backticks, no preamble
+
+The diversity constraint (different sub-audiences) is enforced via the `MUST` instruction in the system prompt. This ensures the three HyDE embeddings cover meaningfully different regions of the vector space, complementing the varying blend ratios in Step 3 of the search pipeline.
 
 The prompt ends with: `"Respond ONLY with the JSON object. No markdown, no backticks, no preamble."` — this is what makes clean JSON parsing reliable without schema enforcement.
 
@@ -452,11 +469,11 @@ Applied to every embedding before storage and before search. Required for cosine
 
 ### What it does
 
-Takes the top-50 vector search candidates and asks Claude Haiku to score each 0-100 based on how well it matches the original user query. Returns fics sorted by `match_score` descending.
+Takes up to 100 vector search candidates (merged and deduplicated from 4 searches) and asks Claude Haiku to score each 0-100 based on how well it matches the **original raw user query** (not the HyDE descriptions). Returns fics sorted by `match_score` descending.
 
 Input to Claude per fic: `title`, `summary`, first 20 `tags`.
 
-The prompt explicitly instructs absolute scoring (not spread scores artificially across the range), so most strong matches score 70-90, weak matches score low.
+The prompt explicitly instructs absolute scoring (not spread scores artificially across the range), so most strong matches score 70-90, weak matches score low. Fics omitted from the LLM response (truncated output, etc.) receive `match_score = None` rather than `0` to avoid false-zero artifacts in sorting.
 
 ### Fallback
 
@@ -464,7 +481,7 @@ On any exception (malformed JSON, timeout, quota): sorts by `kudos` descending a
 
 ### Known issue
 
-See §14 — the ranker is suspected to cause intermittent timeouts on the App Runner endpoint. When it fails, the fallback path returns results in vector similarity order (which is reasonable quality on its own).
+See §14 — the ranker can cause intermittent timeouts on the App Runner endpoint when the candidate set is large. When it fails, the fallback path returns results in vector similarity order (which is reasonable quality on its own).
 
 ---
 
@@ -789,21 +806,24 @@ Changing dims requires dropping and recreating the `embedding` column (`migrate_
 
 ## 16. Recent Changes Log
 
-### April 2026 — Multi-angle HyDE search pipeline
+### April 2026 — Multi-angle HyDE search pipeline with varying blend ratios
 
 **Before**: `enhance_query()` returned a single `semantic_description: str`. The pipeline embedded it once, blended 0.7/0.3 with the raw query embedding, ran one `search_similar()` call (top 50), then ranked those 50 candidates.
 
-**After**: `enhance_query()` returns `semantic_descriptions: list[str]` — exactly 3 hypothetical fic summaries, each exploring a different trope, tone, or narrative angle. The pipeline:
+**After**: `enhance_query()` returns `semantic_descriptions: list[str]` — exactly 3 hypothetical fic summaries, each targeting a **different sub-audience** (primary interpretation / niche angle / emotional tone). The system prompt uses a `MUST` constraint to enforce diversity across the three descriptions. The pipeline now runs 4 searches total:
 
-1. Embeds the raw query once (shared).
-2. Loops over each description: embed → blend 0.7/0.3 with raw → `search_similar(limit=50)`.
-3. Merges all results, deduplicates by `fic_id` (`platform:url`), keeps the best position (lowest index = highest similarity) per fic.
-4. Caps at 100 unique candidates.
-5. Passes candidates to `rank()` with the **original raw query** (not the HyDE descriptions).
+1. Embeds the raw query once (shared across all searches).
+2. Search 1: embed(desc[0]) → blend **0.8/0.2** HyDE/raw → `search_similar(limit=50)`
+3. Search 2: embed(desc[1]) → blend **0.7/0.3** HyDE/raw → `search_similar(limit=50)`
+4. Search 3: embed(desc[2]) → blend **0.5/0.5** HyDE/raw → `search_similar(limit=50)`
+5. Search 4: pure raw embedding (no blend) → `search_similar(limit=50)`
+6. Merge all results, deduplicate by `fic_id` (`platform:url`), keep highest similarity (lowest position) per fic.
+7. Cap at 100 unique candidates.
+8. Pass candidates to `rank()` with the **original raw query** (not the HyDE descriptions).
 
-Fallback behavior is unchanged — if enhancement fails, `semantic_descriptions` is a single-item list containing the raw query, and the loop runs once.
+**Fallback**: if `enhance_query()` fails, `semantic_descriptions` is `[raw_query]` (single item). In this case only 2 searches run: the single description at 0.7/0.3 and the pure raw search. The other two blended searches are skipped.
 
-`max_tokens` in the Bedrock payload was increased from `1024` to `2048` to accommodate three descriptions.
+`max_tokens` in the query enhancer Bedrock payload was increased from `1024` to `2048` to accommodate three descriptions.
 
 ---
 
@@ -811,7 +831,7 @@ Fallback behavior is unchanged — if enhancement fails, `semantic_descriptions`
 
 **Before**: `ranker.py` used `google.genai` with `gemini-2.5-flash` via `client.models.generate_content()`. Fics omitted from the LLM response defaulted to `match_score = 0`.
 
-**After**: Uses `boto3` `bedrock-runtime` client with model `us.anthropic.claude-haiku-4-5-20251001-v1:0`. System prompt instructs the model to return only a JSON array. `max_tokens: 4096` (needed for up to 200 scores), `temperature: 0.1`. Auth via IAM instance role. Fics omitted from the LLM response now get `match_score = None` (not 0) to avoid false scoring artifacts.
+**After**: Uses `boto3` `bedrock-runtime` client with model `us.anthropic.claude-haiku-4-5-20251001-v1:0`. System prompt: `"You are a fanfiction recommendation engine. Return ONLY a JSON array. No markdown, no backticks, no explanation."` `max_tokens: 4096` (needed for up to 100 scores), `temperature: 0.1`. Auth via IAM instance role. Response parsed as `response["body"].read()` → `body["content"][0]["text"]` → `json.loads`. Fics omitted from the LLM response now get `match_score = None` (not 0) to avoid false-zero sorting artifacts.
 
 ---
 
