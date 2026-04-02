@@ -147,7 +147,14 @@ def enhance_query(user_query: str, fandom: str = None) -> EnrichedQuery:
         )
 
         body = json.loads(response["body"].read())
+        print(f"[query_enhancer] raw body: {json.dumps(body)}", flush=True)
         raw = body["content"][0]["text"].strip()
+        # Strip markdown code fences if the model wraps output in ```json ... ``` or ``` ... ```
+        if raw.startswith("```"):
+            raw = raw.split("```", 2)[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+            raw = raw.strip()
         data = json.loads(raw)
         enriched = EnrichedQuery(**data)
 

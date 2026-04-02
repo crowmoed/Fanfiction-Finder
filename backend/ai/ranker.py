@@ -56,8 +56,15 @@ def rank(fics: list[Fic], query: str) -> list[Fic]:
             }),
         )
         body = json.loads(response["body"].read())
+        print(f"[ranker] raw body: {json.dumps(body)}", flush=True)
         raw = body["content"][0]["text"].strip()
-        print(f"[ranker] raw response: {raw[:200]}", flush=True)
+        # Strip markdown code fences if the model wraps output in ```json ... ``` or ``` ... ```
+        if raw.startswith("```"):
+            raw = raw.split("```", 2)[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+            raw = raw.strip()
+        print(f"[ranker] cleaned response: {raw[:200]}", flush=True)
 
         scores = json.loads(raw)
 
