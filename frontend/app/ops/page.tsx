@@ -8,6 +8,7 @@ interface FandomStat {
   fandom: string;
   ao3_count: number;
   ffn_count: number;
+  wattpad_count: number;
   total: number;
   last_indexed: string | null;
   avg_word_count: number | null;
@@ -39,7 +40,7 @@ function getStatus(stat: FandomStat): { label: string; color: string } {
   if (stat.total < 50) return { label: 'Sparse', color: 'text-orange-400' };
   const age = stat.last_indexed ? (Date.now() - new Date(stat.last_indexed).getTime()) / 86_400_000 : Infinity;
   if (age > 60) return { label: 'Stale', color: 'text-yellow-400' };
-  if (stat.ao3_count === 0 || stat.ffn_count === 0) return { label: 'Partial', color: 'text-blue-400' };
+  if (stat.ao3_count === 0 || stat.ffn_count === 0 || stat.wattpad_count === 0) return { label: 'Partial', color: 'text-blue-400' };
   return { label: 'Good', color: 'text-green-400' };
 }
 
@@ -61,6 +62,7 @@ function prioritySort(stats: FandomStat[], supported: string[]): FandomStat[] {
           fandom: f,
           ao3_count: 0,
           ffn_count: 0,
+          wattpad_count: 0,
           total: 0,
           last_indexed: null,
           avg_word_count: null,
@@ -74,7 +76,7 @@ function prioritySort(stats: FandomStat[], supported: string[]): FandomStat[] {
     if (s.total < 50) return 1;
     const age = s.last_indexed ? (Date.now() - new Date(s.last_indexed).getTime()) / 86_400_000 : Infinity;
     if (age > 60) return 2;
-    if (s.ao3_count === 0 || s.ffn_count === 0) return 3;
+    if (s.ao3_count === 0 || s.ffn_count === 0 || s.wattpad_count === 0) return 3;
     return 4;
   };
 
@@ -87,7 +89,7 @@ export default function OpsPage() {
   const [data, setData] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
-  const [sortCol, setSortCol] = useState<'fandom' | 'total' | 'ao3' | 'ffn' | 'last_indexed' | 'avg_words'>('total');
+  const [sortCol, setSortCol] = useState<'fandom' | 'total' | 'ao3' | 'ffn' | 'wattpad' | 'last_indexed' | 'avg_words'>('total');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   const fetchStats = useCallback(async () => {
@@ -141,6 +143,7 @@ export default function OpsPage() {
     if (sortCol === 'total') return (a.total - b.total) * dir;
     if (sortCol === 'ao3') return (a.ao3_count - b.ao3_count) * dir;
     if (sortCol === 'ffn') return (a.ffn_count - b.ffn_count) * dir;
+    if (sortCol === 'wattpad') return (a.wattpad_count - b.wattpad_count) * dir;
     if (sortCol === 'avg_words') return ((a.avg_word_count ?? 0) - (b.avg_word_count ?? 0)) * dir;
     if (sortCol === 'last_indexed') {
       const ta = a.last_indexed ? new Date(a.last_indexed).getTime() : 0;
@@ -185,7 +188,7 @@ export default function OpsPage() {
       const days = s.last_indexed ? Math.floor((Date.now() - new Date(s.last_indexed).getTime()) / 86_400_000) : 0;
       recs.push({ fandom: s.fandom, action: 'python indexer.py', reason: `Last indexed ${days} days ago — refresh recommended` });
     } else if (status.label === 'Partial') {
-      const missing = s.ao3_count === 0 ? 'AO3' : 'FFN';
+      const missing = [s.ao3_count === 0 && 'AO3', s.ffn_count === 0 && 'FFN', s.wattpad_count === 0 && 'Wattpad'].filter(Boolean).join(', ');
       recs.push({ fandom: s.fandom, action: 'python indexer.py', reason: `Missing ${missing} data` });
     }
   });
@@ -257,6 +260,7 @@ export default function OpsPage() {
                   <th className="px-3 py-2 text-left text-xs text-zinc-500 font-medium uppercase tracking-wider whitespace-nowrap">Status</th>
                   <Th col="ao3">AO3</Th>
                   <Th col="ffn">FFN</Th>
+                  <Th col="wattpad">Wattpad</Th>
                   <Th col="total">Total</Th>
                   <Th col="avg_words">Avg Words</Th>
                   <Th col="last_indexed">Last Indexed</Th>
@@ -280,6 +284,9 @@ export default function OpsPage() {
                       </td>
                       <td className="px-3 py-2.5 text-zinc-300 tabular-nums">
                         {s.ffn_count > 0 ? fmt(s.ffn_count) : <span className="text-zinc-600">—</span>}
+                      </td>
+                      <td className="px-3 py-2.5 text-zinc-300 tabular-nums">
+                        {s.wattpad_count > 0 ? fmt(s.wattpad_count) : <span className="text-zinc-600">—</span>}
                       </td>
                       <td className="px-3 py-2.5 text-zinc-200 font-semibold tabular-nums">
                         {s.total > 0 ? fmt(s.total) : <span className="text-zinc-600">0</span>}
@@ -317,20 +324,26 @@ export default function OpsPage() {
                 const maxTotal = Math.max(...all.map((x) => x.total), 1);
                 const barW = Math.round((s.total / maxTotal) * 100);
                 const ao3W = s.total > 0 ? Math.round((s.ao3_count / s.total) * barW) : 0;
-                const ffnW = barW - ao3W;
+                const ffnW = s.total > 0 ? Math.round((s.ffn_count / s.total) * barW) : 0;
+                const wattpadW = barW - ao3W - ffnW;
                 return (
                   <div key={s.fandom} className="flex items-center gap-3">
                     <div className="w-36 text-right text-zinc-400 text-xs truncate shrink-0">{s.fandom}</div>
                     <div className="flex-1 h-4 bg-zinc-900 rounded overflow-hidden flex">
                       <div
-                        className="h-full bg-blue-700/80 rounded-l transition-all"
+                        className="h-full bg-blue-700/80 transition-all"
                         style={{ width: `${ao3W}%` }}
                         title={`AO3: ${s.ao3_count}`}
                       />
                       <div
-                        className="h-full bg-purple-700/80 rounded-r transition-all"
+                        className="h-full bg-purple-700/80 transition-all"
                         style={{ width: `${ffnW}%` }}
                         title={`FFN: ${s.ffn_count}`}
+                      />
+                      <div
+                        className="h-full bg-orange-600/80 rounded-r transition-all"
+                        style={{ width: `${wattpadW}%` }}
+                        title={`Wattpad: ${s.wattpad_count}`}
                       />
                     </div>
                     <div className="text-zinc-500 text-xs tabular-nums w-12 text-right shrink-0">{fmt(s.total)}</div>
@@ -341,6 +354,7 @@ export default function OpsPage() {
           <div className="flex gap-4 mt-3 text-xs text-zinc-600">
             <span><span className="inline-block w-3 h-3 bg-blue-700/80 rounded mr-1" />AO3</span>
             <span><span className="inline-block w-3 h-3 bg-purple-700/80 rounded mr-1" />FFN</span>
+            <span><span className="inline-block w-3 h-3 bg-orange-600/80 rounded mr-1" />Wattpad</span>
           </div>
         </section>
 
