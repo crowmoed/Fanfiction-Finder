@@ -87,12 +87,12 @@ def build_search_url(query: str, offset: int = 0) -> str:
 
 # ── Calibration ──────────────────────────────────────────────────────────────
 
-def _get_percentile_for_total(total: int) -> int:
-    """Return the percentile cutoff based on fandom size."""
+def _get_percentile_for_total(total: int, quality_offset: int = 0) -> int:
+    """Return the percentile cutoff based on fandom size, shifted by quality_offset."""
     for max_total, percentile in FANDOM_SIZE_TIERS:
         if max_total is None or total < max_total:
-            return percentile
-    return FANDOM_SIZE_TIERS[-1][1]
+            return min(percentile + quality_offset, 99)
+    return min(FANDOM_SIZE_TIERS[-1][1] + quality_offset, 99)
 
 
 def _is_valid_story(story: dict) -> bool:
@@ -117,7 +117,7 @@ def _get_ratio(story: dict) -> float:
     return votes / reads
 
 
-def calibrate(query: str, session: requests.Session) -> dict:
+def calibrate(query: str, session: requests.Session, quality_offset: int = 0) -> dict:
     """
     Sample the first CALIBRATION_PAGES pages of results and compute
     fandom-specific engagement thresholds.
@@ -173,7 +173,7 @@ def calibrate(query: str, session: requests.Session) -> dict:
         }
 
     ratios.sort()
-    percentile = _get_percentile_for_total(total)
+    percentile = _get_percentile_for_total(total, quality_offset)
     # Compute the ratio at the chosen percentile
     idx = int(len(ratios) * percentile / 100)
     idx = min(idx, len(ratios) - 1)
@@ -213,7 +213,7 @@ def parse_story(story: dict) -> Fic:
 
 # ── Main search ──────────────────────────────────────────────────────────────
 
-def search(query: str, max_pages: int = 0) -> list[Fic]:
+def search(query: str, max_pages: int = 0, quality_offset: int = 0) -> list[Fic]:
     """
     Search Wattpad with dynamic quality filtering.
 
@@ -231,7 +231,7 @@ def search(query: str, max_pages: int = 0) -> list[Fic]:
 
     # ── Phase 1: Calibration ──────────────────────────────────────────────
     print(f"\n[Wattpad] ── Calibrating for '{query}' ({CALIBRATION_PAGES} sample pages)... ──")
-    cal = calibrate(query, session)
+    cal = calibrate(query, session, quality_offset)
 
     print(f"[Wattpad] Fandom total: {cal['total']:,} stories")
     print(f"[Wattpad] Sample size: {cal['sample_size']} stories")

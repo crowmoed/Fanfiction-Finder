@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import time
@@ -6,13 +7,72 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from google import genai
 from google.genai import types
+from google.genai import errors as genai_errors
 from dotenv import load_dotenv
+from tenacity import (
+    retry,
+    retry_if_exception,
+    stop_after_attempt,
+    wait_exponential,
+    before_sleep_log,
+)
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 EMBEDDING_MODEL = "gemini-embedding-001"
 EMBEDDING_DIMS = 768  
+
+
+def _is_rate_limit(exc: BaseException) -> bool:
+    """Return True only for Gemini 429 / ResourceExhausted errors."""
+    if not isinstance(exc, genai_errors.ClientError):
+        return False
+    code = getattr(exc, 'status_code', None) or getattr(exc, 'code', None)
+    if code == 429:
+        return True
+    text = str(exc).lower()
+    return 'resourceexhausted' in text or '429' in text
+
+
+@retry(
+    retry=retry_if_exception(_is_rate_limit),
+    wait=wait_exponential(multiplier=1, min=2, max=30),
+    stop=stop_after_attempt(3),
+    before_sleep=before_sleep_log(logger, logging.WARNING),
+    reraise=True,
+)
+def _embed_single(contents, task_type: str, title: str = None):
+    """Single embed_content call with up to 3 retries on rate-limit errors."""
+    kwargs = dict(task_type=task_type, output_dimensionality=EMBEDDING_DIMS)
+    if title is not None:
+        kwargs['title'] = title
+    return client.models.embed_content(
+        model=EMBEDDING_MODEL,
+        contents=contents,
+        config=types.EmbedContentConfig(**kwargs),
+    )
+
+
+@retry(
+    retry=retry_if_exception(_is_rate_limit),
+    wait=wait_exponential(multiplier=1, min=2, max=30),
+    stop=stop_after_attempt(5),
+    before_sleep=before_sleep_log(logger, logging.WARNING),
+    reraise=True,
+)
+def _embed_batch(batch: list[str]):
+    """Batch embed_content call with up to 5 retries on rate-limit errors."""
+    return client.models.embed_content(
+        model=EMBEDDING_MODEL,
+        contents=batch,
+        config=types.EmbedContentConfig(
+            task_type="RETRIEVAL_DOCUMENT",
+            output_dimensionality=EMBEDDING_DIMS,
+        ),
+    )
 
 
 def _normalize(vector: list[float]) -> list[float]:
@@ -53,29 +113,14 @@ def embed_fic(title: str, summary: str, tags: list[str], fandom: str = None) -> 
     so the model gets a structured signal about the document.
     """
     text = _format_fic_text(summary, tags, fandom)
-    result = client.models.embed_content(
-        model=EMBEDDING_MODEL,
-        contents=text,
-        config=types.EmbedContentConfig(
-            task_type="RETRIEVAL_DOCUMENT",
-            output_dimensionality=EMBEDDING_DIMS,
-            title=title,
-        )
-    )
+    result = _embed_single(text, task_type="RETRIEVAL_DOCUMENT", title=title)
     return _normalize(result.embeddings[0].values)
 
 
 def embed_query(query: str) -> list[float]:
     """Generate an embedding for a user search query using RETRIEVAL_QUERY task type."""
     print(f"[embedder] sending to Gemini ({EMBEDDING_MODEL}): {query!r}", flush=True)
-    result = client.models.embed_content(
-        model=EMBEDDING_MODEL,
-        contents=query,
-        config=types.EmbedContentConfig(
-            task_type="RETRIEVAL_QUERY",
-            output_dimensionality=EMBEDDING_DIMS,
-        )
-    )
+    result = _embed_single(query, task_type="RETRIEVAL_QUERY")
     return _normalize(result.embeddings[0].values)
 
 
@@ -94,14 +139,7 @@ def embed_fics_batch(fics: list, fandom: str = None, batch_size: int = 25) -> li
     all_embeddings = []
     for i in range(0, len(texts), batch_size):
         batch = texts[i:i + batch_size]
-        result = client.models.embed_content(
-            model=EMBEDDING_MODEL,
-            contents=batch,
-            config=types.EmbedContentConfig(
-                task_type="RETRIEVAL_DOCUMENT",
-                output_dimensionality=EMBEDDING_DIMS,
-            )
-        )
+        result = _embed_batch(batch)
         normalized = [_normalize(e.values) for e in result.embeddings]
         all_embeddings.extend(normalized)
         print(f"  Embedded batch {i//batch_size + 1}/{(len(texts)-1)//batch_size + 1}")

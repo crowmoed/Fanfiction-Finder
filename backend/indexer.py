@@ -12,7 +12,8 @@ import random
 
 load_dotenv()
 
-MIN_WORDS = 10000
+MIN_WORDS = 20000
+WATTPAD_QUALITY_OFFSET = 2
 
 def scrape_and_embed_ao3(fandom_name: str, sb, first_fandom: bool = False, start_page: int = 1) -> int:
     from scrapers.ao3 import build_search_url, parse_results
@@ -110,12 +111,12 @@ def scrape_and_embed_ffn(fandom_name: str, sb, first_fandom: bool = False) -> in
     return stored
 
 
-def scrape_and_embed_wattpad(fandom_name: str) -> int:
+def scrape_and_embed_wattpad(fandom_name: str, quality_offset: int = WATTPAD_QUALITY_OFFSET) -> int:
     from scrapers.wattpad import search
     stored = 0
 
     query = FANDOMS[fandom_name]["wattpad"]
-    fics = search(query, max_pages=0)
+    fics = search(query, max_pages=0, quality_offset=quality_offset)
 
     if not fics:
         print(f"[Wattpad] No qualifying fics found for '{fandom_name}'")
@@ -138,7 +139,7 @@ def scrape_and_embed_wattpad(fandom_name: str) -> int:
     return stored
 
 
-def index_fandom(fandom_name: str, clear: bool = False, start_page: int = 1):
+def index_fandom(fandom_name: str, clear: bool = False, start_page: int = 1, wattpad_quality: int = WATTPAD_QUALITY_OFFSET):
     print(f"\n{'='*50}")
     print(f"Indexing: {fandom_name}")
     print(f"{'='*50}")
@@ -160,7 +161,7 @@ def index_fandom(fandom_name: str, clear: bool = False, start_page: int = 1):
 
         total_stored = ao3_stored + ffn_stored
 
-    wattpad_stored = scrape_and_embed_wattpad(fandom_name)
+    wattpad_stored = scrape_and_embed_wattpad(fandom_name, quality_offset=wattpad_quality)
     print(f"\n[Wattpad] Done: {wattpad_stored} fics stored")
     total_stored += wattpad_stored
 
@@ -168,7 +169,7 @@ def index_fandom(fandom_name: str, clear: bool = False, start_page: int = 1):
     return total_stored
 
 
-def index_all(clear: bool = False):
+def index_all(clear: bool = False, wattpad_quality: int = WATTPAD_QUALITY_OFFSET):
     init_db()
     migrate_embedding_dimensions()
     total = 0
@@ -191,7 +192,7 @@ def index_all(clear: bool = False):
             ffn_stored = scrape_and_embed_ffn(fandom_name, sb, first_fandom=(i == 0))
             print(f"\n[FFN] Done: {ffn_stored} fics stored")
 
-            wattpad_stored = scrape_and_embed_wattpad(fandom_name)
+            wattpad_stored = scrape_and_embed_wattpad(fandom_name, quality_offset=wattpad_quality)
             print(f"\n[Wattpad] Done: {wattpad_stored} fics stored")
 
             total += ao3_stored + ffn_stored + wattpad_stored
@@ -216,7 +217,7 @@ def index_ffn_only(fandom_name: str):
         print(f"\n[FFN] Done: {stored} fics stored")
 
 
-def index_wattpad_only(fandom_name: str):
+def index_wattpad_only(fandom_name: str, wattpad_quality: int = WATTPAD_QUALITY_OFFSET):
     if fandom_name not in FANDOMS:
         print(f"Unknown fandom: '{fandom_name}'")
         print(f"Available: {list(FANDOMS.keys())}")
@@ -226,18 +227,18 @@ def index_wattpad_only(fandom_name: str):
     print(f"\n{'='*50}")
     print(f"Indexing Wattpad: {fandom_name}")
     print(f"{'='*50}")
-    stored = scrape_and_embed_wattpad(fandom_name)
+    stored = scrape_and_embed_wattpad(fandom_name, quality_offset=wattpad_quality)
     print(f"\n[Wattpad] Done: {stored} fics stored")
 
 
-def index_one(fandom_name: str, clear: bool = False, start_page: int = 1):
+def index_one(fandom_name: str, clear: bool = False, start_page: int = 1, wattpad_quality: int = WATTPAD_QUALITY_OFFSET):
     if fandom_name not in FANDOMS:
         print(f"Unknown fandom: '{fandom_name}'")
         print(f"Available: {list(FANDOMS.keys())}")
         return
     init_db()
     migrate_embedding_dimensions()
-    index_fandom(fandom_name, clear=clear, start_page=start_page)
+    index_fandom(fandom_name, clear=clear, start_page=start_page, wattpad_quality=wattpad_quality)
 
 
 if __name__ == "__main__":
@@ -246,13 +247,15 @@ if __name__ == "__main__":
         should_clear = "--clear" in sys.argv
 
         start_page = int(sys.argv[sys.argv.index("--start-page") + 1]) if "--start-page" in sys.argv else 1
+        wattpad_quality = int(sys.argv[sys.argv.index("--wattpad-quality") + 1]) if "--wattpad-quality" in sys.argv else WATTPAD_QUALITY_OFFSET
 
         if "--ffn-only" in sys.argv:
             index_ffn_only(fandom)
         elif "--wattpad-only" in sys.argv:
-            index_wattpad_only(fandom)
+            index_wattpad_only(fandom, wattpad_quality=wattpad_quality)
         else:
-            index_one(fandom, clear=should_clear, start_page=start_page)
+            index_one(fandom, clear=should_clear, start_page=start_page, wattpad_quality=wattpad_quality)
     else:
         should_clear = "--clear" in sys.argv
-        index_all(clear=should_clear)
+        wattpad_quality = int(sys.argv[sys.argv.index("--wattpad-quality") + 1]) if "--wattpad-quality" in sys.argv else WATTPAD_QUALITY_OFFSET
+        index_all(clear=should_clear, wattpad_quality=wattpad_quality)
