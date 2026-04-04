@@ -18,7 +18,7 @@ interface BackendFic {
 }
 
 function mapToFicResult(fic: BackendFic): FicResult {
-  const platform = (fic.platform === 'ao3' || fic.platform === 'ffn') ? fic.platform : 'ao3';
+  const platform = (fic.platform === 'ao3' || fic.platform === 'ffn' || fic.platform === 'wattpad') ? fic.platform : 'ao3';
   return {
     id: fic.url,
     platform,
@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
 
       const ao3Results = ficResults.filter((r) => r.platform === 'ao3');
       const ffnResults = ficResults.filter((r) => r.platform === 'ffn');
+      const wattpadResults = ficResults.filter((r) => r.platform === 'wattpad');
 
       await send({ type: 'status', step: 'ao3-fetch', status: 'complete' });
       await send({ type: 'status', step: 'ffn-fetch', status: 'complete' });
@@ -112,6 +113,9 @@ export async function POST(req: NextRequest) {
       }
       if (ffnResults.length > 0) {
         await send({ type: 'results', platform: 'ffn', results: ffnResults });
+      }
+      if (wattpadResults.length > 0) {
+        await send({ type: 'results', platform: 'wattpad', results: wattpadResults });
       }
 
       // Stage 4: Ranking (already done by backend's AI ranker)

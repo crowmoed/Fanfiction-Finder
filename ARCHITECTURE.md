@@ -27,10 +27,11 @@
 
 ## 1. Project Overview
 
-FicFinder is a semantic search engine for fanfiction. Users submit natural language queries ("Drarry slow burn enemies to lovers no MCD") and get ranked results from two platforms:
+FicFinder is a semantic search engine for fanfiction. Users submit natural language queries ("Drarry slow burn enemies to lovers no MCD") and get ranked results from three platforms:
 
 - **AO3** — Archive of Our Own (`archiveofourown.org`)
 - **FFN** — FanFiction.net (`fanfiction.net`)
+- **Wattpad** — Wattpad (`wattpad.com`)
 
 ### Index-then-search architecture
 
@@ -47,6 +48,7 @@ This means search is fast (sub-second vector lookup) but the corpus is a snapsho
 |---|---|---|
 | AO3 | SeleniumBase UC mode, BeautifulSoup | kudos |
 | FFN | SeleniumBase UC mode, BeautifulSoup | favorites (stored as `kudos`) |
+| Wattpad | Pure HTTP requests (v4 internal API) | vote/read ratio (quality filter) |
 
 ---
 
@@ -490,11 +492,12 @@ See §14 — the ranker can cause intermittent timeouts on the App Runner endpoi
 ### Indexer CLI (`backend/indexer.py`)
 
 ```bash
-python indexer.py                                # Index all 21 fandoms
-python indexer.py "Naruto"                       # Index one fandom (AO3 + FFN)
+python indexer.py                                # Index all 21 fandoms (AO3 + FFN + Wattpad)
+python indexer.py "Naruto"                       # Index one fandom (AO3 + FFN + Wattpad)
 python indexer.py "Naruto" --clear               # Clear fandom from DB first, then re-index
 python indexer.py "Naruto" --start-page 664      # Resume AO3 from a specific page
 python indexer.py "Naruto" --ffn-only            # FFN only for this fandom
+python indexer.py "Naruto" --wattpad-only        # Wattpad only for this fandom
 ```
 
 `index_all()` calls `migrate_embedding_dimensions()` first — handles the case where the DB was built with different dims.
@@ -564,19 +567,57 @@ Timing:
 
 Embeddings are generated immediately after each page is scraped (before moving to the next page). This uses the rate-limit wait time productively — while the scraper waits for the next page, the embedder is calling Gemini.
 
+### Wattpad scraper (`backend/scrapers/wattpad.py`)
+
+Unlike AO3/FFN, Wattpad has no fandom taxonomy — scraping is **keyword-based** (search `"naruto"` instead of browsing a category). No Selenium required; uses pure HTTP requests against Wattpad's internal v4 JSON API.
+
+**Endpoint:**
+```
+https://www.wattpad.com/v4/search/stories/?query={keyword}&limit=50&offset={offset}&fields=...
+```
+
+**Pagination:** offset/limit (50 results per page). Continues until `nextUrl` is absent or offset ≥ total.
+
+**Two-phase quality filter:**
+
+1. **Calibration** (first 10 pages sampled): computes vote/read ratio distribution across valid English, non-paywalled stories with ≥1,000 reads. Selects a percentile cutoff based on fandom size:
+
+   | Fandom size | Percentile cutoff | Effect |
+   |---|---|---|
+   | < 5,000 stories | P40 | Keep top 60% |
+   | 5,000–20,000 | P60 | Keep top 40% |
+   | 20,000–50,000 | P75 | Keep top 25% |
+   | 50,000+ | P85 | Keep top 15% |
+
+2. **Scraping** (all pages): applies the calibrated min ratio to filter stories.
+
+**Field mapping:**
+
+| Wattpad field | Fic model field |
+|---|---|
+| `voteCount` | `kudos` |
+| `readCount` | `hits` |
+| `description` | `summary` |
+| `tags` | `tags` |
+| `word_count` | `None` (Wattpad `length` is character count, not reliable) |
+
+**Rate limiting:** 1.5–3s random delay between pages (handled internally — no extra sleep needed in indexer).
+
+**Fandom keywords** are stored in `FANDOMS[name]["wattpad"]` (e.g. `"naruto"`, `"bnha"`, `"genshin impact"`).
+
 ### Fandom config (`backend/data/fandoms.py`)
 
 ```python
 FANDOMS = {
-    "Harry Potter": {"ao3": "Harry Potter - J. K. Rowling", "ffn": "book/harry-potter"},
-    "Naruto":       {"ao3": "Naruto (Anime & Manga)",       "ffn": "anime/naruto"},
+    "Harry Potter": {"ao3": "Harry Potter - J. K. Rowling", "ffn": "book/harry-potter", "wattpad": "harry potter"},
+    "Naruto":       {"ao3": "Naruto (Anime & Manga)",       "ffn": "anime/naruto",       "wattpad": "naruto"},
     # ...
 }
 ```
 
-21 fandoms total across: Books (4), Anime (6), TV (4), Movies (2), Games (3), Cartoons (2).
+21 fandoms total across: Books (4), Anime (6), TV (4), Movies (2), Games (3), Cartoons (2), K-pop (1).
 
-To add a new fandom: add an entry to `FANDOMS`, then run `python indexer.py "New Fandom"`.
+To add a new fandom: add an entry to `FANDOMS` (with `ao3`, `ffn`, and `wattpad` keys), then run `python indexer.py "New Fandom"`.
 
 ---
 

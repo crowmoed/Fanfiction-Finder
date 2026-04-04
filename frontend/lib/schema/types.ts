@@ -1,6 +1,6 @@
 export interface FicResult {
   id: string;
-  platform: 'ao3' | 'ffn';
+  platform: 'ao3' | 'ffn' | 'wattpad';
   title: string;
   author: string;
   url: string;
@@ -50,7 +50,7 @@ export interface SearchHistoryEntry {
 }
 
 export type SortField = 'matchScore' | 'wordCount' | 'title' | 'updatedAt';
-export type PlatformFilter = 'all' | 'ao3' | 'ffn';
+export type PlatformFilter = 'all' | 'ao3' | 'ffn' | 'wattpad';
 export type StatusFilter = 'all' | 'complete' | 'in-progress';
 export type RatingFilter = 'all' | 'G' | 'T' | 'M' | 'E';
 export type WordCountFilter = 'all' | '10k+' | '20k+' | '40k+' | '75k+' | '100k+' | '200k+' | '400k+';
@@ -58,7 +58,7 @@ export type KudosFilter = 'all' | '100+' | '500+' | '1k+' | '5k+';
 
 export type SearchEvent =
   | { type: 'status'; step: string; status: 'active' | 'complete' | 'skipped' | 'error'; message?: string }
-  | { type: 'results'; platform: 'ao3' | 'ffn'; results: FicResult[] }
+  | { type: 'results'; platform: 'ao3' | 'ffn' | 'wattpad'; results: FicResult[] }
   | { type: 'ranked'; results: FicResult[] }
   | { type: 'done'; totalMs: number }
   | { type: 'error'; message: string };

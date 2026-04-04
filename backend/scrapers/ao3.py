@@ -11,6 +11,8 @@ from urllib.parse import urlencode, quote, quote_plus
 
 def build_search_url(query: str, fandom: Optional[str] = None, page: int = 1, min_words: int = 0) -> str:
     ao3_tag = FANDOMS[fandom]["ao3"]
+    if ao3_tag is None:
+        return None
     encoded_tag = ao3_tag.replace(" ", "+").replace("&", "*a*")
     
     params = [
@@ -77,6 +79,9 @@ def search(query: str, fandom: Optional[str] = None, pages: int = 1) -> list[Fic
     with SB(uc=True, headless=False) as sb:
         for page in range(1, pages + 1):
             url = build_search_url(query, fandom=fandom, page=page)
+            if url is None:
+                print(f"Skipping AO3: no tag configured for '{fandom}'")
+                break
             print(f"Fetching page {page}: {url}")
             sb.open(url)
             if page == 1:

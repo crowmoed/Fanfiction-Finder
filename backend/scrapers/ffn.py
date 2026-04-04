@@ -83,6 +83,9 @@ def search(fandom_name: str, pages: int = 1, sort: int = 3) -> list[Fic]:
         return []
 
     ffn_slug = FANDOMS[fandom_name]["ffn"]
+    if ffn_slug is None:
+        print(f"Skipping FFN: no slug configured for '{fandom_name}'")
+        return []
     results = []
 
     with SB(uc=True, headless=False) as sb:

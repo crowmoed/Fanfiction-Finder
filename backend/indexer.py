@@ -110,6 +110,34 @@ def scrape_and_embed_ffn(fandom_name: str, sb, first_fandom: bool = False) -> in
     return stored
 
 
+def scrape_and_embed_wattpad(fandom_name: str) -> int:
+    from scrapers.wattpad import search
+    stored = 0
+
+    query = FANDOMS[fandom_name]["wattpad"]
+    fics = search(query, max_pages=0)
+
+    if not fics:
+        print(f"[Wattpad] No qualifying fics found for '{fandom_name}'")
+        return 0
+
+    # Embed in batches of ~50 (matches scraper page size)
+    batch_size = 50
+    for batch_start in range(0, len(fics), batch_size):
+        batch = fics[batch_start:batch_start + batch_size]
+        print(f"[Wattpad] Embedding batch {batch_start // batch_size + 1} "
+              f"({len(batch)} fics)...")
+        embeddings = embed_fics_batch(batch, fandom=fandom_name)
+        for fic, embedding in zip(batch, embeddings):
+            try:
+                upsert_fic(fic=fic, fandom=fandom_name, embedding=embedding)
+                stored += 1
+            except Exception as e:
+                print(f"  Skipped '{fic.title}': {e}")
+
+    return stored
+
+
 def index_fandom(fandom_name: str, clear: bool = False, start_page: int = 1):
     print(f"\n{'='*50}")
     print(f"Indexing: {fandom_name}")
@@ -131,6 +159,10 @@ def index_fandom(fandom_name: str, clear: bool = False, start_page: int = 1):
         print(f"\n[FFN] Done: {ffn_stored} fics stored")
 
         total_stored = ao3_stored + ffn_stored
+
+    wattpad_stored = scrape_and_embed_wattpad(fandom_name)
+    print(f"\n[Wattpad] Done: {wattpad_stored} fics stored")
+    total_stored += wattpad_stored
 
     print(f"\n[Done] {fandom_name}: {total_stored} total fics indexed")
     return total_stored
@@ -159,8 +191,11 @@ def index_all(clear: bool = False):
             ffn_stored = scrape_and_embed_ffn(fandom_name, sb, first_fandom=(i == 0))
             print(f"\n[FFN] Done: {ffn_stored} fics stored")
 
-            total += ao3_stored + ffn_stored
-            print(f"\n[Done] {fandom_name}: {ao3_stored + ffn_stored} fics indexed")
+            wattpad_stored = scrape_and_embed_wattpad(fandom_name)
+            print(f"\n[Wattpad] Done: {wattpad_stored} fics stored")
+
+            total += ao3_stored + ffn_stored + wattpad_stored
+            print(f"\n[Done] {fandom_name}: {ao3_stored + ffn_stored + wattpad_stored} fics indexed")
 
     print(f"\n{'='*50}")
     print(f"Indexing complete. Total fics stored: {total}")
@@ -179,6 +214,20 @@ def index_ffn_only(fandom_name: str):
     with SB(uc=True, headless=False) as sb:
         stored = scrape_and_embed_ffn(fandom_name, sb, first_fandom=True)
         print(f"\n[FFN] Done: {stored} fics stored")
+
+
+def index_wattpad_only(fandom_name: str):
+    if fandom_name not in FANDOMS:
+        print(f"Unknown fandom: '{fandom_name}'")
+        print(f"Available: {list(FANDOMS.keys())}")
+        return
+    init_db()
+    migrate_embedding_dimensions()
+    print(f"\n{'='*50}")
+    print(f"Indexing Wattpad: {fandom_name}")
+    print(f"{'='*50}")
+    stored = scrape_and_embed_wattpad(fandom_name)
+    print(f"\n[Wattpad] Done: {stored} fics stored")
 
 
 def index_one(fandom_name: str, clear: bool = False, start_page: int = 1):
@@ -200,6 +249,8 @@ if __name__ == "__main__":
 
         if "--ffn-only" in sys.argv:
             index_ffn_only(fandom)
+        elif "--wattpad-only" in sys.argv:
+            index_wattpad_only(fandom)
         else:
             index_one(fandom, clear=should_clear, start_page=start_page)
     else:
