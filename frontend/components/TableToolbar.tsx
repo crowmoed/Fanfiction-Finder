@@ -128,6 +128,7 @@ export default function TableToolbar({
               <option value="all">All</option>
               <option value="ao3">AO3</option>
               <option value="ffn">FFN</option>
+              <option value="wattpad">Wattpad</option>
             </select>
           </label>
 

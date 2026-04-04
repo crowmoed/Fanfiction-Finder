@@ -7,7 +7,6 @@ import { useSearchHistory } from '@/hooks/useSearchHistory';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 
 import SearchBar from '@/components/SearchBar';
-import QuickFilters from '@/components/QuickFilters';
 import StatusIndicator from '@/components/StatusIndicator';
 import ResultsTable from '@/components/ResultsTable';
 import ResultsCard from '@/components/ResultsCard';
@@ -20,7 +19,6 @@ export default function HomePage() {
   const [appState, setAppState] = useState<AppState>('empty');
   const [currentQuery, setCurrentQuery] = useState('');
   const [currentFandom, setCurrentFandom] = useState<Fandom>('');
-  const [selectedFilterQueries, setSelectedFilterQueries] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
 
@@ -64,6 +62,7 @@ export default function HomePage() {
         resultCount: results.length,
         ao3Count: results.filter((r) => r.platform === 'ao3').length,
         ffnCount: results.filter((r) => r.platform === 'ffn').length,
+        wattpadCount: results.filter((r) => r.platform === 'wattpad').length,
         timestamp: new Date(),
         cachedResults: results,
       });
@@ -77,8 +76,6 @@ export default function HomePage() {
     },
     [handleSearch]
   );
-
-  const appendToPrompt = selectedFilterQueries.join(', ');
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
@@ -166,13 +163,7 @@ export default function HomePage() {
                 onSearch={handleSearch}
                 isSearching={isSearching}
                 initialFandom={currentFandom}
-                appendToPrompt={appendToPrompt}
               />
-
-              {/* Quick filters */}
-              <div className="mt-4">
-                <QuickFilters onSelectionChange={setSelectedFilterQueries} />
-              </div>
 
               {/* Recent searches */}
               {history.length > 0 && (

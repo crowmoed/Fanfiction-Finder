@@ -8,6 +8,7 @@ const INITIAL_STEPS: PipelineStep[] = [
   { id: 'llm-parse', label: 'Parsing Query', status: 'pending' },
   { id: 'ao3-fetch', label: 'Searching AO3', status: 'pending' },
   { id: 'ffn-fetch', label: 'Searching FFN', status: 'pending' },
+  { id: 'wattpad-fetch', label: 'Searching Wattpad', status: 'pending' },
   { id: 'ranking', label: 'Ranking', status: 'pending' },
 ];
 
@@ -58,6 +59,7 @@ export function useSearch() {
         resultCounts: {
           ao3: cachedResults.filter((r) => r.platform === 'ao3').length,
           ffn: cachedResults.filter((r) => r.platform === 'ffn').length,
+          wattpad: cachedResults.filter((r) => r.platform === 'wattpad').length,
         },
       });
       setIsSearching(false);
@@ -115,6 +117,7 @@ export function useSearch() {
                 resultCounts: {
                   ao3: event.results.filter((r) => r.platform === 'ao3').length,
                   ffn: event.results.filter((r) => r.platform === 'ffn').length,
+                  wattpad: event.results.filter((r) => r.platform === 'wattpad').length,
                 },
               }));
               break;

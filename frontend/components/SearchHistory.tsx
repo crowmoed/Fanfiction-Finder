@@ -120,7 +120,7 @@ export default function SearchHistory({ history, onSearch, onClear, onClose }: S
                           {entry.prompt.length > 60 ? entry.prompt.slice(0, 60) + '…' : entry.prompt}
                         </p>
                         <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
-                          {entry.fandom} · AO3: {entry.ao3Count} · FFN: {entry.ffnCount}
+                          {entry.fandom} · AO3: {entry.ao3Count} · FFN: {entry.ffnCount}{entry.wattpadCount > 0 ? ` · Wattpad: ${entry.wattpadCount}` : ''}
                         </p>
                         <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
                           {formatRelativeTime(entry.timestamp)}

@@ -272,7 +272,7 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
                     {/* Words */}
                     <td style={{ ...TD, width: 80 }}>
                       <span className="font-mono text-sm text-right block" style={{ color: 'var(--text-secondary)' }}>
-                        {formatWordCount(fic.wordCount)}
+                        {fic.wordCount > 0 ? formatWordCount(fic.wordCount) : '—'}
                       </span>
                     </td>
 

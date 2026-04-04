@@ -81,9 +81,10 @@ export async function POST(req: NextRequest) {
       // Stage 2: LLM parse — skipped (tag mapper handles it)
       await send({ type: 'status', step: 'llm-parse', status: 'skipped' });
 
-      // Stage 3: AO3 + FFN fetch (concurrent in backend)
+      // Stage 3: AO3 + FFN + Wattpad fetch (concurrent in backend)
       await send({ type: 'status', step: 'ao3-fetch', status: 'active' });
       await send({ type: 'status', step: 'ffn-fetch', status: 'active' });
+      await send({ type: 'status', step: 'wattpad-fetch', status: 'active' });
 
       // Call the Python backend
       console.log(`[API/search] prompt="${prompt}" fandom="${fandom}"`);
@@ -106,6 +107,7 @@ export async function POST(req: NextRequest) {
 
       await send({ type: 'status', step: 'ao3-fetch', status: 'complete' });
       await send({ type: 'status', step: 'ffn-fetch', status: 'complete' });
+      await send({ type: 'status', step: 'wattpad-fetch', status: 'complete' });
 
       // Send unranked results immediately by platform
       if (ao3Results.length > 0) {

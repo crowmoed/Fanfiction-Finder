@@ -25,13 +25,20 @@ export default function StatusIndicator({ status }: StatusIndicatorProps) {
   if (collapsed && allDone) {
     const ao3 = status.resultCounts?.ao3 ?? 0;
     const ffn = status.resultCounts?.ffn ?? 0;
-    const total = ao3 + ffn;
+    const wattpad = status.resultCounts?.wattpad ?? 0;
+    const total = ao3 + ffn + wattpad;
     const elapsed = status.elapsedMs ? formatElapsed(status.elapsedMs) : '';
+
+    const parts = [
+      ao3 > 0 && `AO3 (${ao3})`,
+      ffn > 0 && `FFN (${ffn})`,
+      wattpad > 0 && `Wattpad (${wattpad})`,
+    ].filter(Boolean).join(', ');
 
     return (
       <div className="text-sm text-center py-2 transition-all duration-250" style={{ color: 'var(--text-secondary)' }}>
         {total > 0
-          ? `${total} results from AO3 (${ao3}) and FFN (${ffn})${elapsed ? ` · ${elapsed}` : ''} · Ranked by AI`
+          ? `${total} results from ${parts}${elapsed ? ` · ${elapsed}` : ''} · Ranked by AI`
           : 'No results found'}
         {hasError && (
           <span className="ml-2 text-red-500">· Some sources unavailable</span>

@@ -24,7 +24,7 @@ export interface FicResult {
 }
 
 export interface PipelineStep {
-  id: 'tag-map' | 'llm-parse' | 'ao3-fetch' | 'ffn-fetch' | 'ranking';
+  id: 'tag-map' | 'llm-parse' | 'ao3-fetch' | 'ffn-fetch' | 'wattpad-fetch' | 'ranking';
   label: string;
   status: 'pending' | 'active' | 'complete' | 'skipped' | 'error';
   errorMessage?: string;
@@ -32,7 +32,7 @@ export interface PipelineStep {
 
 export interface PipelineStatus {
   steps: PipelineStep[];
-  resultCounts?: { ao3: number; ffn: number };
+  resultCounts?: { ao3: number; ffn: number; wattpad: number };
   elapsedMs?: number;
   summary?: string;
 }
@@ -45,6 +45,7 @@ export interface SearchHistoryEntry {
   resultCount: number;
   ao3Count: number;
   ffnCount: number;
+  wattpadCount: number;
   timestamp: Date;
   cachedResults?: FicResult[];
 }
