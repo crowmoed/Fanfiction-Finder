@@ -2,7 +2,7 @@
 date: 2026-03-29
 tags: [auth, product, subscriptions]
 ---
-
+Basically just took a look at AUTHO, really havent done much into it, considered my options and moved on as atp I really didnt have any product to actually gatekeep lol...
 # Mar 29 — Auth Planning
 
 ## What happened

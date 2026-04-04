@@ -3,11 +3,12 @@ date: 2026-03-21
 tags: [frontend, design, UX]
 ---
 
+
 # Mar 21 — Frontend Planning
 
 ## What happened
-- Full frontend spec created for FanFicFinder
-- Chose Next.js + Tailwind from scratch — no component libraries (no MUI, Chakra, shadcn)
+- Full frontend created for FanFicFinder
+- Chose Next.js + Tailwind 
 - Dexie.js (IndexedDB) for local search history persistence
 
 ## Design system
@@ -26,5 +27,5 @@ tags: [frontend, design, UX]
 Two-phase result loading: raw results streaming in → ranked reorder. Rows need to animate into new positions when scores arrive without jarring the user.
 
 ## Links
-- [[Mar 20 - Inception]]
+- [[Mar 20 - Came up with the Idea]]
 - [[Mar 22 - First Deploy]]

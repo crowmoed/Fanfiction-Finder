@@ -2,7 +2,7 @@
 date: 2026-04-02
 tags: [AI, bedrock, milestone, pipeline]
 ---
-
+Basically yeah finished the Bedrock migration and made it live. also made it so that the Hyde query enhancement didnt just make 1 imitation story but instead I createed a tri prompt method that created 3 unique storys matching the given prompt, all three from a different angle and vectorized each then found the top 100 most similiar of each. That resulted in list of 300 fics and then I used an LLM to rank only the top 100 of the fics most relevent to the original prompt.
 # Apr 2 — Bedrock Live + Multi-Angle HyDE Pipeline ★
 
 ## What happened

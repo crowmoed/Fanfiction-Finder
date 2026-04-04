@@ -3,20 +3,12 @@ date: 2026-04-04
 tags: [planning, ToS, scale]
 ---
 
-# Apr 4 — Today: ToS Concerns + Scale Planning
+# Apr 4 — Today: Scale Planning
 
 ## What happened
-- Flagged Wattpad ToS violation risk — it's the first thing they say on signup
-- Friend's idea: split large vs. small fandoms across two Neon accounts
+- Flagged Wattpad ToS violation risk  it's the first thing they say on signup
+- idea: split large vs. small fandoms across two Neon accounts
 - Created this Obsidian vault to track project history
-
-## ToS situation
-Wattpad explicitly prohibits automated data collection. Risk is real but currently unclear how aggressively they enforce against small-scale hobby projects vs. commercial scrapers.
-
-Options:
-- Proceed with caution (small-scale, no redistribution)
-- Skip Wattpad entirely for now
-- Only scrape Wattpad for fandoms where it's the primary platform (e.g. NCT, K-pop)
 
 ## Multi-account DB idea
 To manage Neon storage/cost at scale:

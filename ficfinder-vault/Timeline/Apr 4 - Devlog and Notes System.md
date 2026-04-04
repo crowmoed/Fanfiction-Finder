@@ -28,4 +28,4 @@ Obsidian for long-term storage:
 - Link related notes with `[[wikilinks]]`
 
 ## Links
-- [[Apr 4 - Today]]
+- [[Apr 4 - Multi account DB]]

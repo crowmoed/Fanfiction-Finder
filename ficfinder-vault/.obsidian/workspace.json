@@ -11,14 +11,17 @@
             "id": "261a0c26b25aca3b",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "canvas",
               "state": {
-                "file": "2026-04-02-bedrock-live.md",
-                "mode": "preview",
-                "source": false
+                "file": "FicFinder Timeline.canvas",
+                "viewState": {
+                  "x": -352.999485055137,
+                  "y": 377.46925738666437,
+                  "zoom": -1.9999999999999998
+                }
               },
-              "icon": "lucide-file",
-              "title": "2026-04-02-bedrock-live"
+              "icon": "lucide-layout-dashboard",
+              "title": "FicFinder Timeline"
             }
           }
         ]
@@ -185,18 +188,23 @@
   },
   "active": "261a0c26b25aca3b",
   "lastOpenFiles": [
+    "open-questions.md",
+    "FicFinder Timeline.canvas",
+    "2026-03-30-monitoring.md",
+    "2026-03-20-inception.md",
+    "Timeline/Mar 20 - Came up with the Idea.md",
+    "2026-04-04-today.md",
+    "2026-04-03-wattpad-scraper.md",
+    "2026-04-02-bedrock-live.md",
     "2026-03-21-frontend-planning.md",
     "Timeline/Apr 2 - Bedrock Live and HyDE Pipeline.md",
-    "Timeline/Apr 4 - Today.md",
+    "Timeline/Apr 4 - Multi account DB.md",
     "Timeline/Mar 23 - HyDE Query Design.md",
     "Timeline/Mar 24 - Embedding Overhaul.md",
     "Timeline/Mar 30 - Monitoring Explored.md",
     "Timeline/Mar 31 AM - DB Cleanup and Neon Migration.md",
     "Timeline/Mar 31 PM - Bedrock Decision.md",
     "Timeline/Mar 22 - First Deploy.md",
-    "open-questions.md",
-    "FicFinder Timeline.canvas",
-    "2026-03-20-inception.md",
     "000-index.md"
   ]
 }

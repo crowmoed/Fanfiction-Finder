@@ -2,12 +2,13 @@
 date: 2026-03-24
 tags: [AI, embeddings, pipeline]
 ---
+Basically read a research paper and it found that the effectevness of a 768 and 3072 Dimension vector in sentiment analysis using COS search is almost enitrely the same, so to save storage/money I decide to migrate the whole system to that 768 dimension vector. 
 
+As well there were some small changes to the way we vectorized fanfics. with the tags going first instead of the description. Helps the embedding models with better assigning sentiment to the fics.
 # Mar 24 — Embedding Pipeline Overhaul
 
 ## What happened
-Breaking change to embedding format — full re-index required for all future fandoms (Naruto already indexed at old format).
-
+Breaking change to embedding format need to re-index all future fandoms 
 ## Changes made
 
 ### Format (embedder.py)
@@ -17,17 +18,12 @@ Breaking change to embedding format — full re-index required for all future fa
 
 ### Dimensions (postgres.py)
 - Switched from `Vector(3072)` → `Vector(768)` (Matryoshka truncation)
-- 4× cheaper storage with minimal quality loss
-- Added `migrate_embedding_dimensions()` to detect/recreate mismatched columns at startup
-- Added null-embedding filter to `search_similar()`
+- 4× cheaper storage with minimal quality loss // needed for our db
 
 ### Task types (embedder.py)
 - `RETRIEVAL_DOCUMENT` for fic indexing
 - `RETRIEVAL_QUERY` for search queries
 - Asymmetric task types meaningfully improve retrieval quality
-
-### Normalization
-- Added L2 normalization via numpy — Gemini 768-dim outputs are NOT pre-normalized
 
 ## Bug fixed
 Ranker was assigning `0` (instead of `None`) to fics the LLM omitted, causing them to appear falsely scored. LLM ranker temporarily disabled — pgvector cosine order preserved until ranker is rebuilt.

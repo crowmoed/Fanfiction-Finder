@@ -33,14 +33,16 @@ Run outside Docker — needs a real Chrome window to bypass bot detection.
 ```bash
 cd backend
 
-python indexer.py                        # all fandoms
-python indexer.py "Naruto"               # one fandom
-python indexer.py "Naruto" --clear       # re-index from scratch
+python indexer.py                             # all fandoms (AO3 + FFN + Wattpad)
+python indexer.py "Naruto"                    # one fandom
+python indexer.py "Naruto" --clear            # re-index from scratch
 python indexer.py "Naruto" --start-page 664   # resume AO3 from a page
-python indexer.py "Naruto" --ffn-only    # run FFN only
+python indexer.py "Naruto" --ffn-only         # run FFN only
+python indexer.py "Naruto" --wattpad-only     # run Wattpad only
+python indexer.py "Naruto" --wattpad-quality 5   # set Wattpad quality offset
 ```
 
-> First page has a 15s pause — use it to click through any bot/age interstitials.
+> First page has a 15s pause — use it to click through any bot/age interstitials. Wattpad runs headlessly (no browser needed).
 
 ## Deploy
 

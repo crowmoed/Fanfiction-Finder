@@ -2,7 +2,9 @@
 date: 2026-04-03
 tags: [scraping, wattpad, quality-filtering]
 ---
+Basically added wattpad to be one of the websites that is scraped. It was simpler then others because it didnt require any web browser based tokens like AO3, just a backend api call. The real main problem was an algorithm that added fics. Theres a lot of slop on ao3 so we had to be strict with it. 
 
+our final and unfixed problem is the fact that currently the ao3 backend api just stops at 10000, pretty sure anything after that is just straight up un accessible. 
 # Apr 3 — Wattpad Scraper
 
 ## What happened
@@ -18,16 +20,13 @@ GET https://www.wattpad.com/v4/search/stories/
   &limit=20
   &fields=id,title,voteCount,readCount,description,completed,url,...
 ```
-- Offset/limit pagination (not cursor-based)
-- No authentication required
-- No Selenium — plain HTTP requests
 
 ## Field mapping
-| Wattpad field | FicFinder field |
-|--------------|-----------------|
-| `voteCount` | `kudos` |
-| `readCount` | `hits` |
-| `length` | `word_count = None` (length is character count, not words) |
+| Wattpad field | FicFinder field                                            |
+| ------------- | ---------------------------------------------------------- |
+| `voteCount`   | `kudos`                                                    |
+| `readCount`   | `hits`                                                     |
+| `length`      | `word_count = None` (length is character count, not words) |
 
 ## Dynamic quality filtering
 Challenge: Wattpad has no fandom taxonomy — engagement metrics vary wildly by fandom culture.
