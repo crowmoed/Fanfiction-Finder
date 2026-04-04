@@ -1,7 +1,7 @@
 'use client';
 
 interface PlatformBadgeProps {
-  platform: 'ao3' | 'ffn';
+  platform: 'ao3' | 'ffn' | 'wattpad';
 }
 
 export default function PlatformBadge({ platform }: PlatformBadgeProps) {
@@ -13,6 +13,18 @@ export default function PlatformBadge({ platform }: PlatformBadgeProps) {
         aria-label="Archive of Our Own"
       >
         AO3
+      </span>
+    );
+  }
+
+  if (platform === 'wattpad') {
+    return (
+      <span
+        className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-medium"
+        style={{ color: 'var(--wattpad-orange)', backgroundColor: 'var(--wattpad-orange-bg)' }}
+        aria-label="Wattpad"
+      >
+        WP
       </span>
     );
   }
