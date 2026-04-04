@@ -185,6 +185,7 @@ def get_admin_stats() -> dict:
                 "fandom": key,
                 "ao3_count": 0,
                 "ffn_count": 0,
+                "wattpad_count": 0,
                 "total": 0,
                 "last_indexed": None,
                 "avg_word_count": None,
@@ -199,6 +200,8 @@ def get_admin_stats() -> dict:
             fandom_map[key]["ao3_count"] = count
         elif row.platform == "ffn":
             fandom_map[key]["ffn_count"] = count
+        elif row.platform == "wattpad":
+            fandom_map[key]["wattpad_count"] = count
 
         fandom_map[key]["total"] += count
         fandom_map[key]["total_kudos"] += kudos

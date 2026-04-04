@@ -88,11 +88,16 @@ def build_search_url(query: str, offset: int = 0) -> str:
 # ── Calibration ──────────────────────────────────────────────────────────────
 
 def _get_percentile_for_total(total: int, quality_offset: int = 0) -> int:
-    """Return the percentile cutoff based on fandom size, shifted by quality_offset."""
+    """Return the percentile cutoff based on fandom size, shifted by quality_offset.
+
+    Positive offset → stricter filter (fewer, higher-quality fics).
+    Negative offset → looser filter (more fics).
+    Clamped to [1, 99].
+    """
     for max_total, percentile in FANDOM_SIZE_TIERS:
         if max_total is None or total < max_total:
-            return min(percentile + quality_offset, 99)
-    return min(FANDOM_SIZE_TIERS[-1][1] + quality_offset, 99)
+            return max(1, min(percentile + quality_offset, 99))
+    return max(1, min(FANDOM_SIZE_TIERS[-1][1] + quality_offset, 99))
 
 
 def _is_valid_story(story: dict) -> bool:

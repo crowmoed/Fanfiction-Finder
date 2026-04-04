@@ -11,7 +11,7 @@ with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
     print("VACUUM FULL complete.")
 
 with engine.connect() as conn:
-    db_size = conn.execute(text("SELECT pg_size_pretty(pg_database_size('ficfinder'))")).scalar()
+    db_size = conn.execute(text("SELECT pg_size_pretty(pg_database_size('neondb'))")).scalar()
     tbl_size = conn.execute(text("SELECT pg_size_pretty(pg_total_relation_size('fics'))")).scalar()
     print(f"DB size:    {db_size}")
     print(f"Fics table: {tbl_size}")
