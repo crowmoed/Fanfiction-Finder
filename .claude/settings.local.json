@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3 -c \":*)"
+      "Bash(python3 -c \":*)",
+      "Bash(xargs cat:*)",
+      "Bash(grep -r \"if __name__\" /d/Fanfiction-Finder/backend/*.py)"
     ]
   }
 }
