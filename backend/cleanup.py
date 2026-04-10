@@ -1,8 +1,6 @@
 import os
 from sqlalchemy import create_engine, text
-from dotenv import load_dotenv
-
-load_dotenv()
+import config
 engine = create_engine(os.getenv('DATABASE_URL'))
 
 with engine.connect() as conn:

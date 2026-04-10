@@ -44,7 +44,7 @@ from rich import print as rprint
 from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 app = typer.Typer(help="FanFicFinder Local Fandom Swap Tool")
 console = Console()
@@ -430,7 +430,7 @@ def push(
                         f"(:{key}_id, :{key}_title, :{key}_url, :{key}_platform, "
                         f":{key}_summary, :{key}_tags, :{key}_word_count, "
                         f":{key}_kudos, :{key}_hits, :{key}_fandom, "
-                        f":{key}_indexed_at, :{key}_emb::vector)"
+                        f":{key}_indexed_at, CAST(:{key}_emb AS vector))"
                     )
                     params[f"{key}_id"] = row["id"]
                     params[f"{key}_title"] = row["title"]
@@ -449,6 +449,7 @@ def push(
                     "INSERT INTO fics (id, title, url, platform, summary, tags, "
                     "word_count, kudos, hits, fandom, indexed_at, embedding) VALUES "
                     + ", ".join(values)
+                    + " ON CONFLICT (id) DO NOTHING"
                 )
                 conn.execute(text(sql), params)
                 conn.commit()

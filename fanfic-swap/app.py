@@ -39,7 +39,7 @@ from textual.widgets import (
     TabPane,
 )
 
-load_dotenv()
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 sys.path.insert(0, str(Path(__file__).parent))
 from swap_tool import FANDOMS_DIR, fandom_dir, get_engine, load_meta, save_meta, slugify
@@ -177,6 +177,10 @@ class ConstructRow(Horizontal):
     ConstructRow Checkbox {
         width: 1fr;
     }
+    ConstructRow Checkbox.-on {
+        color: $success;
+        text-style: bold;
+    }
     ConstructRow Label {
         width: auto;
         margin: 0 1;
@@ -289,8 +293,22 @@ DataTable {
 #scrape-platform-select {
     width: 1fr;
 }
+#scrape-min-words-select {
+    width: 1fr;
+}
 #scrape-quality-select {
     width: 1fr;
+}
+Select:focus {
+    border: tall $accent;
+}
+Checkbox:focus {
+    text-style: bold underline;
+}
+DataTable > .datatable--cursor {
+    background: $accent 40%;
+    color: $text;
+    text-style: bold;
 }
 .scrape-option-row {
     height: 3;
@@ -326,6 +344,8 @@ class SwapApp(App):
     def __init__(self):
         super().__init__()
         self._busy = False
+        self._scrape_stop = False
+        self._scrape_proc = None
         self._local_fandoms: list[dict] = []
         self._construct_inputs: dict[str, dict] = {}
         self._db_bytes: int = 0
@@ -382,7 +402,8 @@ class SwapApp(App):
                         yield Static(
                             "Truncates the fics table on the live Neon database.\n"
                             "All fic rows and embedding vectors are deleted.\n"
-                            "The schema (table structure) is preserved.\n\n"
+                            "The schema (table structure) is preserved.\n"
+                            "Runs VACUUM FULL to reclaim disk space.\n\n"
                             "Local storage is never affected.",
                             classes="info-card",
                         )
@@ -395,13 +416,16 @@ class SwapApp(App):
                 with TabbedContent(id="scraper-tabs"):
                     with TabPane("Scrape", id="tab-scrape"):
                         yield Label("INDEX A FANDOM", classes="section-title")
-                        yield Label("Scrape fics from AO3/FFN/Wattpad, embed with Gemini, and store in Neon.")
+                        yield Label("Scrape fics from AO3/FFN/Wattpad, embed with Gemini, save locally (Neon fallback).")
                         with Horizontal(classes="scrape-option-row"):
                             yield Label("Fandom:")
                             yield Select([], id="scrape-fandom-select", allow_blank=True)
                         with Horizontal(classes="scrape-option-row"):
                             yield Label("Platform:")
                             yield Select(PLATFORM_OPTIONS, value="all", id="scrape-platform-select", allow_blank=False)
+                        with Horizontal(classes="scrape-option-row"):
+                            yield Label("Min word count:")
+                            yield Select(MIN_WORDS_OPTIONS, value=20000, id="scrape-min-words-select", allow_blank=False)
                         with Horizontal(classes="scrape-option-row"):
                             yield Label("Wattpad quality:")
                             yield Select(WATTPAD_QUALITY_OPTIONS, value=0, id="scrape-quality-select", allow_blank=False)
@@ -483,7 +507,10 @@ class SwapApp(App):
             self.start_scrape()
         elif btn == "btn-scrape-stop":
             self._scrape_stop = True
-            self.notify("Stop requested. Will finish current batch.", severity="warning")
+            # Kill the subprocess immediately if running
+            if hasattr(self, "_scrape_proc") and self._scrape_proc is not None:
+                self._scrape_proc.terminate()
+            self.notify("Stop requested — killing scraper process.", severity="warning")
         elif btn == "btn-coverage":
             self.start_coverage(all_fandoms=False)
         elif btn == "btn-coverage-all":
@@ -564,8 +591,11 @@ class SwapApp(App):
 
     def _update_db_gauge(self, db_bytes: int, tbl_bytes: int) -> None:
         limit_bytes = int(NEON_SIZE_LIMIT_GB * 1_073_741_824)
-        pct = db_bytes / limit_bytes * 100 if limit_bytes else 0
         other_bytes = max(0, db_bytes - tbl_bytes)
+
+        # Use fics table size for the progress bar (what you control)
+        usable_bytes = max(0, limit_bytes - other_bytes)
+        pct = tbl_bytes / usable_bytes * 100 if usable_bytes else 0
 
         bar_width = 30
         filled = int(bar_width * min(pct, 100) / 100)
@@ -580,8 +610,8 @@ class SwapApp(App):
 
         bar = f"[{color}]{'█' * filled}[/{color}]{'░' * empty}"
         gauge_text = (
-            f"DB:   {fmt_bytes(db_bytes)} / {fmt_bytes(limit_bytes)}\n"
-            f"Fics: {fmt_bytes(tbl_bytes)}  Other: {fmt_bytes(other_bytes)}\n"
+            f"Fics: {fmt_bytes(tbl_bytes)} / {fmt_bytes(usable_bytes)} usable\n"
+            f"Overhead: {fmt_bytes(other_bytes)} (system/extensions)\n"
             f"{bar} {pct:.1f}%"
         )
         self.query_one("#db-gauge", Static).update(gauge_text)
@@ -895,7 +925,7 @@ class SwapApp(App):
                         values.append(
                             f"(:{k}_id,:{k}_title,:{k}_url,:{k}_platform,:{k}_summary,"
                             f":{k}_tags,:{k}_word_count,:{k}_kudos,:{k}_hits,:{k}_fandom,"
-                            f":{k}_indexed_at,:{k}_emb::vector)"
+                            f":{k}_indexed_at,CAST(:{k}_emb AS vector))"
                         )
                         params.update({
                             f"{k}_id": row["id"], f"{k}_title": row["title"],
@@ -910,6 +940,7 @@ class SwapApp(App):
                             "INSERT INTO fics (id,title,url,platform,summary,tags,"
                             "word_count,kudos,hits,fandom,indexed_at,embedding) VALUES "
                             + ",".join(values)
+                            + " ON CONFLICT (id) DO NOTHING"
                         ),
                         params,
                     )
@@ -961,12 +992,38 @@ class SwapApp(App):
         self._busy = True
         log = lambda m: self.app.call_from_thread(self._log, "nuke-log", m)
         try:
-            log("Truncating fics table on Neon...")
             engine = get_engine()
+            log("Dropping fics table entirely (Neon won't release storage on truncate)...")
             with engine.connect() as conn:
-                conn.execute(text("TRUNCATE TABLE fics"))
+                conn.execute(text("DROP TABLE IF EXISTS fics"))
                 conn.commit()
-            log("Fics table truncated. Local storage untouched.")
+            log("Table dropped.")
+
+            log("Recreating fics table + pgvector extension...")
+            with engine.connect() as conn:
+                conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+                conn.execute(text("""
+                    CREATE TABLE fics (
+                        id TEXT PRIMARY KEY,
+                        title TEXT NOT NULL,
+                        url TEXT NOT NULL,
+                        platform TEXT NOT NULL,
+                        summary TEXT,
+                        tags TEXT,
+                        word_count INTEGER,
+                        kudos INTEGER,
+                        hits INTEGER,
+                        fandom TEXT,
+                        embedding vector(768),
+                        indexed_at TIMESTAMPTZ DEFAULT NOW()
+                    )
+                """))
+                conn.commit()
+            log("Table recreated.")
+
+            log("Clearing connection cache...")
+            engine.dispose()
+
             self.app.call_from_thread(self.load_all_data)
         except Exception as e:
             log(f"ERROR: {e}")
@@ -986,6 +1043,7 @@ class SwapApp(App):
 
         fandom_sel = self.query_one("#scrape-fandom-select", Select)
         platform_sel = self.query_one("#scrape-platform-select", Select)
+        min_words_sel = self.query_one("#scrape-min-words-select", Select)
         quality_sel = self.query_one("#scrape-quality-select", Select)
         clear_cb = self.query_one("#scrape-clear-cb", Checkbox)
 
@@ -995,6 +1053,7 @@ class SwapApp(App):
             return
 
         platform = platform_sel.value if platform_sel.value is not Select.BLANK else "all"
+        min_words = min_words_sel.value if min_words_sel.value is not Select.BLANK else 20000
         quality = quality_sel.value if quality_sel.value is not Select.BLANK else 0
         clear = clear_cb.value
 
@@ -1002,98 +1061,77 @@ class SwapApp(App):
         self._log_clear("scrape-log")
         self.query_one("#btn-scrape", Button).disabled = True
         self.query_one("#btn-scrape-stop", Button).disabled = False
-        self.run_scrape(fandom, platform, quality, clear)
+        self.run_scrape(fandom, platform, quality, clear, min_words)
 
     @work(thread=True)
-    def run_scrape(self, fandom: str, platform: str, quality: int, clear: bool) -> None:
+    def run_scrape(self, fandom: str, platform: str, quality: int, clear: bool, min_words: int = 20000) -> None:
+        """Run the scraper as a subprocess so it doesn't block the UI."""
+        import subprocess
+
         self._busy = True
+        self._scrape_proc = None
         log = lambda m: self.app.call_from_thread(self._log, "scrape-log", m)
 
-        # Redirect print output to the log
-        import io
-
-        class LogWriter(io.TextIOBase):
-            def __init__(self, log_fn):
-                self._log_fn = log_fn
-                self._buf = ""
-            def write(self, s):
-                self._buf += s
-                while "\n" in self._buf:
-                    line, self._buf = self._buf.split("\n", 1)
-                    if line.strip():
-                        self._log_fn(line)
-                return len(s)
-            def flush(self):
-                if self._buf.strip():
-                    self._log_fn(self._buf.strip())
-                    self._buf = ""
-
-        old_stdout = sys.stdout
-        sys.stdout = LogWriter(log)
-
         try:
-            from db.postgres import init_db, migrate_embedding_dimensions, clear_fandom
-            init_db()
-            migrate_embedding_dimensions()
+            # Build the indexer command
+            cmd = [sys.executable, str(BACKEND_DIR / "indexer.py"), fandom]
 
             if clear:
-                log(f"Clearing existing fics for {fandom}...")
-                clear_fandom(fandom)
+                cmd.append("--clear")
 
-            total = 0
+            if platform == "ao3":
+                cmd.append("--ao3-only")
+            elif platform == "ffn":
+                cmd.append("--ffn-only")
+            elif platform == "wattpad":
+                cmd.append("--wattpad-only")
+            # "all" uses the default index_one path
 
-            if platform in ("all", "ao3"):
-                log(f"--- AO3 scraping for {fandom} ---")
-                try:
-                    from seleniumbase import SB
-                    with SB(uc=True, headless=False) as sb:
-                        from indexer import scrape_and_embed_ao3
-                        stored = scrape_and_embed_ao3(fandom, sb, first_fandom=True)
-                        log(f"[AO3] Done: {stored} fics stored")
-                        total += stored
-                except Exception as e:
-                    log(f"[AO3] Error: {e}")
+            cmd.extend(["--min-words", str(min_words)])
 
-            if self._scrape_stop:
-                log("Stopped by user.")
-                return
+            if quality != 0:
+                cmd.extend(["--wattpad-quality", str(quality)])
 
-            if platform in ("all", "ffn"):
-                ffn_slug = self._fandom_dict.get(fandom, {}).get("ffn")
-                if ffn_slug:
-                    log(f"--- FFN scraping for {fandom} ---")
+            log(f"Starting scraper subprocess...")
+            log(f"  cmd: {' '.join(cmd)}")
+
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                cwd=str(BACKEND_DIR),
+            )
+            self._scrape_proc = proc
+
+            # Stream output line by line to the log widget
+            for line in proc.stdout:
+                line = line.rstrip("\n\r")
+                if line.strip():
+                    log(line)
+                # Check if stop was requested
+                if self._scrape_stop:
+                    log("Stop requested — killing scraper process...")
+                    proc.terminate()
                     try:
-                        from seleniumbase import SB
-                        with SB(uc=True, headless=False) as sb:
-                            from indexer import scrape_and_embed_ffn
-                            stored = scrape_and_embed_ffn(fandom, sb, first_fandom=True)
-                            log(f"[FFN] Done: {stored} fics stored")
-                            total += stored
-                    except Exception as e:
-                        log(f"[FFN] Error: {e}")
-                else:
-                    log(f"[FFN] No FFN slug for {fandom} — skipping")
+                        proc.wait(timeout=10)
+                    except subprocess.TimeoutExpired:
+                        proc.kill()
+                    log("Scraper stopped.")
+                    return
 
-            if self._scrape_stop:
-                log("Stopped by user.")
-                return
+            proc.wait()
+            if proc.returncode == 0:
+                log(f"\nScraper finished successfully.")
+            else:
+                log(f"\nScraper exited with code {proc.returncode}")
 
-            if platform in ("all", "wattpad"):
-                log(f"--- Wattpad scraping for {fandom} ---")
-                try:
-                    from indexer import scrape_and_embed_wattpad
-                    stored = scrape_and_embed_wattpad(fandom, quality_offset=quality)
-                    log(f"[Wattpad] Done: {stored} fics stored")
-                    total += stored
-                except Exception as e:
-                    log(f"[Wattpad] Error: {e}")
-
-            log(f"\nTotal: {total} fics indexed for {fandom}")
             self.app.call_from_thread(self.load_all_data)
         except Exception as e:
             log(f"ERROR: {e}")
         finally:
-            sys.stdout = old_stdout
+            self._scrape_proc = None
             self._busy = False
             self.app.call_from_thread(self._scrape_buttons_reset)
 
@@ -1289,6 +1327,10 @@ class SwapApp(App):
                 )
                 conn.commit()
                 log(f"Deleted {result.rowcount} fics for {fandom}.")
+            log("Running VACUUM to reclaim disk space...")
+            with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+                conn.execute(text("VACUUM ANALYZE fics"))
+            log("VACUUM complete.")
             self.app.call_from_thread(self.load_all_data)
         except Exception as e:
             log(f"ERROR: {e}")

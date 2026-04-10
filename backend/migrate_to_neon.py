@@ -1,8 +1,6 @@
 import os
 from sqlalchemy import create_engine, text
-from dotenv import load_dotenv
-
-load_dotenv()
+import config
 
 RDS_URL  = os.getenv('DATABASE_URL')
 NEON_URL = "postgresql://neondb_owner:npg_RPN4Y1FJZhvf@ep-square-pond-a4jvs9wi-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require"

@@ -17,12 +17,10 @@ import requests
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from dotenv import load_dotenv
+import config
 from data.fandoms import FANDOMS
 from db.postgres import engine
 from sqlalchemy import text
-
-load_dotenv()
 
 MIN_WORDS = 20000  # must match indexer.py
 

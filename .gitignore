@@ -4,3 +4,6 @@ frontend/out/
 .env
 .env.*
 fandoms/
+**/constructed/*.npy
+__pycache__/
+*.pyc
