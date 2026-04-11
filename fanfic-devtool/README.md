@@ -5,7 +5,7 @@ Local fandom storage manager. Import fandoms from Neon to local parquet + numpy 
 ## Quick Start
 
 ```bash
-cd d:\Fanfiction-Finder\fanfic-swap
+cd d:\Fanfiction-Finder\fanfic-devtool
 pip install -r requirements.txt
 python app.py
 ```
@@ -58,7 +58,7 @@ python swap_tool.py nuke
 ## Directory Structure
 
 ```text
-fanfic-swap/
+fanfic-devtool/
   app.py               <- interactive TUI (Textual)
   swap_tool.py         <- standalone CLI commands
   requirements.txt

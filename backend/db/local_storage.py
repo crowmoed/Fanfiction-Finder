@@ -1,7 +1,7 @@
 """
 Local-first fic storage using parquet + numpy files.
 
-Saves scraped fics to local parquet/npy files (same format as fanfic-swap).
+Saves scraped fics to local parquet/npy files (same format as fanfic-devtool).
 Falls back to Neon DB if local storage fails.
 """
 
@@ -16,8 +16,8 @@ import numpy as np
 import polars as pl
 
 # Resolve paths
-FANFIC_SWAP_DIR = Path(__file__).parent.parent.parent / "fanfic-swap"
-FANDOMS_DIR = FANFIC_SWAP_DIR / "fandoms"
+DEVTOOL_DIR = Path(__file__).parent.parent.parent / "fanfic-devtool"
+FANDOMS_DIR = DEVTOOL_DIR / "fandoms"
 EMBEDDING_DIMS = 768
 
 
