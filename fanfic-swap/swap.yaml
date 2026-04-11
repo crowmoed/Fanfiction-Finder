@@ -1,8 +1,0 @@
-# swap.yaml — Example preset for non-interactive push
-# Usage: python swap_tool.py push --config swap.yaml --yes
-
-fandoms:
-  - name: Naruto
-    min_words: 20000
-  - name: Hunter x Hunter
-    min_words: 10000
