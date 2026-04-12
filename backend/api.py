@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from typing import Optional
 import numpy as np
 
@@ -10,6 +12,10 @@ from ai.query_enhancer import enhance_query
 from ai.ranker import rank
 from db.postgres import search_similar, get_fic_count, get_indexed_fandoms, get_admin_stats, engine
 from sqlalchemy import text
+
+from auth.auth import verify_google_token, create_jwt
+from auth.user_store import user_store
+from auth.dependencies import get_current_user, check_search_limit
 
 
 @asynccontextmanager
@@ -24,6 +30,39 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="FicFinder API", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Tighten to frontend origin in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ── Request models ────────────────────────────────────────────────
+
+class LoginRequest(BaseModel):
+    id_token: str
+
+
+# ── Auth endpoints ────────────────────────────────────────────────
+
+@app.post("/auth/login")
+def login(body: LoginRequest):
+    """Exchange a Google ID token for a FicFinder JWT."""
+    payload = verify_google_token(body.id_token)
+    sub = payload["sub"]
+    email = payload.get("email", "")
+    user = user_store.upsert_user(sub, email)
+    token = create_jwt(sub, email)
+    return {"token": token, "user": user}
+
+
+@app.get("/auth/me")
+def me(user: dict = Depends(get_current_user)):
+    """Return the current user's profile (tier, searches remaining, etc.)."""
+    return user
 
 
 def _blend_embeddings(hyde_emb: list[float], raw_emb: list[float], hyde_weight: float = 0.7) -> list[float]:
@@ -58,7 +97,8 @@ def get_fandoms():
 async def search(
     q: str = Query(..., description="Natural language search query"),
     fandom: Optional[str] = Query(None, description="Fandom name from /fandoms"),
-    limit: int = Query(20, ge=1, le=100, description="Number of results to return")
+    limit: int = Query(20, ge=1, le=100, description="Number of results to return"),
+    user: dict = Depends(check_search_limit),
 ):
     if not fandom:
         raise HTTPException(status_code=400, detail="Fandom is required.")
@@ -115,7 +155,12 @@ async def search(
     ranked = rank(fics=candidates, query=q)
     print(f"[search] ranking done, returning {min(limit, len(ranked))} results", flush=True)
 
-    return ranked[:limit]
+    results = ranked[:limit]
+
+    # Increment search count only after a successful search
+    user_store.increment_searches(user["id"])
+
+    return results
 
 
 @app.get("/health")
