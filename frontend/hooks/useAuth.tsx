@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import type { ReactNode } from 'react';
 
 const TOKEN_KEY = 'ficfinder_token';
 
@@ -13,7 +14,18 @@ export interface AuthUser {
   search_limit: number;
 }
 
-export function useAuth() {
+interface AuthContextValue {
+  user: AuthUser | null;
+  loading: boolean;
+  login: (credentialResponse: { credential?: string }) => Promise<void>;
+  logout: () => void;
+  getAuthHeader: () => Record<string, string>;
+  isLoggedIn: boolean;
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -91,5 +103,15 @@ export function useAuth() {
 
   const isLoggedIn = user !== null;
 
-  return { user, loading, login, logout, getAuthHeader, isLoggedIn };
+  return (
+    <AuthContext.Provider value={{ user, loading, login, logout, getAuthHeader, isLoggedIn }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
+  return ctx;
 }

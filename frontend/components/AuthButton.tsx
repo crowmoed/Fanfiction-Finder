@@ -40,25 +40,8 @@ export default function AuthButton() {
     );
   }
 
-  const searchesRemaining =
-    user && user.tier === 'free'
-      ? `${user.searches_used}/${user.search_limit} searches`
-      : null;
-
   return (
     <div className="flex items-center gap-3">
-      {searchesRemaining && (
-        <span
-          className="text-xs font-mono px-2 py-1 rounded-md"
-          style={{
-            backgroundColor: 'var(--bg-secondary)',
-            color: 'var(--text-tertiary)',
-          }}
-        >
-          {searchesRemaining}
-        </span>
-      )}
-
       <span
         className="text-xs font-mono hidden sm:inline"
         style={{ color: 'var(--text-secondary)' }}

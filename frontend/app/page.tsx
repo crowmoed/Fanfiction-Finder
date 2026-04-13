@@ -27,7 +27,7 @@ export default function HomePage() {
   const { search, results, pipelineStatus, isSearching, isRanked, error } = useSearch();
   const { history, addEntry, clearHistory, getCachedEntry } = useSearchHistory();
   const isMobile = useIsMobile();
-  const { isLoggedIn, getAuthHeader } = useAuth();
+  const { user, isLoggedIn, getAuthHeader } = useAuth();
 
   // Track state transitions
   useEffect(() => {
@@ -179,6 +179,16 @@ export default function HomePage() {
                 initialFandom={currentFandom}
               />
 
+              {/* Search count for free tier */}
+              {isLoggedIn && user?.tier === 'free' && (
+                <p
+                  className="text-xs font-mono text-center mt-2"
+                  style={{ color: 'var(--text-tertiary)' }}
+                >
+                  {user.searches_used} of {user.search_limit} free searches used this week
+                </p>
+              )}
+
               {/* Auth prompt */}
               {authPrompt && (
                 <div
@@ -239,7 +249,27 @@ export default function HomePage() {
                 initialPrompt={currentQuery}
                 initialFandom={currentFandom}
               />
+              {isLoggedIn && user?.tier === 'free' && (
+                <p
+                  className="text-xs font-mono text-center mt-1"
+                  style={{ color: 'var(--text-tertiary)' }}
+                >
+                  {user.searches_used} of {user.search_limit} free searches used this week
+                </p>
+              )}
             </div>
+
+            {/* Search count for desktop in results view */}
+            {isLoggedIn && user?.tier === 'free' && (
+              <div className="hidden sm:block" style={{ backgroundColor: 'var(--bg-elevated)' }}>
+                <p
+                  className="text-xs font-mono text-center py-1"
+                  style={{ color: 'var(--text-tertiary)' }}
+                >
+                  {user.searches_used} of {user.search_limit} free searches used this week
+                </p>
+              </div>
+            )}
 
             {/* Pipeline status */}
             <div
