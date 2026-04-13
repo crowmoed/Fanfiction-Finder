@@ -6,7 +6,10 @@ import { useAuth } from '@/hooks/useAuth';
 export default function AuthButton() {
   const { user, loading, login, logout, isLoggedIn } = useAuth();
 
+  console.log('[AuthButton] Render — loading:', loading, 'isLoggedIn:', isLoggedIn, 'user:', user?.email ?? null);
+
   if (loading) {
+    console.log('[AuthButton] Still loading auth state, showing shimmer');
     return (
       <div
         className="h-9 w-24 rounded-lg shimmer-bar"
@@ -16,10 +19,18 @@ export default function AuthButton() {
   }
 
   if (!isLoggedIn) {
+    console.log('[AuthButton] Not logged in — rendering GoogleLogin button');
     return (
       <GoogleLogin
-        onSuccess={login}
-        onError={() => console.error('Google login failed')}
+        onSuccess={(credentialResponse) => {
+          console.log('[AuthButton] Google onSuccess fired');
+          console.log('[AuthButton] credential present:', !!credentialResponse.credential);
+          console.log('[AuthButton] credential length:', credentialResponse.credential?.length ?? 0);
+          login(credentialResponse);
+        }}
+        onError={() => {
+          console.error('[AuthButton] Google onError fired — login popup failed or was closed');
+        }}
         size="medium"
         shape="pill"
         theme="outline"

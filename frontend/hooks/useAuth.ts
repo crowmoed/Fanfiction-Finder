@@ -20,20 +20,29 @@ export function useAuth() {
   // Rehydrate on mount
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
+    console.log('[useAuth] Mount — token in localStorage:', token ? `${token.slice(0, 20)}...` : '(none)');
+
     if (!token) {
+      console.log('[useAuth] No token found, skipping rehydration');
       setLoading(false);
       return;
     }
 
+    console.log('[useAuth] Rehydrating user from /api/auth/me...');
     fetch('/api/auth/me', {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
-        if (!res.ok) throw new Error('invalid token');
+        console.log('[useAuth] /api/auth/me response:', res.status, res.statusText);
+        if (!res.ok) throw new Error(`invalid token (${res.status})`);
         return res.json();
       })
-      .then((data) => setUser(data))
-      .catch(() => {
+      .then((data) => {
+        console.log('[useAuth] Rehydrated user:', data?.email, 'tier:', data?.tier);
+        setUser(data);
+      })
+      .catch((err) => {
+        console.warn('[useAuth] Rehydration failed, clearing token:', err.message);
         localStorage.removeItem(TOKEN_KEY);
       })
       .finally(() => setLoading(false));
@@ -41,19 +50,30 @@ export function useAuth() {
 
   const login = useCallback(async (credentialResponse: { credential?: string }) => {
     const idToken = credentialResponse.credential;
-    if (!idToken) return;
+    console.log('[useAuth] login() called — id_token present:', !!idToken);
 
+    if (!idToken) {
+      console.warn('[useAuth] login() — no credential in response, aborting');
+      return;
+    }
+
+    console.log('[useAuth] POSTing to /api/auth/login...');
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id_token: idToken }),
     });
 
+    console.log('[useAuth] /api/auth/login response:', res.status, res.statusText);
+
     if (!res.ok) {
+      const body = await res.text().catch(() => '(no body)');
+      console.error('[useAuth] Login failed:', res.status, body);
       throw new Error('Login failed');
     }
 
     const data = await res.json();
+    console.log('[useAuth] Login success — user:', data.user?.email, 'token length:', data.token?.length);
     localStorage.setItem(TOKEN_KEY, data.token);
     setUser(data.user);
   }, []);
