@@ -29,6 +29,22 @@ export default function HomePage() {
   const isMobile = useIsMobile();
   const { user, isLoggedIn, getAuthHeader } = useAuth();
 
+  // Handle Stripe redirect — refresh user state on upgrade success
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('upgrade') === 'success') {
+      // Remove query param from URL without reload
+      window.history.replaceState({}, '', window.location.pathname);
+      // Re-fetch user to pick up the new tier
+      const token = localStorage.getItem('ficfinder_token');
+      if (token) {
+        fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+          .then((res) => res.ok ? res.json() : null)
+          .then(() => window.location.reload());
+      }
+    }
+  }, []);
+
   // Track state transitions
   useEffect(() => {
     if (isSearching) {
@@ -179,13 +195,21 @@ export default function HomePage() {
                 initialFandom={currentFandom}
               />
 
-              {/* Search count for free tier */}
+              {/* Search count / tier display */}
               {isLoggedIn && user?.tier === 'free' && (
                 <p
                   className="text-xs font-mono text-center mt-2"
                   style={{ color: 'var(--text-tertiary)' }}
                 >
                   {user.searches_used} of 2 free searches used this week
+                </p>
+              )}
+              {isLoggedIn && user?.tier === 'paid' && (
+                <p
+                  className="text-xs font-mono text-center mt-2"
+                  style={{ color: 'var(--accent)' }}
+                >
+                  Pro — Unlimited searches
                 </p>
               )}
 
@@ -257,6 +281,14 @@ export default function HomePage() {
                   {user.searches_used} of 2 free searches used this week
                 </p>
               )}
+              {isLoggedIn && user?.tier === 'paid' && (
+                <p
+                  className="text-xs font-mono text-center mt-1"
+                  style={{ color: 'var(--accent)' }}
+                >
+                  Pro — Unlimited searches
+                </p>
+              )}
             </div>
 
             {/* Search count for desktop in results view */}
@@ -267,6 +299,16 @@ export default function HomePage() {
                   style={{ color: 'var(--text-tertiary)' }}
                 >
                   {user.searches_used} of 2 free searches used this week
+                </p>
+              </div>
+            )}
+            {isLoggedIn && user?.tier === 'paid' && (
+              <div className="hidden sm:block" style={{ backgroundColor: 'var(--bg-elevated)' }}>
+                <p
+                  className="text-xs font-mono text-center py-1"
+                  style={{ color: 'var(--accent)' }}
+                >
+                  Pro — Unlimited searches
                 </p>
               </div>
             )}

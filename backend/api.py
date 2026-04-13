@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Query, HTTPException, Depends
+from fastapi import FastAPI, Query, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
@@ -16,6 +16,7 @@ from sqlalchemy import text
 from auth.auth import verify_google_token, create_jwt
 from auth.user_store import user_store
 from auth.dependencies import get_current_user, check_search_limit
+from auth.stripe_handler import create_checkout_session, handle_webhook
 
 
 @asynccontextmanager
@@ -63,6 +64,27 @@ def login(body: LoginRequest):
 def me(user: dict = Depends(get_current_user)):
     """Return the current user's profile (tier, searches remaining, etc.)."""
     return user
+
+
+@app.post("/auth/checkout")
+def checkout(user: dict = Depends(get_current_user)):
+    """Create a Stripe Checkout Session and return the URL."""
+    url = create_checkout_session(user["id"], user["email"])
+    return {"url": url}
+
+
+@app.post("/webhooks/stripe")
+async def stripe_webhook(request: Request):
+    """Stripe webhook endpoint — no auth, raw body for signature verification."""
+    payload = await request.body()
+    sig_header = request.headers.get("Stripe-Signature", "")
+    try:
+        handle_webhook(payload, sig_header)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid payload")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid signature")
+    return {"status": "ok"}
 
 
 def _blend_embeddings(hyde_emb: list[float], raw_emb: list[float], hyde_weight: float = 0.7) -> list[float]:
