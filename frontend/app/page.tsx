@@ -5,6 +5,7 @@ import type { Fandom, FicResult } from '@/lib/schema/types';
 import { useSearch } from '@/hooks/useSearch';
 import { useSearchHistory } from '@/hooks/useSearchHistory';
 import { useIsMobile } from '@/hooks/useMediaQuery';
+import { useAuth } from '@/hooks/useAuth';
 
 import SearchBar from '@/components/SearchBar';
 import StatusIndicator from '@/components/StatusIndicator';
@@ -12,6 +13,7 @@ import ResultsTable from '@/components/ResultsTable';
 import ResultsCard from '@/components/ResultsCard';
 import ExportButton from '@/components/ExportButton';
 import SearchHistory from '@/components/SearchHistory';
+import AuthButton from '@/components/AuthButton';
 
 type AppState = 'empty' | 'loading' | 'results';
 
@@ -25,6 +27,7 @@ export default function HomePage() {
   const { search, results, pipelineStatus, isSearching, isRanked, error } = useSearch();
   const { history, addEntry, clearHistory, getCachedEntry } = useSearchHistory();
   const isMobile = useIsMobile();
+  const { isLoggedIn, getAuthHeader } = useAuth();
 
   // Track state transitions
   useEffect(() => {
@@ -35,8 +38,15 @@ export default function HomePage() {
     }
   }, [isSearching, results.length]);
 
+  const [authPrompt, setAuthPrompt] = useState(false);
+
   const handleSearch = useCallback(
     async (prompt: string, fandom: Fandom, cachedResults?: FicResult[]) => {
+      if (!isLoggedIn) {
+        setAuthPrompt(true);
+        return;
+      }
+      setAuthPrompt(false);
       setCurrentQuery(prompt);
       setCurrentFandom(fandom);
       setAppState('loading');
@@ -47,9 +57,9 @@ export default function HomePage() {
         cachedResults = cached?.cachedResults;
       }
 
-      await search(prompt, fandom, cachedResults);
+      await search(prompt, fandom, cachedResults, getAuthHeader());
     },
-    [search, getCachedEntry]
+    [search, getCachedEntry, isLoggedIn, getAuthHeader]
   );
 
   // Save to history when search completes
@@ -119,21 +129,25 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* History toggle */}
-        <button
-          onClick={() => setShowHistory(true)}
-          className="p-2 rounded-lg transition-colors duration-150"
-          style={{ color: 'var(--text-secondary)' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-hover)'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = ''; }}
-          aria-label="Search history"
-          title="Search history"
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M10 6v4l2.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-3">
+          <AuthButton />
+
+          {/* History toggle */}
+          <button
+            onClick={() => setShowHistory(true)}
+            className="p-2 rounded-lg transition-colors duration-150"
+            style={{ color: 'var(--text-secondary)' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-hover)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = ''; }}
+            aria-label="Search history"
+            title="Search history"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M10 6v4l2.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
       </header>
 
       {/* ─── Main Content ───────────────────────────────────────────────── */}
@@ -164,6 +178,20 @@ export default function HomePage() {
                 isSearching={isSearching}
                 initialFandom={currentFandom}
               />
+
+              {/* Auth prompt */}
+              {authPrompt && (
+                <div
+                  className="mt-4 px-4 py-3 rounded-lg text-sm text-center"
+                  style={{
+                    backgroundColor: '#FEF3C7',
+                    color: '#92400E',
+                    border: '1px solid #FDE68A',
+                  }}
+                >
+                  Please sign in with Google to search.
+                </div>
+              )}
 
               {/* Recent searches */}
               {history.length > 0 && (

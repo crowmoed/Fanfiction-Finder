@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Instrument_Serif, DM_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+import Providers from './providers';
 
 const instrumentSerif = Instrument_Serif({
   weight: '400',
@@ -35,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${instrumentSerif.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
     >
       <body className="font-sans" style={{ backgroundColor: 'var(--bg-primary)' }}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

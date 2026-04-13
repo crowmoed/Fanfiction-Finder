@@ -60,6 +60,50 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // Pre-flight auth check: call backend search and capture the response
+  // before opening the SSE stream so we can return proper HTTP status codes.
+  const backendHeaders: Record<string, string> = {};
+  const authHeader = req.headers.get('Authorization');
+  if (authHeader) {
+    backendHeaders['Authorization'] = authHeader;
+  }
+
+  console.log(`[API/search] prompt="${prompt}" fandom="${fandom}"`);
+  let backendResp: Response;
+  try {
+    backendResp = await fetch(
+      `${BACKEND_URL}/search?q=${encodeURIComponent(prompt)}&fandom=${encodeURIComponent(fandom)}&limit=100`,
+      { signal: AbortSignal.timeout(60_000), headers: backendHeaders }
+    );
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Backend unreachable';
+    return new Response(JSON.stringify({ error: message }), {
+      status: 502,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Return auth / rate-limit errors as proper HTTP status codes
+  if (backendResp.status === 401 || backendResp.status === 429) {
+    const detail = await backendResp.text().catch(() => backendResp.statusText);
+    return new Response(detail, {
+      status: backendResp.status,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!backendResp.ok) {
+    const detail = await backendResp.text().catch(() => backendResp.statusText);
+    return new Response(JSON.stringify({ error: `Backend error ${backendResp.status}: ${detail}` }), {
+      status: 502,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Backend succeeded — parse results before starting SSE stream
+  const fics: BackendFic[] = await backendResp.json();
+  const ficResults = fics.map(mapToFicResult);
+
   const encoder = new TextEncoder();
   const stream = new TransformStream<Uint8Array, Uint8Array>();
   const writer = stream.writable.getWriter();
@@ -85,21 +129,6 @@ export async function POST(req: NextRequest) {
       await send({ type: 'status', step: 'ao3-fetch', status: 'active' });
       await send({ type: 'status', step: 'ffn-fetch', status: 'active' });
       await send({ type: 'status', step: 'wattpad-fetch', status: 'active' });
-
-      // Call the Python backend
-      console.log(`[API/search] prompt="${prompt}" fandom="${fandom}"`);
-      const backendResp = await fetch(
-        `${BACKEND_URL}/search?q=${encodeURIComponent(prompt)}&fandom=${encodeURIComponent(fandom)}&limit=100`,
-        { signal: AbortSignal.timeout(60_000) }
-      );
-
-      if (!backendResp.ok) {
-        const detail = await backendResp.text().catch(() => backendResp.statusText);
-        throw new Error(`Backend error ${backendResp.status}: ${detail}`);
-      }
-
-      const fics: BackendFic[] = await backendResp.json();
-      const ficResults = fics.map(mapToFicResult);
 
       const ao3Results = ficResults.filter((r) => r.platform === 'ao3');
       const ffnResults = ficResults.filter((r) => r.platform === 'ffn');

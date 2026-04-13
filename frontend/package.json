@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.13.5",
     "@tanstack/react-table": "^8.20.5",
     "@tanstack/react-virtual": "^3.11.2",
     "dexie": "^3.2.7",

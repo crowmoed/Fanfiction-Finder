@@ -36,7 +36,8 @@ export function useSearch() {
   const search = useCallback(async (
     prompt: string,
     fandom: string,
-    cachedResults?: FicResult[]
+    cachedResults?: FicResult[],
+    authHeaders?: Record<string, string>
   ) => {
     // Abort any in-progress search
     abortRef.current?.abort();
@@ -69,10 +70,22 @@ export function useSearch() {
     try {
       const response = await fetch('/api/search', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({ prompt, fandom }),
         signal: controller.signal,
       });
+
+      if (response.status === 401) {
+        setError('Please sign in to search.');
+        setIsSearching(false);
+        return;
+      }
+
+      if (response.status === 429) {
+        setError('You\u2019ve reached your weekly search limit. Upgrade for more searches.');
+        setIsSearching(false);
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(`Search failed: ${response.statusText}`);
