@@ -185,7 +185,7 @@ export default function HomePage() {
                   className="text-xs font-mono text-center mt-2"
                   style={{ color: 'var(--text-tertiary)' }}
                 >
-                  {user.searches_used} of {user.search_limit} free searches used this week
+                  {user.searches_used} of 2 free searches used this week
                 </p>
               )}
 
@@ -254,7 +254,7 @@ export default function HomePage() {
                   className="text-xs font-mono text-center mt-1"
                   style={{ color: 'var(--text-tertiary)' }}
                 >
-                  {user.searches_used} of {user.search_limit} free searches used this week
+                  {user.searches_used} of 2 free searches used this week
                 </p>
               )}
             </div>
@@ -266,7 +266,7 @@ export default function HomePage() {
                   className="text-xs font-mono text-center py-1"
                   style={{ color: 'var(--text-tertiary)' }}
                 >
-                  {user.searches_used} of {user.search_limit} free searches used this week
+                  {user.searches_used} of 2 free searches used this week
                 </p>
               </div>
             )}

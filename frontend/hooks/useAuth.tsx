@@ -11,7 +11,6 @@ export interface AuthUser {
   name: string;
   tier: string;
   searches_used: number;
-  search_limit: number;
 }
 
 interface AuthContextValue {
