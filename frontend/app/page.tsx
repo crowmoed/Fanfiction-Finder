@@ -462,7 +462,7 @@ export default function HomePage() {
           className="px-6 py-6 font-mono text-[11px] flex flex-wrap items-center justify-center gap-x-3 gap-y-1"
           style={{ color: 'var(--text-tertiary)' }}
         >
-          <span>* built in a small apartment</span>
+          <span>* built in a college dorm</span>
           <span style={{ color: 'var(--accent)' }}>◆</span>
           <span>indexes ao3 · ffn · wattpad</span>
           <span style={{ color: 'var(--accent)' }}>◆</span>

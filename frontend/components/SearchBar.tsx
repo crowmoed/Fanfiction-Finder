@@ -118,7 +118,7 @@ export default function SearchBar({
           border: `1.5px solid var(--text-primary)`,
           borderRadius: compact ? '6px' : '4px',
           boxShadow: focused
-            ? (compact ? '2px 2px 0 var(--accent)' : '4px 4px 0 var(--accent)')
+            ? (compact ? '2px 2px 0 var(--accent-hover)' : '4px 4px 0 var(--accent-hover)')
             : (compact ? 'var(--shadow-sm)' : 'var(--shadow-md)'),
           transform: focused ? 'translate(-1px, -1px)' : 'none',
         }}
