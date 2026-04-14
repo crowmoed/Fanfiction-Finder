@@ -14,6 +14,9 @@ import ResultsCard from '@/components/ResultsCard';
 import ExportButton from '@/components/ExportButton';
 import SearchHistory from '@/components/SearchHistory';
 import AuthButton from '@/components/AuthButton';
+import AccountBadge from '@/components/AccountBadge';
+import RateLimitBanner from '@/components/RateLimitBanner';
+import RateLimitBlock from '@/components/RateLimitBlock';
 
 type AppState = 'empty' | 'loading' | 'results';
 
@@ -55,6 +58,20 @@ export default function HomePage() {
   }, [isSearching, results.length]);
 
   const [authPrompt, setAuthPrompt] = useState(false);
+
+  const handleUpgrade = async () => {
+    try {
+      const res = await fetch('/api/auth/checkout', {
+        method: 'POST',
+        headers: getAuthHeader(),
+      });
+      if (!res.ok) throw new Error('Checkout failed');
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch (err) {
+      console.error('Upgrade error:', err);
+    }
+  };
 
   const handleSearch = useCallback(
     async (prompt: string, fandom: Fandom, cachedResults?: FicResult[]) => {
@@ -146,6 +163,13 @@ export default function HomePage() {
         )}
 
         <div className="flex items-center gap-3">
+          {isLoggedIn && (
+            <AccountBadge
+              tier={user?.tier as 'free' | 'paid'}
+              searchesUsed={user?.searches_used ?? 0}
+              searchesMax={2}
+            />
+          )}
           <AuthButton />
 
           {/* History toggle */}
@@ -194,24 +218,6 @@ export default function HomePage() {
                 isSearching={isSearching}
                 initialFandom={currentFandom}
               />
-
-              {/* Search count / tier display */}
-              {isLoggedIn && user?.tier === 'free' && (
-                <p
-                  className="text-xs font-mono text-center mt-2"
-                  style={{ color: 'var(--text-tertiary)' }}
-                >
-                  {user.searches_used} of 2 free searches used this week
-                </p>
-              )}
-              {isLoggedIn && user?.tier === 'paid' && (
-                <p
-                  className="text-xs font-mono text-center mt-2"
-                  style={{ color: 'var(--accent)' }}
-                >
-                  Pro — Unlimited searches
-                </p>
-              )}
 
               {/* Auth prompt */}
               {authPrompt && (
@@ -273,45 +279,7 @@ export default function HomePage() {
                 initialPrompt={currentQuery}
                 initialFandom={currentFandom}
               />
-              {isLoggedIn && user?.tier === 'free' && (
-                <p
-                  className="text-xs font-mono text-center mt-1"
-                  style={{ color: 'var(--text-tertiary)' }}
-                >
-                  {user.searches_used} of 2 free searches used this week
-                </p>
-              )}
-              {isLoggedIn && user?.tier === 'paid' && (
-                <p
-                  className="text-xs font-mono text-center mt-1"
-                  style={{ color: 'var(--accent)' }}
-                >
-                  Pro — Unlimited searches
-                </p>
-              )}
             </div>
-
-            {/* Search count for desktop in results view */}
-            {isLoggedIn && user?.tier === 'free' && (
-              <div className="hidden sm:block" style={{ backgroundColor: 'var(--bg-elevated)' }}>
-                <p
-                  className="text-xs font-mono text-center py-1"
-                  style={{ color: 'var(--text-tertiary)' }}
-                >
-                  {user.searches_used} of 2 free searches used this week
-                </p>
-              </div>
-            )}
-            {isLoggedIn && user?.tier === 'paid' && (
-              <div className="hidden sm:block" style={{ backgroundColor: 'var(--bg-elevated)' }}>
-                <p
-                  className="text-xs font-mono text-center py-1"
-                  style={{ color: 'var(--accent)' }}
-                >
-                  Pro — Unlimited searches
-                </p>
-              </div>
-            )}
 
             {/* Pipeline status */}
             <div
@@ -355,6 +323,23 @@ export default function HomePage() {
 
             {/* Results area */}
             <div className="mx-auto px-4 sm:px-6 py-6" style={{ maxWidth: '1200px' }}>
+              {isLoggedIn && user?.tier === 'free' && (user?.searches_used ?? 0) >= 2 ? (
+                <RateLimitBlock onUpgrade={handleUpgrade} />
+              ) : (
+                <>
+                  {isLoggedIn &&
+                    user?.tier === 'free' &&
+                    (user?.searches_used ?? 0) > 0 &&
+                    (user?.searches_used ?? 0) < 2 && (
+                      <div className="mb-4">
+                        <RateLimitBanner
+                          searchesUsed={user?.searches_used ?? 0}
+                          searchesMax={2}
+                          onUpgrade={handleUpgrade}
+                        />
+                      </div>
+                    )}
+
               {/* Mobile view toggle */}
               {isMobile && results.length > 0 && (
                 <div className="flex justify-end mb-3 gap-2">
@@ -437,6 +422,8 @@ export default function HomePage() {
                     Load demo results
                   </button>
                 </div>
+              )}
+                </>
               )}
             </div>
           </div>

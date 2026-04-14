@@ -5,7 +5,7 @@ All Stripe SDK usage is isolated here. Nothing else should import stripe directl
 Env vars required:
   STRIPE_SECRET_KEY     — sk_test_... or sk_live_...
   STRIPE_WEBHOOK_SECRET — whsec_...
-  STRIPE_PRICE_ID       — price_... for the $2/mo subscription
+  STRIPE_PRICE_ID       — price_... for the $5/mo subscription
   FRONTEND_URL          — e.g. https://fanfiction-finder.vercel.app
 """
 
@@ -23,7 +23,7 @@ FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 
 
 def create_checkout_session(user_id: str, email: str) -> str:
-    """Create a Stripe Checkout Session for a $2/month subscription.
+    """Create a Stripe Checkout Session for a $5/month subscription.
 
     Returns the checkout URL the frontend should redirect to.
     """
