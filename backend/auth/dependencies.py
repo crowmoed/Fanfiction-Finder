@@ -3,6 +3,7 @@
 from fastapi import Depends, Header, HTTPException
 
 from auth.auth import decode_jwt
+from auth.stripe_handler import verify_paid_user
 from auth.user_store import user_store
 
 
@@ -22,8 +23,11 @@ def get_current_user(authorization: str = Header(None)) -> dict:
     if user is None:
         raise HTTPException(status_code=401, detail="User not found")
 
+    user = verify_paid_user(user)
+
     # Attach sub so callers can identify the user
     user["sub"] = claims["sub"]
+
     return user
 
 

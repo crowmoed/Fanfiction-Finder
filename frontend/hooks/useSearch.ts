@@ -91,7 +91,10 @@ export function useSearch() {
         throw new Error(`Search failed: ${response.statusText}`);
       }
 
-      const reader = response.body!.getReader();
+      if (!response.body) {
+        throw new Error('Search response has no body');
+      }
+      const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
 
@@ -101,7 +104,7 @@ export function useSearch() {
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n\n');
-        buffer = lines.pop()!;
+        buffer = lines.pop() ?? '';
 
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;

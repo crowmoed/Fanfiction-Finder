@@ -10,10 +10,16 @@ Env vars required:
 """
 
 import os
+from datetime import datetime, timezone
 
 import stripe
 
 from auth.user_store import user_store
+
+# How long to trust a cached "paid" verification before re-checking Stripe.
+# TODO(pre-launch): raise this and/or switch to honoring cancel_at_period_end
+# so cancelled users keep access until the end of their paid period.
+VERIFY_CACHE_SECONDS = 300
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 
@@ -61,6 +67,52 @@ def handle_webhook(payload: bytes, sig_header: str) -> None:
         customer_id = subscription["customer"]
         # Find user by stripe_customer_id — scan is fine for this low-volume event
         _downgrade_by_customer_id(customer_id)
+
+
+def verify_paid_user(user: dict) -> dict:
+    """Re-check Stripe for a paid user's subscription, downgrading if none is active.
+
+    Closes the gap where Stripe-side changes (e.g. deleting a customer in the
+    dashboard) don't deliver a customer.subscription.deleted webhook. Cached
+    via stripe_last_checked so we don't hit Stripe on every authed request.
+
+    Returns the user dict, possibly mutated to tier=free.
+    """
+    if user.get("tier") != "paid":
+        return user
+
+    customer_id = user.get("stripe_customer_id")
+    if not customer_id:
+        return user
+
+    last_checked = user.get("stripe_last_checked")
+    now = datetime.now(timezone.utc)
+    if last_checked:
+        try:
+            delta = (now - datetime.fromisoformat(last_checked)).total_seconds()
+            if delta < VERIFY_CACHE_SECONDS:
+                return user
+        except ValueError:
+            pass
+
+    try:
+        subs = stripe.Subscription.list(customer=customer_id, status="active", limit=1)
+        has_active = len(subs.data) > 0
+    except stripe.error.InvalidRequestError:
+        # Customer was deleted on Stripe's side — no subscription possible.
+        has_active = False
+    except stripe.error.StripeError:
+        # Transient Stripe failure — keep existing tier, try again next request.
+        return user
+
+    if not has_active:
+        user_store.set_tier(user["id"], "free")
+        user["tier"] = "free"
+        return user
+
+    user_store.set_stripe_last_checked(user["id"], now.isoformat())
+    user["stripe_last_checked"] = now.isoformat()
+    return user
 
 
 def _downgrade_by_customer_id(customer_id: str) -> None:

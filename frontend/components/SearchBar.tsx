@@ -99,9 +99,6 @@ export default function SearchBar({
     const full = appendToPrompt
       ? `${prompt.trim()}, ${appendToPrompt}`
       : prompt.trim();
-    console.log('[SearchBar] User prompt:', prompt.trim());
-    if (appendToPrompt) console.log('[SearchBar] Appended filters:', appendToPrompt);
-    console.log('[SearchBar] Full prompt sent to search:', full);
     onSearch(full, fandom);
   }, [prompt, fandom, isSearching, onSearch, appendToPrompt]);
 

@@ -214,7 +214,7 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
             </thead>
 
             <tbody>
-              {paddingTop > 0 && <tr><td style={{ height: paddingTop }} /></tr>}
+              {paddingTop > 0 && <tr key="__vpad-top"><td style={{ height: paddingTop }} /></tr>}
 
               {virtualItems.map((vRow) => {
                 const fic = rows[vRow.index];
@@ -302,7 +302,7 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
                 );
               })}
 
-              {paddingBottom > 0 && <tr><td style={{ height: paddingBottom }} /></tr>}
+              {paddingBottom > 0 && <tr key="__vpad-bottom"><td style={{ height: paddingBottom }} /></tr>}
             </tbody>
           </table>
         </div>

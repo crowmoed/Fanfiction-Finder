@@ -16,12 +16,10 @@ export default function SettingsPage() {
       });
       const body = await res.text();
       if (!res.ok) {
-        console.error(`[checkout] ${res.status} ${res.statusText} —`, body);
         throw new Error(`Checkout failed (${res.status}): ${body.slice(0, 200)}`);
       }
       const data = JSON.parse(body);
       if (data.url) window.location.href = data.url;
-      else console.error('[checkout] 200 but no url in response:', data);
     } catch (err) {
       console.error('Upgrade error:', err);
     }

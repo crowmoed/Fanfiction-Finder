@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Fandom, FicResult } from '@/lib/schema/types';
 import { useSearch } from '@/hooks/useSearch';
 import { useSearchHistory } from '@/hooks/useSearchHistory';
@@ -90,23 +90,30 @@ export default function HomePage() {
     [search, getCachedEntry, isLoggedIn, getAuthHeader]
   );
 
-  // Save to history when search completes
+  // Save to history when search completes. Guarded by a ref so a single
+  // completed search saves exactly once, even if results or deps change afterward.
+  const savedForQueryRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!isSearching && results.length > 0 && currentQuery && isRanked) {
-      addEntry({
-        prompt: currentQuery,
-        fandom: currentFandom,
-        parsedFilters: {},
-        resultCount: results.length,
-        ao3Count: results.filter((r) => r.platform === 'ao3').length,
-        ffnCount: results.filter((r) => r.platform === 'ffn').length,
-        wattpadCount: results.filter((r) => r.platform === 'wattpad').length,
-        timestamp: new Date(),
-        cachedResults: results,
-      });
+    if (isSearching) {
+      savedForQueryRef.current = null;
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSearching, isRanked]);
+    if (!isRanked || results.length === 0 || !currentQuery) return;
+    const key = `${currentQuery}|${currentFandom}`;
+    if (savedForQueryRef.current === key) return;
+    savedForQueryRef.current = key;
+    addEntry({
+      prompt: currentQuery,
+      fandom: currentFandom,
+      parsedFilters: {},
+      resultCount: results.length,
+      ao3Count: results.filter((r) => r.platform === 'ao3').length,
+      ffnCount: results.filter((r) => r.platform === 'ffn').length,
+      wattpadCount: results.filter((r) => r.platform === 'wattpad').length,
+      timestamp: new Date(),
+      cachedResults: results,
+    });
+  }, [isSearching, isRanked, results, currentQuery, currentFandom, addEntry]);
 
   const handleHistorySearch = useCallback(
     (prompt: string, fandom: string, cached?: FicResult[]) => {
@@ -160,7 +167,7 @@ export default function HomePage() {
         <div className="flex items-center gap-3">
           {isLoggedIn && (
             <AccountBadge
-              tier={user?.tier as 'free' | 'paid'}
+              tier={user?.tier === 'paid' ? 'paid' : 'free'}
               searchesUsed={user?.searches_used ?? 0}
               searchesMax={2}
             />

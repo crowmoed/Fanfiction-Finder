@@ -148,5 +148,14 @@ class UserStore:
         )
         return _item_to_dict(resp["Attributes"])
 
+    def set_stripe_last_checked(self, user_id: str, iso_timestamp: str) -> dict:
+        resp = self._table.update_item(
+            Key={"id": user_id},
+            UpdateExpression="SET stripe_last_checked = :ts",
+            ExpressionAttributeValues={":ts": iso_timestamp},
+            ReturnValues="ALL_NEW",
+        )
+        return _item_to_dict(resp["Attributes"])
+
 
 user_store = UserStore()
