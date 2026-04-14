@@ -15,6 +15,7 @@ import ExportButton from '@/components/ExportButton';
 import SearchHistory from '@/components/SearchHistory';
 import AuthButton from '@/components/AuthButton';
 import AccountBadge from '@/components/AccountBadge';
+import SettingsButton from '@/components/SettingsButton';
 import RateLimitBanner from '@/components/RateLimitBanner';
 import RateLimitBlock from '@/components/RateLimitBlock';
 
@@ -171,6 +172,7 @@ export default function HomePage() {
             />
           )}
           <AuthButton />
+          {isLoggedIn && <SettingsButton />}
 
           {/* History toggle */}
           <button

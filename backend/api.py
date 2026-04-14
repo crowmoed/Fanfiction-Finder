@@ -17,6 +17,7 @@ from auth.auth import verify_google_token, create_jwt
 from auth.user_store import user_store
 from auth.dependencies import get_current_user, check_search_limit
 from auth.stripe_handler import create_checkout_session, handle_webhook
+import stripe
 
 
 @asynccontextmanager
@@ -69,7 +70,11 @@ def me(user: dict = Depends(get_current_user)):
 @app.post("/auth/checkout")
 def checkout(user: dict = Depends(get_current_user)):
     """Create a Stripe Checkout Session and return the URL."""
-    url = create_checkout_session(user["id"], user["email"])
+    try:
+        url = create_checkout_session(user["id"], user["email"])
+    except stripe.error.StripeError as e:
+        msg = getattr(e, "user_message", None) or str(e)
+        raise HTTPException(status_code=502, detail=f"Stripe error: {msg}")
     return {"url": url}
 
 

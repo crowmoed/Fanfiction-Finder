@@ -46,6 +46,31 @@ class UserStore:
             return None
         return _item_to_dict(item)
 
+    def get_user_with_week_reset(self, user_id: str) -> dict | None:
+        """Fetch user, persisting a week-rollover reset if the stored week_start is stale.
+
+        Mirrors the rollover check in increment_searches so reads and writes agree
+        on the current-week count. Returns None if the user doesn't exist.
+        """
+        user = self.get_user(user_id)
+        if user is None:
+            return None
+
+        current_monday = _monday_of_current_week()
+        if user.get("week_start", "") < current_monday:
+            resp = self._table.update_item(
+                Key={"id": user_id},
+                UpdateExpression="SET searches_used = :zero, week_start = :monday",
+                ExpressionAttributeValues={
+                    ":zero": 0,
+                    ":monday": current_monday,
+                },
+                ReturnValues="ALL_NEW",
+            )
+            return _item_to_dict(resp["Attributes"])
+
+        return user
+
     def upsert_user(self, user_id: str, email: str) -> dict:
         """Create user if not exists, otherwise return existing.
 

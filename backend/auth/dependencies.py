@@ -18,7 +18,7 @@ def get_current_user(authorization: str = Header(None)) -> dict:
     token = authorization.removeprefix("Bearer ").strip()
     claims = decode_jwt(token)
 
-    user = user_store.get_user(claims["sub"])
+    user = user_store.get_user_with_week_reset(claims["sub"])
     if user is None:
         raise HTTPException(status_code=401, detail="User not found")
 
