@@ -83,6 +83,8 @@ def verify_paid_user(user: dict) -> dict:
 
     customer_id = user.get("stripe_customer_id")
     if not customer_id:
+        user_store.set_tier(user["id"], "free")
+        user["tier"] = "free"
         return user
 
     last_checked = user.get("stripe_last_checked")
