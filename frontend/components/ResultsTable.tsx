@@ -112,15 +112,22 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
 
   if (results.length === 0) {
     return (
-      <div className="rounded-xl border py-16 flex flex-col items-center gap-3"
-        style={{ borderColor: 'var(--border-default)', backgroundColor: 'var(--bg-elevated)' }}>
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style={{ color: 'var(--text-tertiary)' }}>
-          <circle cx="22" cy="22" r="16" stroke="currentColor" strokeWidth="2" />
-          <path d="M34 34l8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          <path d="M22 15v7M22 26v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <div
+        className="py-16 flex flex-col items-center gap-3"
+        style={{
+          border: '1.5px solid var(--text-primary)',
+          borderRadius: '4px',
+          backgroundColor: 'var(--bg-elevated)',
+          boxShadow: 'var(--shadow-md)',
+        }}
+      >
+        <svg width="44" height="44" viewBox="0 0 48 48" fill="none" style={{ color: 'var(--text-tertiary)' }}>
+          <circle cx="22" cy="22" r="16" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M34 34l8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M22 15v7M22 26v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
-        <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-          No fics found. Try broadening your search or tweaking your prompt.
+        <p className="text-sm font-serif italic" style={{ color: 'var(--text-secondary)' }}>
+          Nothing turned up. Try broadening the search, or tweak the prompt.
         </p>
       </div>
     );
@@ -164,11 +171,12 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
       />
 
       <div
-        className="rounded-xl border overflow-hidden"
+        className="overflow-hidden"
         style={{
           backgroundColor: 'var(--bg-elevated)',
-          borderColor: 'var(--border-default)',
-          boxShadow: 'var(--shadow-sm)',
+          border: '1.5px solid var(--text-primary)',
+          borderRadius: '4px',
+          boxShadow: 'var(--shadow-md)',
         }}
       >
         <div
@@ -188,11 +196,14 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
                         width: col.width,
                         minWidth: col.minWidth,
                         color: 'var(--text-secondary)',
-                        borderBottom: '1px solid var(--border-default)',
+                        borderBottom: '1.5px solid var(--text-primary)',
                         padding: '10px 12px',
                         textAlign: 'left',
                         fontWeight: 500,
-                        fontSize: '12px',
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-plex-mono), monospace',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.08em',
                         userSelect: 'none',
                         cursor: col.sortable ? 'pointer' : 'default',
                         whiteSpace: 'nowrap',
@@ -218,7 +229,6 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
 
               {virtualItems.map((vRow) => {
                 const fic = rows[vRow.index];
-                const isEven = vRow.index % 2 === 0;
                 const isTop3 = fic._rank <= 3;
 
                 return (
@@ -226,16 +236,33 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
                     key={fic.id}
                     className="fic-row cursor-pointer"
                     onClick={() => window.open(fic.url, '_blank', 'noopener,noreferrer')}
-                    style={{
-                      backgroundColor: isEven ? 'var(--bg-elevated)' : 'var(--bg-secondary)',
-                    }}
+                    style={{ backgroundColor: 'var(--bg-elevated)' }}
                   >
                     {/* # */}
                     <td style={TD}>
-                      <span className="font-mono font-bold text-sm"
-                        style={{ color: isTop3 ? 'var(--accent)' : 'var(--text-primary)' }}>
-                        {isRanked ? fic._rank : '—'}
-                      </span>
+                      {isRanked ? (
+                        isTop3 ? (
+                          <span
+                            className="inline-flex items-center justify-center font-mono text-xs font-bold"
+                            style={{
+                              width: 22,
+                              height: 22,
+                              borderRadius: '50%',
+                              backgroundColor: 'var(--accent)',
+                              color: 'var(--bg-elevated)',
+                              border: '1.5px solid var(--text-primary)',
+                            }}
+                          >
+                            {fic._rank}
+                          </span>
+                        ) : (
+                          <span className="font-mono text-sm" style={{ color: 'var(--text-tertiary)' }}>
+                            {fic._rank}
+                          </span>
+                        )
+                      ) : (
+                        <span className="font-mono text-sm" style={{ color: 'var(--text-tertiary)' }}>—</span>
+                      )}
                     </td>
 
                     {/* Title */}
@@ -245,8 +272,8 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="font-medium text-sm leading-snug hover:underline block"
-                        style={{ color: 'var(--text-primary)' }}
+                        className="font-serif text-base leading-snug hover:underline block"
+                        style={{ color: 'var(--text-primary)', textDecorationThickness: '1px', textUnderlineOffset: '2px' }}
                       >
                         {fic.title}
                       </a>

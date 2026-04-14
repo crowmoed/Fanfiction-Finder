@@ -33,8 +33,9 @@ const config: Config = {
       },
       fontFamily: {
         serif: ['var(--font-instrument-serif)', 'Georgia', 'serif'],
-        sans: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
-        mono: ['var(--font-jetbrains-mono)', 'Consolas', 'monospace'],
+        display: ['var(--font-instrument-serif)', 'Georgia', 'serif'],
+        sans: ['var(--font-newsreader)', 'Georgia', 'serif'],
+        mono: ['var(--font-plex-mono)', 'Consolas', 'monospace'],
       },
       maxWidth: {
         content: '960px',

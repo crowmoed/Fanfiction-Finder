@@ -112,13 +112,15 @@ export default function SearchBar({
     <div className="w-full space-y-3">
       {/* Search input */}
       <div
-        className={`flex items-center gap-3 ${containerSize} rounded-xl border transition-all duration-150`}
+        className={`flex items-center gap-3 ${containerSize} transition-all`}
         style={{
           backgroundColor: 'var(--bg-elevated)',
-          borderColor: focused ? 'var(--accent)' : 'var(--border-default)',
+          border: `1.5px solid var(--text-primary)`,
+          borderRadius: compact ? '6px' : '4px',
           boxShadow: focused
-            ? '0 0 0 3px rgba(13, 148, 136, 0.15), var(--shadow-md)'
-            : 'var(--shadow-md)',
+            ? (compact ? '2px 2px 0 var(--accent)' : '4px 4px 0 var(--accent)')
+            : (compact ? 'var(--shadow-sm)' : 'var(--shadow-md)'),
+          transform: focused ? 'translate(-1px, -1px)' : 'none',
         }}
         role="search"
         aria-label="Search for fanfiction"
@@ -156,8 +158,14 @@ export default function SearchBar({
         <button
           onClick={handleSubmit}
           disabled={isSearching || !prompt.trim()}
-          className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-all duration-150 disabled:opacity-60"
-          style={{ backgroundColor: isSearching ? 'var(--accent-hover)' : 'var(--accent)' }}
+          className="shrink-0 flex items-center gap-2 px-4 py-2 text-sm font-mono font-medium uppercase tracking-wider disabled:opacity-50"
+          style={{
+            backgroundColor: isSearching ? 'var(--accent-hover)' : 'var(--accent)',
+            color: 'var(--bg-elevated)',
+            border: '1.5px solid var(--text-primary)',
+            borderRadius: '4px',
+            letterSpacing: '0.05em',
+          }}
           onMouseEnter={(e) => {
             if (!isSearching) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--accent-hover)';
           }}
@@ -196,11 +204,13 @@ export default function SearchBar({
           id="fandom-select"
           value={fandom}
           onChange={(e) => setFandom(e.target.value as Fandom)}
-          className="flex-1 max-w-xs border rounded-lg px-3 py-1.5 text-sm focus:outline-none transition-colors duration-150"
+          className="flex-1 max-w-xs px-3 py-1.5 text-sm font-mono focus:outline-none"
           style={{
             backgroundColor: 'var(--bg-elevated)',
             color: 'var(--text-primary)',
-            borderColor: 'var(--border-default)',
+            border: '1.5px solid var(--text-primary)',
+            borderRadius: '4px',
+            boxShadow: '2px 2px 0 rgba(26, 24, 20, 0.9)',
           }}
         >
           {fandoms.length === 0 ? (

@@ -129,8 +129,7 @@ export default function HomePage() {
         className="sticky top-0 z-40 h-14 flex items-center justify-between px-6"
         style={{
           backgroundColor: 'var(--bg-elevated)',
-          borderBottom: `1px solid var(--border-default)`,
-          boxShadow: 'var(--shadow-sm)',
+          borderBottom: `1.5px solid var(--border-ink)`,
         }}
       >
         <button
@@ -139,14 +138,17 @@ export default function HomePage() {
           aria-label="FanFiction Finder home"
         >
           <span
-            className="font-serif text-2xl leading-none"
-            style={{ color: 'var(--text-primary)' }}
+            className="font-serif text-2xl leading-none italic"
+            style={{ color: 'var(--text-primary)', letterSpacing: '-0.01em' }}
           >
-            FanFiction Finder
+            Fanfic Finder
+          </span>
+          <span className="text-[10px] font-mono" style={{ color: 'var(--text-tertiary)' }}>
+            v0.1
           </span>
           {appState !== 'empty' && (
-            <span className="text-xs font-mono" style={{ color: 'var(--text-tertiary)' }}>
-              {currentFandom}
+            <span className="text-xs font-mono ml-2" style={{ color: 'var(--text-tertiary)' }}>
+              / {currentFandom}
             </span>
           )}
         </button>
@@ -202,15 +204,36 @@ export default function HomePage() {
             style={{ minHeight: 'calc(100vh - 56px)' }}
           >
             {/* Hero logo */}
-            <div className="mb-8 text-center">
-              <h1
-                className="font-serif mb-2"
-                style={{ fontSize: '48px', color: 'var(--text-primary)', lineHeight: 1.1 }}
+            <div className="mb-10 text-center">
+              <div
+                className="inline-block mb-3 px-2 py-0.5 font-mono text-[11px] indie-sticker"
+                style={{
+                  backgroundColor: 'var(--accent-alt-light)',
+                  color: 'var(--text-primary)',
+                  border: '1.5px solid var(--text-primary)',
+                }}
               >
-                FanFiction Finder
+                made by one person / still rough
+              </div>
+              <h1
+                className="font-serif italic"
+                style={{
+                  fontSize: 'clamp(48px, 8vw, 82px)',
+                  color: 'var(--text-primary)',
+                  lineHeight: 1,
+                  letterSpacing: '-0.02em',
+                  marginBottom: '10px',
+                }}
+              >
+                Fanfic Finder
               </h1>
-              <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
-                Find fanfiction with natural language. Ranked by AI.
+              <p
+                className="text-base max-w-md mx-auto"
+                style={{ color: 'var(--text-secondary)', lineHeight: 1.5 }}
+              >
+                Describe the fic you're craving in plain English —
+                <em> found family, slow burn, 100k+, no MCD </em>
+                — and I'll dig through AO3 and friends to find it.
               </p>
             </div>
 
@@ -238,9 +261,9 @@ export default function HomePage() {
 
               {/* Recent searches */}
               {history.length > 0 && (
-                <div className="mt-8">
-                  <p className="text-xs font-mono mb-3" style={{ color: 'var(--text-tertiary)' }}>
-                    Recent searches
+                <div className="mt-10">
+                  <p className="text-xs font-mono mb-3 uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
+                    — recent searches
                   </p>
                   <div className="flex flex-col gap-1">
                     {history.slice(0, 5).map((entry) => (
@@ -432,6 +455,20 @@ export default function HomePage() {
           </div>
         )}
       </main>
+
+      {/* ─── Colophon ───────────────────────────────────────────────────── */}
+      {appState === 'empty' && (
+        <footer
+          className="px-6 py-6 font-mono text-[11px] flex flex-wrap items-center justify-center gap-x-3 gap-y-1"
+          style={{ color: 'var(--text-tertiary)' }}
+        >
+          <span>* built in a small apartment</span>
+          <span style={{ color: 'var(--accent)' }}>◆</span>
+          <span>indexes ao3 · ffn · wattpad</span>
+          <span style={{ color: 'var(--accent)' }}>◆</span>
+          <span>not affiliated with any of them</span>
+        </footer>
+      )}
 
       {/* ─── Search History Panel ───────────────────────────────────────── */}
       {showHistory && (

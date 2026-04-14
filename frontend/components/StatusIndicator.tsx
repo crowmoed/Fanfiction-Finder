@@ -36,12 +36,15 @@ export default function StatusIndicator({ status }: StatusIndicatorProps) {
     ].filter(Boolean).join(', ');
 
     return (
-      <div className="text-sm text-center py-2 transition-all duration-250" style={{ color: 'var(--text-secondary)' }}>
+      <div
+        className="text-sm text-center py-2 font-mono"
+        style={{ color: 'var(--text-secondary)' }}
+      >
         {total > 0
-          ? `${total} results from ${parts}${elapsed ? ` · ${elapsed}` : ''} · Ranked by AI`
-          : 'No results found'}
+          ? `${total} results from ${parts}${elapsed ? ` · ${elapsed}` : ''} · ranked`
+          : 'no results yet'}
         {hasError && (
-          <span className="ml-2 text-red-500">· Some sources unavailable</span>
+          <span className="ml-2" style={{ color: 'var(--accent)' }}>· some sources unreachable</span>
         )}
       </div>
     );

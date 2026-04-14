@@ -1,39 +1,42 @@
 import type { Metadata } from 'next';
-import { Instrument_Serif, DM_Sans, JetBrains_Mono } from 'next/font/google';
+import { Instrument_Serif, Newsreader, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import Providers from './providers';
 
 const instrumentSerif = Instrument_Serif({
   weight: '400',
+  style: ['normal', 'italic'],
   subsets: ['latin'],
   variable: '--font-instrument-serif',
   display: 'swap',
 });
 
-const dmSans = DM_Sans({
+const newsreader = Newsreader({
   weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
   subsets: ['latin'],
-  variable: '--font-dm-sans',
+  variable: '--font-newsreader',
   display: 'swap',
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  weight: ['400', '500'],
+const plexMono = IBM_Plex_Mono({
+  weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
   subsets: ['latin'],
-  variable: '--font-jetbrains-mono',
+  variable: '--font-plex-mono',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'FanFiction Finder — Semantic Fanfiction Search',
-  description: 'Find fanfiction using natural language. Powered by AI ranking across AO3 and FanFiction.net.',
+  title: 'FanFiction Finder — A semantic search for fanfic readers',
+  description: 'A small tool that helps you find fanfiction using plain English. Built by one person.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${instrumentSerif.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
+      className={`${instrumentSerif.variable} ${newsreader.variable} ${plexMono.variable}`}
     >
       <body className="font-sans" style={{ backgroundColor: 'var(--bg-primary)' }}>
         <Providers>{children}</Providers>
