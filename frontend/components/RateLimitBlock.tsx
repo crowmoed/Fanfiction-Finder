@@ -16,7 +16,7 @@ export default function RateLimitBlock({ onUpgrade }: RateLimitBlockProps) {
       </h2>
 
       <p className="text-sm text-text-secondary leading-relaxed mb-6">
-        This is a one-person project and every search costs real money in AI and hosting fees. Free accounts get 2 searches per week — if you want unlimited, it&apos;s $5/month to help cover the costs. Cancel anytime.
+        This is a one-person project and every search costs real money in AI and hosting fees. Free accounts get 2 searches per week — if you want unlimited, it&apos;s $2/month to help cover the costs. Cancel anytime.
       </p>
 
       <button

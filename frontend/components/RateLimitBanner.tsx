@@ -14,7 +14,7 @@ export default function RateLimitBanner({ searchesUsed, searchesMax, onUpgrade }
           {searchesUsed}/{searchesMax} free searches used this week
         </p>
         <p className="text-xs text-text-secondary mt-0.5">
-          Resets every Monday. Each search costs me real money in AI and cloud fees — unlimited is $5/mo if you want more.
+          Resets every Monday. Each search costs me real money in AI and cloud fees — unlimited is $2/mo if you want more.
         </p>
       </div>
       <button

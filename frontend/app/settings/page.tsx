@@ -25,6 +25,23 @@ export default function SettingsPage() {
     }
   };
 
+  const handleManageBilling = async () => {
+    try {
+      const res = await fetch('/api/auth/billing-portal', {
+        method: 'POST',
+        headers: getAuthHeader(),
+      });
+      const body = await res.text();
+      if (!res.ok) {
+        throw new Error(`Billing portal failed (${res.status}): ${body.slice(0, 200)}`);
+      }
+      const data = JSON.parse(body);
+      if (data.url) window.location.href = data.url;
+    } catch (err) {
+      console.error('Billing portal error:', err);
+    }
+  };
+
   const handleSignOut = () => {
     logout();
     router.push('/');
@@ -96,23 +113,30 @@ export default function SettingsPage() {
               {user?.tier === 'paid' ? (
                 <div className="px-4 py-4 rounded-lg bg-bg-elevated border border-border-default">
                   <p className="text-sm text-text-primary mb-1">Unlimited is active.</p>
-                  <p className="text-xs text-text-secondary">
-                    Thanks for supporting the project. You can cancel or manage billing through
-                    the Stripe customer portal — reply to any Stripe receipt email to reach it.
+                  <p className="text-xs text-text-secondary mb-4 leading-relaxed">
+                    Thanks for supporting the project. Manage your payment method or cancel anytime
+                    through the Stripe customer portal.
                   </p>
+                  <button
+                    onClick={handleManageBilling}
+                    className="px-4 py-2 rounded-lg text-sm bg-bg-secondary text-text-primary hover:bg-bg-hover border border-border-default"
+                  >
+                    Manage subscription
+                  </button>
+                  <p className="text-xs text-text-tertiary mt-2">Redirects to Stripe billing portal</p>
                 </div>
               ) : (
                 <div className="px-4 py-4 rounded-lg bg-bg-elevated border border-border-default">
                   <p className="text-sm text-text-primary mb-1">Upgrade to Unlimited</p>
                   <p className="text-xs text-text-secondary mb-4 leading-relaxed">
                     Free accounts get 2 searches per week. Each search costs real money in AI and
-                    hosting fees — unlimited is $5/month to help cover the costs. Cancel anytime.
+                    hosting fees — unlimited is $2/month to help cover the costs. Cancel anytime.
                   </p>
                   <button
                     onClick={handleUpgrade}
                     className="px-4 py-2 rounded-lg text-sm font-medium bg-accent text-white hover:bg-accent-hover"
                   >
-                    Upgrade — $5/mo
+                    Upgrade — $2/mo
                   </button>
                   <p className="text-xs text-text-tertiary mt-2">Redirects to Stripe checkout</p>
                 </div>

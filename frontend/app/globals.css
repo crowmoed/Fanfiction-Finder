@@ -154,6 +154,29 @@ button, a, select, input {
 @keyframes spin { to { transform: rotate(360deg); } }
 .animate-spin { animation: spin 0.8s steps(8, end) infinite; }
 
+.firework {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.firework-particle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 9999px;
+  background: currentColor;
+  box-shadow: 0 0 4px currentColor;
+  transform: translate(-50%, -50%);
+  animation: fireworkParticle 0.9s ease-out forwards;
+}
+@keyframes fireworkParticle {
+  0%   { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0)    scale(1);   opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(18px) scale(0.2); opacity: 0; }
+}
+
 /* ---- Indie utility classes -------------------------------------- */
 
 /* The offset "sticker" shadow — one of the signature moves. */

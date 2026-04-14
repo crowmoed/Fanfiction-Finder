@@ -5,7 +5,7 @@ All Stripe SDK usage is isolated here. Nothing else should import stripe directl
 Env vars required:
   STRIPE_SECRET_KEY     — sk_test_... or sk_live_...
   STRIPE_WEBHOOK_SECRET — whsec_...
-  STRIPE_PRICE_ID       — price_... for the $5/mo subscription
+  STRIPE_PRICE_ID       — price_... for the $2/mo subscription
   FRONTEND_URL          — e.g. https://fanfiction-finder.vercel.app
 """
 
@@ -29,7 +29,7 @@ FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
 
 
 def create_checkout_session(user_id: str, email: str) -> str:
-    """Create a Stripe Checkout Session for a $5/month subscription.
+    """Create a Stripe Checkout Session for a $2/month subscription.
 
     Returns the checkout URL the frontend should redirect to.
     """
@@ -41,6 +41,18 @@ def create_checkout_session(user_id: str, email: str) -> str:
         success_url=FRONTEND_URL + "?upgrade=success",
         cancel_url=FRONTEND_URL + "?upgrade=cancelled",
         metadata={"user_id": user_id},
+    )
+    return session.url
+
+
+def create_portal_session(customer_id: str) -> str:
+    """Create a Stripe Billing Portal session so the customer can cancel or update payment.
+
+    Returns the portal URL the frontend should redirect to.
+    """
+    session = stripe.billing_portal.Session.create(
+        customer=customer_id,
+        return_url=FRONTEND_URL + "/settings",
     )
     return session.url
 

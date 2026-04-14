@@ -16,7 +16,7 @@ from sqlalchemy import text
 from auth.auth import verify_google_token, create_jwt
 from auth.user_store import user_store
 from auth.dependencies import get_current_user, check_search_limit
-from auth.stripe_handler import create_checkout_session, handle_webhook
+from auth.stripe_handler import create_checkout_session, create_portal_session, handle_webhook
 import stripe
 
 
@@ -72,6 +72,20 @@ def checkout(user: dict = Depends(get_current_user)):
     """Create a Stripe Checkout Session and return the URL."""
     try:
         url = create_checkout_session(user["id"], user["email"])
+    except stripe.error.StripeError as e:
+        msg = getattr(e, "user_message", None) or str(e)
+        raise HTTPException(status_code=502, detail=f"Stripe error: {msg}")
+    return {"url": url}
+
+
+@app.post("/auth/billing-portal")
+def billing_portal(user: dict = Depends(get_current_user)):
+    """Create a Stripe Billing Portal session so the user can cancel or manage billing."""
+    customer_id = user.get("stripe_customer_id")
+    if not customer_id:
+        raise HTTPException(status_code=400, detail="No Stripe customer on file")
+    try:
+        url = create_portal_session(customer_id)
     except stripe.error.StripeError as e:
         msg = getattr(e, "user_message", None) or str(e)
         raise HTTPException(status_code=502, detail=f"Stripe error: {msg}")

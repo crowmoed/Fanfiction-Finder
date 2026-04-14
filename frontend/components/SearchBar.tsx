@@ -30,8 +30,9 @@ export default function SearchBar({
   const [prompt, setPrompt] = useState(initialPrompt);
   const [fandom, setFandom] = useState<Fandom>(initialFandom);
   const [fandoms, setFandoms] = useState<FandomInfo[]>([]);
-  const [focused, setFocused] = useState(false);
   const [placeholder, setPlaceholder] = useState('');
+  const [fireworks, setFireworks] = useState<{ id: number; x: number; y: number; color: string }[]>([]);
+  const fireworkIdRef = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const exampleIndexRef = useRef(0);
   const charIndexRef = useRef(0);
@@ -94,6 +95,24 @@ export default function SearchBar({
     };
   }, [compact]);
 
+  const spawnFirework = useCallback(() => {
+    const colors = ['var(--accent)', 'var(--accent-alt)', 'var(--accent-hover)'];
+    const input = inputRef.current;
+    const container = input?.parentElement;
+    const width = container?.clientWidth ?? 300;
+    // Gentle center bias: average two randoms → triangular distribution peaked at 0.5.
+    const r = (Math.random() + Math.random()) / 2;
+    const x = 16 + r * Math.max(0, width - 32);
+    // Vary vertical position above the bar: higher = farther up.
+    const y = -4 - Math.random() * 22;
+    const id = ++fireworkIdRef.current;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    setFireworks((prev) => [...prev, { id, x, y, color }]);
+    setTimeout(() => {
+      setFireworks((prev) => prev.filter((f) => f.id !== id));
+    }, 950);
+  }, []);
+
   const handleSubmit = useCallback(() => {
     if (!prompt.trim() || isSearching) return;
     const full = appendToPrompt
@@ -112,19 +131,34 @@ export default function SearchBar({
     <div className="w-full space-y-3">
       {/* Search input */}
       <div
-        className={`flex items-center gap-3 ${containerSize} transition-all`}
+        className={`relative flex items-center gap-3 ${containerSize}`}
         style={{
           backgroundColor: 'var(--bg-elevated)',
           border: `1.5px solid var(--text-primary)`,
           borderRadius: compact ? '6px' : '4px',
-          boxShadow: focused
-            ? (compact ? '2px 2px 0 var(--accent-hover)' : '4px 4px 0 var(--accent-hover)')
-            : (compact ? 'var(--shadow-sm)' : 'var(--shadow-md)'),
-          transform: focused ? 'translate(-1px, -1px)' : 'none',
+          boxShadow: compact ? 'var(--shadow-sm)' : 'var(--shadow-md)',
         }}
         role="search"
         aria-label="Search for fanfiction"
       >
+        {/* Firework bursts — one per keystroke, auto-removed after animation */}
+        <div className="pointer-events-none absolute inset-0 overflow-visible" aria-hidden>
+          {fireworks.map((f) => (
+            <span
+              key={f.id}
+              className="firework absolute"
+              style={{ left: f.x, top: f.y, color: f.color }}
+            >
+              {Array.from({ length: 8 }).map((_, i) => (
+                <span
+                  key={i}
+                  className="firework-particle"
+                  style={{ ['--angle' as string]: `${i * 45}deg` }}
+                />
+              ))}
+            </span>
+          ))}
+        </div>
         {/* Search icon */}
         <svg
           width="20"
@@ -143,10 +177,12 @@ export default function SearchBar({
           ref={inputRef}
           type="text"
           value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
+          onChange={(e) => {
+            const next = e.target.value;
+            if (next.length > prompt.length) spawnFirework();
+            setPrompt(next);
+          }}
           onKeyDown={handleKeyDown}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
           placeholder={compact ? 'Search fanfiction…' : placeholder || EXAMPLES[0]}
           className="flex-1 bg-transparent outline-none text-base min-w-0"
           style={{ color: 'var(--text-primary)' }}
