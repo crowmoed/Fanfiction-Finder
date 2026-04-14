@@ -119,13 +119,17 @@ def upsert_fic(fic: Fic, fandom: str, embedding: list[float]):
         session.commit()
 
 
-def search_similar(query_embedding: list[float], fandom: str, limit: int = 50) -> list[Fic]:
-    """Find fics whose embeddings are closest to the query embedding."""
+def search_similar(query_embedding: list[float], fandom: str | None, limit: int = 50) -> list[Fic]:
+    """Find fics whose embeddings are closest to the query embedding.
+
+    If fandom is None, searches across all fandoms.
+    """
     with Session(engine) as session:
+        query = session.query(FicRecord).filter(FicRecord.embedding.isnot(None))
+        if fandom is not None:
+            query = query.filter(FicRecord.fandom == fandom)
         results = (
-            session.query(FicRecord)
-            .filter(FicRecord.fandom == fandom)
-            .filter(FicRecord.embedding.isnot(None))  # skip un-embedded rows
+            query
             .order_by(FicRecord.embedding.cosine_distance(query_embedding))
             .limit(limit)
             .all()

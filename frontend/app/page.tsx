@@ -33,19 +33,13 @@ export default function HomePage() {
   const isMobile = useIsMobile();
   const { user, isLoggedIn, getAuthHeader } = useAuth();
 
-  // Handle Stripe redirect — refresh user state on upgrade success
+  // Handle Stripe redirect — strip the ?upgrade=success param once rehydration is done.
+  // useAuth's mount-effect already refetches /auth/me, so no manual reload is needed;
+  // doing one mid-rehydration was racing setUser and leaving the UI signed out.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('upgrade') === 'success') {
-      // Remove query param from URL without reload
       window.history.replaceState({}, '', window.location.pathname);
-      // Re-fetch user to pick up the new tier
-      const token = localStorage.getItem('ficfinder_token');
-      if (token) {
-        fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
-          .then((res) => res.ok ? res.json() : null)
-          .then(() => window.location.reload());
-      }
     }
   }, []);
 

@@ -46,7 +46,8 @@ export default function SearchBar({
         const list = Array.isArray(data.fandoms) ? data.fandoms : [];
         setFandoms(list);
         if (!fandom) {
-          const first = list.find((f) => f.collected) ?? list[0];
+          const allFandoms = list.find((f) => f.name === 'All Fandoms');
+          const first = allFandoms ?? list.find((f) => f.collected) ?? list[0];
           if (first) setFandom(first.name);
         }
       })
@@ -209,8 +210,11 @@ export default function SearchBar({
             <option value="">Backend unavailable</option>
           ) : (
             <>
+              {fandoms.find((f) => f.name === 'All Fandoms') && (
+                <option value="All Fandoms">All Fandoms</option>
+              )}
               <optgroup label="Available">
-                {fandoms.filter((f) => f.collected).map((f) => (
+                {fandoms.filter((f) => f.collected && f.name !== 'All Fandoms').map((f) => (
                   <option key={f.name} value={f.name}>{f.name}</option>
                 ))}
               </optgroup>

@@ -108,14 +108,20 @@ def _blend_embeddings(hyde_emb: list[float], raw_emb: list[float], hyde_weight: 
     return blended.tolist()
 
 
+ALL_FANDOMS = "All Fandoms"
+
+
 @app.get("/fandoms")
 def get_fandoms():
     """Returns supported fandoms with their collection status."""
     indexed = get_indexed_fandoms()
     return {
         "fandoms": [
-            {"name": fandom, "collected": fandom in indexed}
-            for fandom in FANDOMS
+            {"name": ALL_FANDOMS, "collected": True},
+            *[
+                {"name": fandom, "collected": fandom in indexed}
+                for fandom in FANDOMS
+            ],
         ]
     }
 
@@ -129,17 +135,22 @@ async def search(
 ):
     if not fandom:
         raise HTTPException(status_code=400, detail="Fandom is required.")
-    if fandom not in FANDOMS:
+    is_all_fandoms = fandom == ALL_FANDOMS
+    if not is_all_fandoms and fandom not in FANDOMS:
         raise HTTPException(status_code=400, detail=f"Unknown fandom '{fandom}'. See /fandoms.")
-    if get_fic_count(fandom) == 0:
-        raise HTTPException(status_code=404, detail=f"No fics indexed for '{fandom}'. Run the indexer first.")
+    count_filter = None if is_all_fandoms else fandom
+    if get_fic_count(count_filter) == 0:
+        label = "any fandom" if is_all_fandoms else f"'{fandom}'"
+        raise HTTPException(status_code=404, detail=f"No fics indexed for {label}. Run the indexer first.")
 
     print(f"\n[search] ── new request ──────────────────", flush=True)
     print(f"[search] fandom : {fandom!r}", flush=True)
     print(f"[search] query  : {q!r}", flush=True)
 
+    search_fandom = None if is_all_fandoms else fandom
+
     # Step 1: Enhance the query (HyDE — generate 3 hypothetical fic descriptions at different angles)
-    enriched = enhance_query(q, fandom=fandom)
+    enriched = enhance_query(q, fandom=search_fandom)
     print(f"[search] enhanced query ready ({len(enriched.semantic_descriptions)} descriptions)", flush=True)
 
     # Step 2: Embed raw query once (shared across all angles)
@@ -158,7 +169,7 @@ async def search(
     for angle_idx, (description, hyde_weight) in enumerate(zip(descriptions, blend_ratios)):
         hyde_embedding = embed_query(description)
         blended = _blend_embeddings(hyde_embedding, raw_embedding, hyde_weight=hyde_weight)
-        results = search_similar(blended, fandom=fandom, limit=50)
+        results = search_similar(blended, fandom=search_fandom, limit=50)
         print(f"[search] angle {angle_idx + 1}: blend {hyde_weight}/{round(1 - hyde_weight, 1)}, {len(results)} results", flush=True)
         for pos, fic in enumerate(results):
             fic_id = f"{fic.platform}:{fic.url}"
@@ -166,7 +177,7 @@ async def search(
                 merged[fic_id] = (fic, pos)
 
     # Final search: pure raw query embedding, no blend
-    raw_results = search_similar(raw_embedding, fandom=fandom, limit=50)
+    raw_results = search_similar(raw_embedding, fandom=search_fandom, limit=50)
     print(f"[search] raw search: {len(raw_results)} results", flush=True)
     for pos, fic in enumerate(raw_results):
         fic_id = f"{fic.platform}:{fic.url}"
