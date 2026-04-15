@@ -350,8 +350,9 @@ class SwapApp(App):
     def __init__(self):
         super().__init__()
         self._busy = False
-        self._scrape_stop = False
-        self._scrape_proc = None
+        # Active scraper jobs keyed by fandom name. Each value is a dict:
+        #   { proc, platform, started_at, exit_code (None while running) }
+        self._scrape_jobs: dict[str, dict] = {}
         self._local_fandoms: list[dict] = []
         self._construct_inputs: dict[str, dict] = {}
         self._db_bytes: int = 0
@@ -422,7 +423,6 @@ class SwapApp(App):
                 with TabbedContent(id="scraper-tabs"):
                     with TabPane("Scrape", id="tab-scrape"):
                         yield Label("INDEX A FANDOM", classes="section-title")
-                        yield Label("Scrape fics from AO3/FFN/Wattpad, embed with Gemini, save locally (Neon fallback).")
                         with Horizontal(classes="scrape-option-row"):
                             yield Label("Fandom:")
                             yield Select([], id="scrape-fandom-select", allow_blank=True)
@@ -439,8 +439,24 @@ class SwapApp(App):
                             yield Checkbox("Clear existing fics first", id="scrape-clear-cb")
                         with Horizontal():
                             yield Button("Start Scraping", id="btn-scrape", variant="success")
-                            yield Button("Stop", id="btn-scrape-stop", variant="error", disabled=True)
+
+                        yield Label("CHECKPOINT", classes="section-title")
+                        yield Static("(select a fandom)", id="progress-status", classes="info-card")
+                        with Horizontal():
+                            yield Button("Reset fandom", id="btn-progress-reset-fandom", variant="warning")
+                            yield Button("Reset source", id="btn-progress-reset-source", variant="warning")
+                            yield Button("Reset ALL", id="btn-progress-reset-all", variant="error")
+
                         yield Log(id="scrape-log", classes="log-box-tall")
+
+                    with TabPane("Active", id="tab-active"):
+                        yield Label("ACTIVE SCRAPERS", classes="section-title")
+                        yield DataTable(id="active-table")
+                        with Horizontal():
+                            yield Button("Stop Selected", id="btn-active-stop", variant="error")
+                            yield Button("Refresh Now", id="btn-active-refresh", variant="default")
+                            yield Button("Clear Finished", id="btn-active-clear", variant="default")
+                        yield Log(id="active-log", classes="log-box")
 
                     with TabPane("Coverage", id="tab-coverage"):
                         yield Label("SCRAPE COVERAGE", classes="section-title")
@@ -485,6 +501,13 @@ class SwapApp(App):
         cov_tbl.add_columns("Fandom", "Platform", "Indexed", "Available", "Gap", "Coverage")
         cov_tbl.cursor_type = "row"
 
+        active_tbl = self.query_one("#active-table", DataTable)
+        active_tbl.add_columns("Fandom", "Platform", "Status", "Elapsed", "PID")
+        active_tbl.cursor_type = "row"
+
+        # Poll running jobs + checkpoint state every 2s for the Active tab.
+        self.set_interval(2.0, self._refresh_active_grid)
+
         # Load fandom list for dropdowns
         self._fandom_dict = get_fandom_list()
         fandom_options = [(name, name) for name in self._fandom_dict]
@@ -492,7 +515,51 @@ class SwapApp(App):
             self.query_one("#scrape-fandom-select", Select).set_options(fandom_options)
             self.query_one("#coverage-fandom-select", Select).set_options(fandom_options)
 
+        self._refresh_progress_status()
         self.load_all_data()
+
+    def _refresh_progress_status(self) -> None:
+        """Update the progress-status card based on the currently selected fandom."""
+        try:
+            from data import progress as _progress
+        except Exception as e:
+            self.query_one("#progress-status", Static).update(f"[error loading progress module: {e}]")
+            return
+
+        try:
+            sel = self.query_one("#scrape-fandom-select", Select)
+        except Exception:
+            return
+        fandom = sel.value if sel.value is not Select.BLANK else None
+
+        data = _progress.load()
+        all_fandoms = data.get("fandoms", {})
+        total_tracked = len(all_fandoms)
+
+        if not fandom:
+            if total_tracked == 0:
+                msg = "No checkpoints saved."
+            else:
+                msg = f"{total_tracked} fandom(s) have saved progress."
+            self.query_one("#progress-status", Static).update(msg)
+            return
+
+        entry = all_fandoms.get(fandom, {})
+        if not entry:
+            msg = f"{fandom}: no checkpoint."
+        else:
+            lines = [f"{fandom}:"]
+            for source in ("ao3", "ffn", "wattpad"):
+                s = entry.get(source)
+                if not s:
+                    lines.append(f"  {source.upper():<8} not started")
+                elif s.get("done"):
+                    lines.append(f"  {source.upper():<8} DONE")
+                else:
+                    state = {k: v for k, v in s.items() if k != "done"}
+                    lines.append(f"  {source.upper():<8} resume at {state}")
+            msg = "\n".join(lines)
+        self.query_one("#progress-status", Static).update(msg)
 
     def _refresh_cleanup_select(self) -> None:
         """Populate the cleanup 'Fandom to clear' dropdown from local storage."""
@@ -519,12 +586,12 @@ class SwapApp(App):
         # Scraper buttons
         elif btn == "btn-scrape":
             self.start_scrape()
-        elif btn == "btn-scrape-stop":
-            self._scrape_stop = True
-            # Kill the subprocess immediately if running
-            if hasattr(self, "_scrape_proc") and self._scrape_proc is not None:
-                self._scrape_proc.terminate()
-            self.notify("Stop requested — killing scraper process.", severity="warning")
+        elif btn == "btn-active-stop":
+            self.stop_selected_job()
+        elif btn == "btn-active-refresh":
+            self._refresh_active_grid()
+        elif btn == "btn-active-clear":
+            self._clear_finished_jobs()
         elif btn == "btn-coverage":
             self.start_coverage(all_fandoms=False)
         elif btn == "btn-coverage-all":
@@ -533,6 +600,59 @@ class SwapApp(App):
             self.start_cleanup()
         elif btn == "btn-clear-fandom":
             self.start_clear_fandom()
+        # Progress-checkpoint buttons
+        elif btn == "btn-progress-reset-all":
+            self.reset_progress_all()
+        elif btn == "btn-progress-reset-fandom":
+            self.reset_progress_fandom()
+        elif btn == "btn-progress-reset-source":
+            self.reset_progress_source()
+
+    def on_select_changed(self, event: Select.Changed) -> None:
+        if event.select.id == "scrape-fandom-select":
+            self._refresh_progress_status()
+
+    def reset_progress_all(self) -> None:
+        try:
+            from data import progress as _progress
+            _progress.reset()
+            self.notify("All scrape checkpoints cleared.", severity="warning")
+            self._refresh_progress_status()
+        except Exception as e:
+            self.notify(f"Reset failed: {e}", severity="error")
+
+    def reset_progress_fandom(self) -> None:
+        sel = self.query_one("#scrape-fandom-select", Select)
+        fandom = sel.value if sel.value is not Select.BLANK else None
+        if not fandom:
+            self.notify("Select a fandom first.", severity="warning")
+            return
+        try:
+            from data import progress as _progress
+            _progress.reset(fandom=fandom)
+            self.notify(f"Checkpoint cleared for {fandom}.", severity="warning")
+            self._refresh_progress_status()
+        except Exception as e:
+            self.notify(f"Reset failed: {e}", severity="error")
+
+    def reset_progress_source(self) -> None:
+        sel = self.query_one("#scrape-fandom-select", Select)
+        fandom = sel.value if sel.value is not Select.BLANK else None
+        psel = self.query_one("#scrape-platform-select", Select)
+        platform = psel.value if psel.value is not Select.BLANK else "all"
+        if platform == "all":
+            self.notify("Pick a specific platform (AO3/FFN/Wattpad) to reset one source.", severity="warning")
+            return
+        if not fandom:
+            self.notify("Select a fandom first.", severity="warning")
+            return
+        try:
+            from data import progress as _progress
+            _progress.reset(fandom=fandom, source=platform)
+            self.notify(f"Checkpoint cleared for {fandom} / {platform}.", severity="warning")
+            self._refresh_progress_status()
+        except Exception as e:
+            self.notify(f"Reset failed: {e}", severity="error")
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         if event.input.id == "import-input":
@@ -1052,10 +1172,6 @@ class SwapApp(App):
     # ── Scrape ───────────────────────────────────────────────────────────────
 
     def start_scrape(self) -> None:
-        if self._busy:
-            self.notify("An operation is already running.", severity="warning")
-            return
-
         fandom_sel = self.query_one("#scrape-fandom-select", Select)
         platform_sel = self.query_one("#scrape-platform-select", Select)
         min_words_sel = self.query_one("#scrape-min-words-select", Select)
@@ -1067,102 +1183,229 @@ class SwapApp(App):
             self.notify("Select a fandom.", severity="warning")
             return
 
+        # Reject if a job for this fandom is already running
+        existing = self._scrape_jobs.get(fandom)
+        if existing and existing.get("proc") is not None and existing["proc"].poll() is None:
+            self.notify(f"'{fandom}' is already being scraped. See the Active tab.", severity="warning")
+            return
+
         platform = platform_sel.value if platform_sel.value is not Select.BLANK else "all"
         min_words = min_words_sel.value if min_words_sel.value is not Select.BLANK else 20000
         quality = quality_sel.value if quality_sel.value is not Select.BLANK else 0
         clear = clear_cb.value
 
-        self._scrape_stop = False
-        self._log_clear("scrape-log")
-        self.query_one("#btn-scrape", Button).disabled = True
-        self.query_one("#btn-scrape-stop", Button).disabled = False
-        self.run_scrape(fandom, platform, quality, clear, min_words)
+        self._launch_scrape_job(fandom, platform, quality, clear, min_words)
 
-    @work(thread=True)
-    def run_scrape(self, fandom: str, platform: str, quality: int, clear: bool, min_words: int = 20000) -> None:
-        """Run the scraper in a new console window so Chrome/seleniumbase output
-        doesn't corrupt the Textual TUI."""
+    def _launch_scrape_job(self, fandom: str, platform: str, quality: int,
+                           clear: bool, min_words: int) -> None:
+        """Launch a scraper subprocess and record it. Non-blocking."""
         import subprocess
 
-        self._busy = True
-        self._scrape_proc = None
-        log = lambda m: self.app.call_from_thread(self._log, "scrape-log", m)
+        cmd = [sys.executable, "-u", str(BACKEND_DIR / "indexer.py"), fandom]
+        if clear:
+            cmd.append("--clear")
+        if platform == "ao3":
+            cmd.append("--ao3-only")
+        elif platform == "ffn":
+            cmd.append("--ffn-only")
+        elif platform == "wattpad":
+            cmd.append("--wattpad-only")
+        cmd.extend(["--min-words", str(min_words)])
+        if quality != 0:
+            cmd.extend(["--wattpad-quality", str(quality)])
+
+        popen_kwargs = {"cwd": str(BACKEND_DIR)}
+        if sys.platform == "win32":
+            popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+        else:
+            popen_kwargs["stdin"] = subprocess.DEVNULL
+            popen_kwargs["stdout"] = subprocess.DEVNULL
+            popen_kwargs["stderr"] = subprocess.DEVNULL
+            popen_kwargs["start_new_session"] = True
 
         try:
-            # Build the indexer command
-            cmd = [sys.executable, "-u", str(BACKEND_DIR / "indexer.py"), fandom]
-
-            if clear:
-                cmd.append("--clear")
-
-            if platform == "ao3":
-                cmd.append("--ao3-only")
-            elif platform == "ffn":
-                cmd.append("--ffn-only")
-            elif platform == "wattpad":
-                cmd.append("--wattpad-only")
-            # "all" uses the default index_one path
-
-            cmd.extend(["--min-words", str(min_words)])
-
-            if quality != 0:
-                cmd.extend(["--wattpad-quality", str(quality)])
-
-            log(f"Launching scraper in a new terminal window...")
-            log(f"  cmd: {' '.join(cmd)}")
-            log("Scraper output is shown in the separate window.")
-            log("Use the Stop button to terminate it.")
-
-            popen_kwargs = {"cwd": str(BACKEND_DIR)}
-            if sys.platform == "win32":
-                # CREATE_NEW_CONSOLE gives the child its own console window so
-                # seleniumbase / Chrome debug output can't corrupt this TUI.
-                popen_kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
-            else:
-                # On non-Windows, detach stdio so Chrome logging stays out of our
-                # terminal. The child still runs in the background.
-                popen_kwargs["stdin"] = subprocess.DEVNULL
-                popen_kwargs["stdout"] = subprocess.DEVNULL
-                popen_kwargs["stderr"] = subprocess.DEVNULL
-                popen_kwargs["start_new_session"] = True
-
             proc = subprocess.Popen(cmd, **popen_kwargs)
-            self._scrape_proc = proc
+        except Exception as e:
+            self._log("scrape-log", f"ERROR launching {fandom}: {e}")
+            return
 
-            # Poll for completion / stop request without capturing stdout.
-            while True:
+        self._scrape_jobs[fandom] = {
+            "proc": proc,
+            "platform": platform,
+            "started_at": time.time(),
+            "exit_code": None,
+        }
+
+        self._log("scrape-log", f"[{fandom}] launched (pid={proc.pid}, platform={platform})")
+        self._log("scrape-log", f"  cmd: {' '.join(cmd)}")
+        self._refresh_active_grid()
+
+    # ── Active scrapers grid ─────────────────────────────────────────────────
+
+    def _describe_checkpoint_status(self, fandom: str, platform: str) -> str:
+        """Read the progress file and render a human status string for a job."""
+        try:
+            from data import progress as _progress
+        except Exception:
+            return "?"
+        data = _progress.load()
+        entry = data.get("fandoms", {}).get(fandom, {})
+        if not entry:
+            return "starting..."
+
+        sources = ("ao3", "ffn", "wattpad") if platform == "all" else (platform,)
+        parts = []
+        for src in sources:
+            s = entry.get(src)
+            if not s:
+                parts.append(f"{src}: waiting")
+                continue
+            if s.get("done"):
+                parts.append(f"{src}: done")
+                continue
+            if src == "ao3":
+                parts.append(f"ao3 p{s.get('page', '?')}")
+            elif src == "ffn":
+                wl = s.get("word_len")
+                bucket = "40k-100k" if wl == 10 else "100k+" if wl == 20 else "?"
+                parts.append(f"ffn {bucket} p{s.get('page', '?')}")
+            elif src == "wattpad":
+                parts.append("wattpad running")
+            else:
+                parts.append(f"{src}: running")
+
+        # If "all" and earlier sources are done, surface the currently active one
+        return " | ".join(parts)
+
+    def _format_elapsed(self, started_at: float) -> str:
+        secs = int(time.time() - started_at)
+        h, rem = divmod(secs, 3600)
+        m, s = divmod(rem, 60)
+        if h:
+            return f"{h}h{m:02d}m"
+        return f"{m}m{s:02d}s"
+
+    def _refresh_active_grid(self) -> None:
+        """Rebuild the Active tab table from self._scrape_jobs + checkpoint file."""
+        try:
+            tbl = self.query_one("#active-table", DataTable)
+        except Exception:
+            return
+
+        # Update exit codes for jobs that have finished
+        for fandom, job in self._scrape_jobs.items():
+            proc = job.get("proc")
+            if proc is not None and job.get("exit_code") is None:
+                rc = proc.poll()
+                if rc is not None:
+                    job["exit_code"] = rc
+                    self._log("active-log", f"[{fandom}] exited with code {rc}")
+
+        tbl.clear()
+
+        if not self._scrape_jobs:
+            return
+
+        for fandom, job in sorted(self._scrape_jobs.items()):
+            proc = job["proc"]
+            platform = job["platform"]
+            exit_code = job.get("exit_code")
+
+            if exit_code is None:
+                status = self._describe_checkpoint_status(fandom, platform)
+            elif exit_code == 0:
+                status = "FINISHED (ok)"
+            else:
+                status = f"EXITED rc={exit_code}"
+
+            elapsed = self._format_elapsed(job["started_at"])
+            pid = str(proc.pid) if proc else "?"
+            tbl.add_row(fandom, platform, status, elapsed, pid, key=fandom)
+
+    def stop_selected_job(self) -> None:
+        tbl = self.query_one("#active-table", DataTable)
+        if tbl.row_count == 0:
+            self.notify("No jobs to stop.", severity="warning")
+            return
+
+        try:
+            row_key = tbl.coordinate_to_cell_key(tbl.cursor_coordinate).row_key
+            fandom = row_key.value
+        except Exception:
+            self.notify("Select a row first (click a job).", severity="warning")
+            return
+
+        job = self._scrape_jobs.get(fandom)
+        if not job:
+            self.notify(f"No job record for '{fandom}'.", severity="warning")
+            return
+        proc = job.get("proc")
+        if proc is None or job.get("exit_code") is not None:
+            self.notify(f"'{fandom}' already finished.", severity="information")
+            return
+
+        self._log("active-log", f"[{fandom}] stop requested — killing pid {proc.pid} (+ children)...")
+        self._stop_watcher(fandom)
+
+    @work(thread=True)
+    def _stop_watcher(self, fandom: str) -> None:
+        """Kill a job's full process tree (Chrome/chromedriver descend from it)."""
+        import subprocess
+        job = self._scrape_jobs.get(fandom)
+        if not job:
+            return
+        proc = job.get("proc")
+        if proc is None:
+            return
+
+        # Kill the whole tree: the indexer spawns Chrome/chromedriver as children,
+        # and terminate() alone would orphan them.
+        if sys.platform == "win32":
+            try:
+                subprocess.run(
+                    ["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                    capture_output=True, timeout=10,
+                )
+            except Exception as e:
+                self.app.call_from_thread(self._log, "active-log",
+                                          f"[{fandom}] taskkill failed: {e}")
+        else:
+            try:
+                os.killpg(os.getpgid(proc.pid), 15)  # SIGTERM the group
+            except Exception:
                 try:
-                    rc = proc.wait(timeout=1)
-                    break
-                except subprocess.TimeoutExpired:
-                    pass
-                if self._scrape_stop:
-                    log("Stop requested — killing scraper process...")
-                    proc.terminate()
-                    try:
-                        rc = proc.wait(timeout=10)
-                    except subprocess.TimeoutExpired:
-                        proc.kill()
-                        rc = proc.wait()
-                    log("Scraper stopped.")
+                    proc.kill()
+                except Exception as e:
+                    self.app.call_from_thread(self._log, "active-log",
+                                              f"[{fandom}] kill failed: {e}")
                     return
 
-            if rc == 0:
-                log("\nScraper finished successfully.")
-            else:
-                log(f"\nScraper exited with code {rc}")
+        try:
+            rc = proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            try:
+                proc.kill()
+                rc = proc.wait()
+            except Exception as e:
+                self.app.call_from_thread(self._log, "active-log",
+                                          f"[{fandom}] final kill failed: {e}")
+                return
 
-            self.app.call_from_thread(self.load_all_data)
-        except Exception as e:
-            log(f"ERROR: {e}")
-        finally:
-            self._scrape_proc = None
-            self._busy = False
-            self.app.call_from_thread(self._scrape_buttons_reset)
+        job["exit_code"] = rc
+        self._scrape_jobs.pop(fandom, None)
+        self.app.call_from_thread(self._log, "active-log", f"[{fandom}] stopped (rc={rc})")
+        self.app.call_from_thread(self._refresh_active_grid)
+        self.app.call_from_thread(self._refresh_progress_status)
 
-    def _scrape_buttons_reset(self) -> None:
-        self.query_one("#btn-scrape", Button).disabled = False
-        self.query_one("#btn-scrape-stop", Button).disabled = True
+    def _clear_finished_jobs(self) -> None:
+        removed = [f for f, j in self._scrape_jobs.items() if j.get("exit_code") is not None]
+        for f in removed:
+            del self._scrape_jobs[f]
+        if removed:
+            self._log("active-log", f"Cleared {len(removed)} finished job(s): {', '.join(removed)}")
+        else:
+            self._log("active-log", "No finished jobs to clear.")
+        self._refresh_active_grid()
 
     # ── Coverage ─────────────────────────────────────────────────────────────
 

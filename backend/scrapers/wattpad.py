@@ -41,6 +41,11 @@ FIELDS = (
 
 LIMIT = 50  # max results per request
 
+# Wattpad's v4 search caps pagination at offset 10,000 regardless of total.
+# To cover fandoms larger than that, we shard the corpus by story length
+# (minParts/maxParts) and walk each shard independently, deduping by id.
+OFFSET_CAP = 10_000
+
 # ── Calibration settings ─────────────────────────────────────────────────────
 
 CALIBRATION_PAGES = 10            # pages to sample during calibration phase
@@ -75,14 +80,123 @@ def _make_session() -> requests.Session:
     return session
 
 
-def build_search_url(query: str, offset: int = 0) -> str:
+def build_search_url(
+    query: str,
+    offset: int = 0,
+    min_parts: int | None = None,
+    max_parts: int | None = None,
+    update_younger_than: int | None = None,
+) -> str:
     """Build the Wattpad v4 search API URL."""
-    return (
+    url = (
         f"{BASE_URL}?query={requests.utils.quote(query)}"
         f"&limit={LIMIT}"
         f"&fields={FIELDS}"
         f"&offset={offset}"
     )
+    if min_parts is not None:
+        url += f"&minParts={min_parts}"
+    if max_parts is not None:
+        url += f"&maxParts={max_parts}"
+    if update_younger_than is not None:
+        url += f"&updateYoungerThan={update_younger_than}"
+    return url
+
+
+# A shard is (min_parts, max_parts, update_younger_than_days).
+# `None` on max_parts means open-ended. `None` on the age field means no age filter.
+Shard = tuple[int | None, int | None, int | None]
+
+
+def _get_total(session: requests.Session, query: str, shard: Shard) -> int:
+    """Cheap probe: total results for a given shard."""
+    lo, hi, age = shard
+    url = build_search_url(query, offset=0, min_parts=lo, max_parts=hi,
+                           update_younger_than=age)
+    try:
+        resp = session.get(url, timeout=30)
+        resp.raise_for_status()
+        return resp.json().get("total", 0) or 0
+    except (requests.RequestException, ValueError):
+        return 0
+
+
+# Age cutoffs (days since last update) used to split single-parts buckets that
+# still overflow. Applied in ascending order so each shard covers the delta
+# between consecutive cutoffs; we post-process to form disjoint age ranges.
+AGE_CUTOFFS_DAYS = [30, 180, 365, 1095, 3650]  # ~1mo, 6mo, 1yr, 3yr, 10yr
+
+
+def _plan_shards(session: requests.Session, query: str) -> list[Shard]:
+    """
+    Build a list of shards that each fit under OFFSET_CAP.
+
+    Strategy:
+      1. Start from coarse minParts buckets.
+      2. Binary-subdivide any overflow bucket on the parts axis.
+      3. If a single-width parts bucket still overflows (e.g. 1-part stories),
+         fall back to splitting it on updateYoungerThan (age) windows.
+    """
+    initial: list[Shard] = [
+        (1, 1, None), (2, 2, None), (3, 3, None), (4, 5, None),
+        (6, 10, None), (11, 20, None), (21, 50, None), (51, None, None),
+    ]
+
+    final: list[Shard] = []
+    queue: list[Shard] = list(initial)
+    age_split_attempted: set[tuple[int | None, int | None]] = set()
+
+    while queue:
+        shard = queue.pop(0)
+        lo, hi, age = shard
+        total = _get_total(session, query, shard)
+        if total == 0:
+            continue
+        if total <= OFFSET_CAP:
+            final.append(shard)
+            continue
+
+        # Overflow — try to subdivide on the parts axis first
+        if hi is None:
+            new_hi = max(lo + 1, lo * 4)
+            queue.append((lo, new_hi, age))
+            queue.append((new_hi + 1, None, age))
+            continue
+        if hi > lo:
+            mid = (lo + hi) // 2
+            queue.append((lo, mid, age))
+            queue.append((mid + 1, hi, age))
+            continue
+
+        # Parts axis exhausted (lo == hi). Fall back to age-window splits.
+        # Age cutoffs are cumulative ("updated within N days"), so shards
+        # overlap — dedup by id handles the overlap cheaply.
+        if age is not None or (lo, hi) in age_split_attempted:
+            # Already tried age splitting or already on an age shard — accept
+            # what we can reach (first OFFSET_CAP results of this shard).
+            print(f"[Wattpad] shard {shard} still overflows ({total}); "
+                  f"accepting first {OFFSET_CAP} only")
+            final.append(shard)
+            continue
+
+        print(f"[Wattpad] single-parts shard [{lo},{hi}] overflows "
+              f"({total}) — splitting by age")
+        age_split_attempted.add((lo, hi))
+        for days in AGE_CUTOFFS_DAYS:
+            queue.append((lo, hi, days))
+        # Also keep the unrestricted shard to sweep stories older than the
+        # largest cutoff; dedup by id removes overlap with the age shards.
+        # On requeue it will fall into the "already attempted" branch above
+        # and be accepted as a best-effort up-to-10k shard.
+        queue.append((lo, hi, None))
+
+    # Preserve ascending order for nicer logs: parts first, then age
+    final.sort(key=lambda s: (
+        s[0] if s[0] is not None else 0,
+        s[1] if s[1] is not None else 10**9,
+        s[2] if s[2] is not None else 10**9,
+    ))
+    return final
 
 
 # ── Calibration ──────────────────────────────────────────────────────────────
@@ -247,84 +361,110 @@ def search(query: str, max_pages: int = 0, quality_offset: int = 0) -> list[Fic]
     min_ratio = cal["min_ratio"]
     total = cal["total"]
 
-    # ── Phase 2: Full scrape ──────────────────────────────────────────────
+    # ── Phase 2: Plan shards to work around the 10k offset cap ────────────
+    print(f"\n[Wattpad] ── Planning shards (corpus: {total:,}) ──")
+    shards = _plan_shards(session, query)
+    print(f"[Wattpad] {len(shards)} shards: {shards}")
+
+    # ── Phase 3: Scrape each shard, dedupe by story id ────────────────────
     print(f"\n[Wattpad] ── Scraping with calibrated filter (min ratio: {min_ratio:.2%}) ──")
 
-    results = []
-    offset = 0
+    seen_ids: set[str] = set()
+    results: list[Fic] = []
     pages_fetched = 0
-    consecutive_empty = 0
+    budget_exhausted = False
 
-    while True:
-        url = build_search_url(query, offset=offset)
-        print(f"\n[Wattpad] Fetching offset {offset}...")
+    for shard_idx, (min_parts, max_parts, age_days) in enumerate(shards, 1):
+        parts_label = f"parts[{min_parts},{max_parts if max_parts is not None else '∞'}]"
+        age_label = f" age<={age_days}d" if age_days is not None else ""
+        shard_label = parts_label + age_label
+        print(f"\n[Wattpad] ── Shard {shard_idx}/{len(shards)} {shard_label} ──")
 
-        try:
-            resp = session.get(url, timeout=30)
-            resp.raise_for_status()
-            data = resp.json()
-        except requests.RequestException as e:
-            print(f"[Wattpad] Request failed at offset {offset}: {e}")
-            break
-        except ValueError:
-            print(f"[Wattpad] Invalid JSON at offset {offset}")
-            break
+        offset = 0
+        shard_qualified = 0
+        consecutive_empty = 0
 
-        stories = data.get("stories", [])
-        if not stories:
-            print(f"[Wattpad] No stories returned at offset {offset} — done")
-            break
+        while True:
+            url = build_search_url(query, offset=offset,
+                                   min_parts=min_parts, max_parts=max_parts,
+                                   update_younger_than=age_days)
+            print(f"[Wattpad] {shard_label} offset {offset}...")
 
-        # Filter and convert
-        page_qualified = 0
-        for story in stories:
-            if not _is_valid_story(story):
-                continue
+            try:
+                resp = session.get(url, timeout=30)
+                resp.raise_for_status()
+                data = resp.json()
+            except requests.RequestException as e:
+                print(f"[Wattpad] Request failed at offset {offset}: {e}")
+                break
+            except ValueError:
+                print(f"[Wattpad] Invalid JSON at offset {offset}")
+                break
 
-            ratio = _get_ratio(story)
-            if ratio >= min_ratio:
-                fic = parse_story(story)
-                results.append(fic)
+            stories = data.get("stories", [])
+            if not stories:
+                print(f"[Wattpad] No stories at offset {offset} — shard done")
+                break
+
+            page_qualified = 0
+            page_new = 0
+            for story in stories:
+                if not _is_valid_story(story):
+                    continue
+                ratio = _get_ratio(story)
+                if ratio < min_ratio:
+                    continue
+
+                sid = str(story.get("id", ""))
+                if not sid or sid in seen_ids:
+                    continue
+                seen_ids.add(sid)
+
+                results.append(parse_story(story))
                 page_qualified += 1
+                page_new += 1
 
-        print(f"[Wattpad] Page {pages_fetched + 1}: {len(stories)} fetched, "
-              f"{page_qualified} qualified (total qualified: {len(results)})")
+            shard_qualified += page_qualified
+            print(f"[Wattpad] {shard_label} page {pages_fetched + 1}: "
+                  f"{len(stories)} fetched, {page_qualified} qualified, "
+                  f"{page_new} new (total unique: {len(results)})")
 
-        pages_fetched += 1
+            pages_fetched += 1
 
-        # Early stop: consecutive pages with no qualifying fics
-        if EARLY_STOP_ENABLED:
-            if page_qualified == 0:
-                consecutive_empty += 1
-                if consecutive_empty >= MAX_EMPTY_PAGES:
-                    print(f"[Wattpad] {MAX_EMPTY_PAGES} consecutive empty pages — stopping early")
-                    break
-            else:
-                consecutive_empty = 0
+            if EARLY_STOP_ENABLED:
+                if page_qualified == 0:
+                    consecutive_empty += 1
+                    if consecutive_empty >= MAX_EMPTY_PAGES:
+                        print(f"[Wattpad] {MAX_EMPTY_PAGES} empty pages — stopping shard")
+                        break
+                else:
+                    consecutive_empty = 0
 
-        # Max pages limit
-        if max_pages > 0 and pages_fetched >= max_pages:
-            print(f"[Wattpad] Reached max_pages={max_pages} — stopping")
+            if max_pages > 0 and pages_fetched >= max_pages:
+                print(f"[Wattpad] Reached max_pages={max_pages} — stopping all shards")
+                budget_exhausted = True
+                break
+
+            offset += LIMIT
+            if offset >= OFFSET_CAP:
+                print(f"[Wattpad] {shard_label} hit offset cap ({OFFSET_CAP}) — shard done")
+                break
+
+            if not data.get("nextUrl"):
+                print(f"[Wattpad] {shard_label} no nextUrl — shard done")
+                break
+
+            time.sleep(random.uniform(1.5, 3.0))
+
+        print(f"[Wattpad] Shard {shard_label} done: {shard_qualified} qualified")
+        if budget_exhausted:
             break
 
-        # Pagination: check if more results exist
-        offset += LIMIT
-        if total and offset >= total:
-            print(f"[Wattpad] Reached end of results (offset {offset} >= total {total})")
-            break
-
-        next_url = data.get("nextUrl")
-        if not next_url:
-            print(f"[Wattpad] No nextUrl — done")
-            break
-
-        # Rate limiting — be polite
-        delay = random.uniform(1.5, 3.0)
-        time.sleep(delay)
-
-    print(f"\n[Wattpad] Done: {len(results)} qualifying fics from {pages_fetched} pages")
-    print(f"[Wattpad] Pass rate: {len(results)}/{pages_fetched * LIMIT} "
-          f"({len(results) / max(pages_fetched * LIMIT, 1):.1%})")
+    print(f"\n[Wattpad] Done: {len(results)} unique qualifying fics from "
+          f"{pages_fetched} pages across {len(shards)} shards")
+    if pages_fetched:
+        print(f"[Wattpad] Pass rate: {len(results)}/{pages_fetched * LIMIT} "
+              f"({len(results) / (pages_fetched * LIMIT):.1%})")
     return results
 
 

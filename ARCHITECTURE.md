@@ -165,6 +165,35 @@ docker push <account_id>.dkr.ecr.us-east-1.amazonaws.com/ficfinder-backend:lates
 
 Vercel picks up frontend changes automatically on push to `main`.
 
+### Swapping the database host
+
+The only DB env var is `DATABASE_URL`. It's read in three places:
+
+- `backend/db/postgres.py` (SQLAlchemy engine)
+- `backend/cleanup.py` (VACUUM script)
+- `backend/docker-compose.yml` (compose passes it through to the container)
+
+To move from Neon to another Postgres host (RDS, Supabase, self-hosted):
+
+1. Update `DATABASE_URL` in `backend/.env` **and** in the App Runner service's environment variables (console → Configuration → Edit configurations, or `aws apprunner update-service`). Keep `?sslmode=require`.
+2. Verify the new host supports `pgvector` (RDS: Postgres 15.2+ with `vector` in `shared_preload_libraries` or just `CREATE EXTENSION`). `init_db()` runs `CREATE EXTENSION IF NOT EXISTS vector` automatically on first boot.
+3. Run `python backend/db/postgres.py` once against the new host to create the `fics` table and enable pgvector.
+4. Network: RDS in a private VPC requires an App Runner VPC connector and a security group rule allowing inbound from it. Neon is public-endpoint so no VPC wiring is needed.
+5. Data migration: [backend/migrate_to_neon.py](backend/migrate_to_neon.py) is the reference pattern (batched 500/row copy preserving embedding vectors via `::text` → `::vector` cast). Flip source/destination as needed.
+6. Users live in **DynamoDB** (`USERS_TABLE`, default `ficfinder-users`), not Postgres — a DB swap does not affect auth or billing state.
+
+### Swapping the backend host
+
+The frontend → backend arrow is driven by one env var on Vercel: `BACKEND_URL`. Used by all Next.js server routes under `frontend/app/api/*`.
+
+To move off App Runner (or to a different App Runner service):
+
+1. **Vercel** → Project Settings → Environment Variables → set `BACKEND_URL` to the new public backend URL (e.g. `https://new-backend.example.com`). Redeploy.
+2. **New backend host** → set `FRONTEND_URL` (used by Stripe checkout/portal redirects in `backend/auth/stripe_handler.py`) to the Vercel domain.
+3. **Google OAuth console** → add the new backend origin/redirect URI if backend participates in the OAuth flow.
+4. **Stripe dashboard** → repoint the webhook endpoint at the new backend URL (path `/auth/stripe/webhook` or wherever it's mounted in `api.py`).
+5. The backend itself has no "self-URL" env var — it doesn't need to know where it's reachable from.
+
 ---
 
 ## 4. Database
@@ -724,17 +753,23 @@ Planned design:
 ### Backend (`backend/.env`)
 
 | Variable | Description | Required |
-|---|---|---|
-| `DATABASE_URL` | Neon PostgreSQL connection string (pooler URL with `?sslmode=require`) | Yes |
+| --- | --- | --- |
+| `DATABASE_URL` | Postgres connection string with `?sslmode=require`. Currently Neon (pooler URL). To swap providers, see §3 → *Swapping the database host*. | Yes |
 | `GEMINI_API_KEY` | Google Gemini API key (for `gemini-embedding-001` and `gemini-2.5-flash`) | Yes |
+| `USERS_TABLE` | DynamoDB table name for users (default `ficfinder-users`) | No |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID (token verification in `auth/auth.py`) | For auth |
+| `JWT_SECRET` | HMAC secret for session JWTs | For auth |
+| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` / `STRIPE_PRICE_ID` | Stripe credentials | For billing |
+| `FRONTEND_URL` | Vercel domain — used for Stripe checkout/portal redirects. Update when the frontend domain changes. | For billing |
 
 AWS credentials for Bedrock are **not** in `.env` — they come from the IAM instance role attached to the App Runner service. Locally, `boto3` falls back to `~/.aws/credentials` or environment variables.
 
 ### Frontend (`frontend/.env.local`)
 
 | Variable | Description | Required |
-|---|---|---|
-| `BACKEND_URL` | Full URL to the Python backend (e.g. `https://your-app.us-east-1.awsapprunner.com`) | Yes |
+| --- | --- | --- |
+| `BACKEND_URL` | Full URL to the Python backend (e.g. `https://your-app.us-east-1.awsapprunner.com`). To swap backend hosts, see §3 → *Swapping the backend host*. | Yes |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Google OAuth client ID exposed to the browser for Google Sign-In | For auth |
 
 If `BACKEND_URL` is unset, the Next.js server routes default to `http://localhost:8000`.
 
