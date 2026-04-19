@@ -1,7 +1,12 @@
 """
 Local-first fic storage using parquet + numpy files.
 
-Saves scraped fics to local parquet/npy files (same format as fanfic-devtool).
+Write path is append-only: each scrape batch writes a new part file under
+`parts/` rather than rewriting the full fandom corpus. A `compact()` call
+merges parts back into the canonical `fics.parquet` + `embeddings.npy` that
+the devtool reads. This keeps per-batch memory O(batch_size) instead of
+O(fandom_size), which matters when running several scrapers in parallel.
+
 Falls back to Neon DB if local storage fails.
 """
 
@@ -9,6 +14,7 @@ import datetime
 import json
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -20,6 +26,10 @@ DEVTOOL_DIR = Path(__file__).parent.parent.parent / "fanfic-devtool"
 FANDOMS_DIR = DEVTOOL_DIR / "fandoms"
 EMBEDDING_DIMS = 768
 
+CANONICAL_PARQUET = "fics.parquet"
+CANONICAL_NPY = "embeddings.npy"
+PARTS_SUBDIR = "parts"
+
 
 def slugify(fandom: str) -> str:
     return fandom.lower().replace(" ", "_").replace("/", "_").replace(".", "")
@@ -29,34 +39,141 @@ def fandom_dir(fandom: str) -> Path:
     return FANDOMS_DIR / slugify(fandom)
 
 
-def _load_existing(fandom: str) -> tuple[Optional[pl.DataFrame], Optional[np.ndarray]]:
-    """Load existing parquet + embeddings for a fandom, or return (None, None)."""
-    d = fandom_dir(fandom)
-    parquet_path = d / "fics.parquet"
-    npy_path = d / "embeddings.npy"
+def _parts_dir(fandom: str) -> Path:
+    return fandom_dir(fandom) / PARTS_SUBDIR
 
+
+# ── Cross-process write lock ─────────────────────────────────────────────────
+
+class _FandomLock:
+    """Simple cross-process lock scoped to a fandom directory.
+
+    Uses O_CREAT|O_EXCL on a lockfile — portable across Windows and POSIX
+    without pulling in msvcrt/fcntl. Stale locks older than 5 min are broken
+    (a crashed scraper shouldn't wedge the fandom forever).
+    """
+
+    STALE_SECONDS = 300
+
+    def __init__(self, fandom: str):
+        self.path = fandom_dir(fandom) / ".write.lock"
+        self.acquired = False
+
+    def __enter__(self):
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        deadline = time.monotonic() + 60  # up to 60s waiting
+        while True:
+            try:
+                fd = os.open(str(self.path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                os.write(fd, str(os.getpid()).encode())
+                os.close(fd)
+                self.acquired = True
+                return self
+            except FileExistsError:
+                try:
+                    age = time.time() - self.path.stat().st_mtime
+                    if age > self.STALE_SECONDS:
+                        self.path.unlink(missing_ok=True)
+                        continue
+                except FileNotFoundError:
+                    continue
+                if time.monotonic() > deadline:
+                    raise TimeoutError(f"Could not acquire lock on {self.path}")
+                time.sleep(0.25)
+
+    def __exit__(self, exc_type, exc, tb):
+        if self.acquired:
+            try:
+                self.path.unlink(missing_ok=True)
+            except OSError:
+                pass
+
+
+# ── Part-file IO ─────────────────────────────────────────────────────────────
+
+def _next_part_index(fandom: str) -> int:
+    """Return the next unused part index for atomic append."""
+    pd = _parts_dir(fandom)
+    if not pd.exists():
+        return 0
+    existing = list(pd.glob("fics_*.parquet"))
+    if not existing:
+        return 0
+    idxs = []
+    for p in existing:
+        stem = p.stem  # fics_0001
+        try:
+            idxs.append(int(stem.split("_")[-1]))
+        except ValueError:
+            continue
+    return (max(idxs) + 1) if idxs else 0
+
+
+def _write_part(fandom: str, rows: list[dict], embs: np.ndarray) -> None:
+    """Write one part file atomically (tmp then rename)."""
+    pd = _parts_dir(fandom)
+    pd.mkdir(parents=True, exist_ok=True)
+
+    idx = _next_part_index(fandom)
+    name = f"fics_{idx:06d}"
+    parquet_tmp = pd / f".{name}.parquet.tmp"
+    # np.save() appends .npy if the path doesn't end in .npy already, so we
+    # have to give it a .npy suffix on the temp path too.
+    npy_tmp = pd / f".{name}.tmp.npy"
+    parquet_final = pd / f"{name}.parquet"
+    npy_final = pd / f"{name}.npy"
+
+    df = pl.DataFrame(rows)
+    df.write_parquet(parquet_tmp)
+    np.save(npy_tmp, embs)
+
+    os.replace(parquet_tmp, parquet_final)
+    os.replace(npy_tmp, npy_final)
+
+
+def _list_parts(fandom: str) -> list[tuple[Path, Path]]:
+    pd = _parts_dir(fandom)
+    if not pd.exists():
+        return []
+    pairs = []
+    for parquet in sorted(pd.glob("fics_*.parquet")):
+        npy = pd / (parquet.stem + ".npy")
+        if npy.exists():
+            pairs.append((parquet, npy))
+    return pairs
+
+
+# ── Canonical IO (used by devtool and compaction) ────────────────────────────
+
+def _canonical_paths(fandom: str) -> tuple[Path, Path]:
+    d = fandom_dir(fandom)
+    return d / CANONICAL_PARQUET, d / CANONICAL_NPY
+
+
+def _load_canonical(fandom: str) -> tuple[Optional[pl.DataFrame], Optional[np.ndarray]]:
+    parquet_path, npy_path = _canonical_paths(fandom)
     if parquet_path.exists() and npy_path.exists():
         try:
-            df = pl.read_parquet(parquet_path)
-            embs = np.load(npy_path)
-            return df, embs
+            return pl.read_parquet(parquet_path), np.load(npy_path)
         except Exception:
             return None, None
     return None, None
 
 
-def _save(fandom: str, df: pl.DataFrame, embs: np.ndarray):
-    """Save parquet + embeddings + meta for a fandom."""
-    d = fandom_dir(fandom)
-    d.mkdir(parents=True, exist_ok=True)
+def _write_canonical(fandom: str, df: pl.DataFrame, embs: np.ndarray) -> None:
+    parquet_path, npy_path = _canonical_paths(fandom)
+    parquet_path.parent.mkdir(parents=True, exist_ok=True)
 
-    parquet_path = d / "fics.parquet"
-    npy_path = d / "embeddings.npy"
+    parquet_tmp = parquet_path.with_suffix(".parquet.tmp")
+    # np.save auto-appends .npy unless the path already has it
+    npy_tmp = npy_path.with_suffix(".tmp.npy")
 
-    df.write_parquet(parquet_path)
-    np.save(npy_path, embs)
+    df.write_parquet(parquet_tmp)
+    np.save(npy_tmp, embs)
 
-    # Update meta.json
+    os.replace(parquet_tmp, parquet_path)
+    os.replace(npy_tmp, npy_path)
+
     meta = {
         "fandom_name": fandom,
         "slug": slugify(fandom),
@@ -71,125 +188,189 @@ def _save(fandom: str, df: pl.DataFrame, embs: np.ndarray):
             "median": int(df["word_count"].median()) if df["word_count"].median() is not None else 0,
         },
     }
-    meta_path = d / "meta.json"
-    meta_path.write_text(json.dumps(meta, indent=2, default=str))
+    (fandom_dir(fandom) / "meta.json").write_text(json.dumps(meta, indent=2, default=str))
+
+
+# ── Public API ───────────────────────────────────────────────────────────────
+
+def _row_from_fic(fic, fandom: str, now: str) -> dict:
+    return {
+        "id": f"{fic.platform}:{fic.url}",
+        "title": fic.title,
+        "url": fic.url,
+        "platform": fic.platform,
+        "summary": fic.summary,
+        "tags": ", ".join(fic.tags) if fic.tags else None,
+        "word_count": fic.word_count,
+        "kudos": fic.kudos,
+        "hits": fic.hits,
+        "fandom": fandom,
+        "indexed_at": now,
+    }
 
 
 def upsert_fic_local(fic, fandom: str, embedding: list[float]) -> bool:
-    """
-    Insert or update a fic in local parquet/npy storage.
-
-    Returns True on success, False on failure.
-    """
+    """Insert a single fic as its own (tiny) part file. Prefer the batch API."""
     try:
-        from data.schema import Fic
-
-        fic_id = f"{fic.platform}:{fic.url}"
-
-        # Load existing data
-        existing_df, existing_embs = _load_existing(fandom)
-
-        # Build new row
-        new_row = {
-            "id": fic_id,
-            "title": fic.title,
-            "url": fic.url,
-            "platform": fic.platform,
-            "summary": fic.summary,
-            "tags": ", ".join(fic.tags) if fic.tags else None,
-            "word_count": fic.word_count,
-            "kudos": fic.kudos,
-            "hits": fic.hits,
-            "fandom": fandom,
-            "indexed_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-        }
-        new_emb = np.array(embedding, dtype=np.float32)
-
-        if existing_df is not None and existing_embs is not None:
-            # Check if fic already exists — update it
-            mask = existing_df["id"] == fic_id
-            if mask.any():
-                # Remove old row
-                keep_mask = ~mask
-                existing_df = existing_df.filter(keep_mask)
-                existing_embs = existing_embs[keep_mask.to_numpy()]
-
-            # Append new row
-            new_df = pl.DataFrame([new_row], schema=existing_df.schema)
-            combined_df = pl.concat([existing_df, new_df])
-            combined_embs = np.vstack([existing_embs, new_emb.reshape(1, -1)])
-        else:
-            # First fic for this fandom
-            combined_df = pl.DataFrame([new_row])
-            combined_embs = new_emb.reshape(1, -1)
-
-        _save(fandom, combined_df, combined_embs)
+        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        row = _row_from_fic(fic, fandom, now)
+        emb = np.asarray(embedding, dtype=np.float32).reshape(1, -1)
+        with _FandomLock(fandom):
+            _write_part(fandom, [row], emb)
         return True
-
     except Exception as e:
         print(f"  [local] Failed to save '{fic.title}': {e}")
         return False
 
 
 def upsert_fics_batch_local(fics, fandom: str, embeddings: list[list[float]]) -> tuple[int, int]:
-    """
-    Batch upsert fics to local storage. Much more efficient than one-at-a-time
-    since it only reads/writes the parquet+npy once per batch.
-
-    Returns (success_count, fail_count).
-    """
+    """Append a batch as one part file. O(batch_size) memory — no corpus rewrite."""
+    if not fics:
+        return 0, 0
     try:
-        fic_ids = [f"{fic.platform}:{fic.url}" for fic in fics]
-
-        # Load existing data
-        existing_df, existing_embs = _load_existing(fandom)
-
-        # Build new rows
         now = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        new_rows = []
-        new_embs = []
-        for fic, embedding in zip(fics, embeddings):
-            new_rows.append({
-                "id": f"{fic.platform}:{fic.url}",
-                "title": fic.title,
-                "url": fic.url,
-                "platform": fic.platform,
-                "summary": fic.summary,
-                "tags": ", ".join(fic.tags) if fic.tags else None,
-                "word_count": fic.word_count,
-                "kudos": fic.kudos,
-                "hits": fic.hits,
-                "fandom": fandom,
-                "indexed_at": now,
-            })
-            new_embs.append(np.array(embedding, dtype=np.float32))
-
-        new_embs_arr = np.stack(new_embs)
-
-        if existing_df is not None and existing_embs is not None:
-            # Remove any existing rows with same IDs (for upsert)
-            keep_mask = ~existing_df["id"].is_in(fic_ids)
-            existing_df = existing_df.filter(keep_mask)
-            existing_embs = existing_embs[keep_mask.to_numpy()]
-
-            # Append new rows
-            new_df = pl.DataFrame(new_rows, schema=existing_df.schema)
-            combined_df = pl.concat([existing_df, new_df])
-            combined_embs = np.vstack([existing_embs, new_embs_arr])
-        else:
-            combined_df = pl.DataFrame(new_rows)
-            combined_embs = new_embs_arr
-
-        _save(fandom, combined_df, combined_embs)
+        rows = [_row_from_fic(fic, fandom, now) for fic in fics]
+        embs = np.asarray(embeddings, dtype=np.float32)
+        if embs.ndim == 1:
+            embs = embs.reshape(1, -1)
+        with _FandomLock(fandom):
+            _write_part(fandom, rows, embs)
         return len(fics), 0
-
     except Exception as e:
         print(f"  [local] Batch save failed: {e}")
         return 0, len(fics)
 
 
+def compact(fandom: str) -> int:
+    """Merge all part files into the canonical parquet/npy and delete parts.
+
+    Deduplicates by fic id, keeping the last-written row (later parts win).
+    Returns total fic count after compaction.
+    """
+    with _FandomLock(fandom):
+        parts = _list_parts(fandom)
+        existing_df, existing_embs = _load_canonical(fandom)
+
+        if not parts and existing_df is None:
+            return 0
+        if not parts:
+            return len(existing_df) if existing_df is not None else 0
+
+        dfs: list[pl.DataFrame] = []
+        emb_arrays: list[np.ndarray] = []
+
+        if existing_df is not None and existing_embs is not None:
+            dfs.append(existing_df)
+            emb_arrays.append(existing_embs)
+
+        for parquet_path, npy_path in parts:
+            try:
+                dfs.append(pl.read_parquet(parquet_path))
+                emb_arrays.append(np.load(npy_path))
+            except Exception as e:
+                print(f"  [local] Skipping unreadable part {parquet_path.name}: {e}")
+
+        if not dfs:
+            return 0
+
+        # Align schemas before concat (part files may have different null types)
+        target_schema = dfs[0].schema
+        aligned = [dfs[0]]
+        for d in dfs[1:]:
+            try:
+                aligned.append(d.cast(target_schema))
+            except Exception:
+                aligned.append(d)
+
+        combined_df = pl.concat(aligned, how="diagonal_relaxed")
+        combined_embs = np.vstack(emb_arrays)
+
+        # Dedupe by id, keeping the last occurrence
+        n = len(combined_df)
+        combined_df = combined_df.with_row_index("_row_idx")
+        keep_idx = (
+            combined_df.group_by("id")
+            .agg(pl.col("_row_idx").max())
+            .get_column("_row_idx")
+            .to_numpy()
+        )
+        # to_numpy() on a polars column may be a read-only zero-copy view,
+        # so copy before in-place sort.
+        keep_idx = np.array(keep_idx, copy=True)
+        keep_idx.sort()
+        combined_df = combined_df[keep_idx].drop("_row_idx")
+        combined_embs = combined_embs[keep_idx]
+
+        _write_canonical(fandom, combined_df, combined_embs)
+
+        # Remove part files only after canonical write succeeded
+        for parquet_path, npy_path in parts:
+            try:
+                parquet_path.unlink(missing_ok=True)
+                npy_path.unlink(missing_ok=True)
+            except OSError:
+                pass
+        try:
+            _parts_dir(fandom).rmdir()
+        except OSError:
+            pass
+
+        print(f"[local] Compacted '{fandom}': {n} rows -> {len(combined_df)} unique")
+        return len(combined_df)
+
+
+def get_local_fic_count(fandom: str, platform: str = "all") -> int:
+    """Count rows across canonical + parts. Used by the devtool for live counts."""
+    total = 0
+
+    parquet_path, _ = _canonical_paths(fandom)
+    if parquet_path.exists():
+        try:
+            df = pl.read_parquet(parquet_path, columns=["platform"])
+            if platform == "all":
+                total += df.height
+            else:
+                total += int(df.filter(pl.col("platform") == platform).height)
+        except Exception:
+            pass
+
+    for parquet_path, _ in _list_parts(fandom):
+        try:
+            df = pl.read_parquet(parquet_path, columns=["platform"])
+            if platform == "all":
+                total += df.height
+            else:
+                total += int(df.filter(pl.col("platform") == platform).height)
+        except Exception:
+            pass
+
+    return total
+
+
+def get_platform_counts(fandom: str) -> dict:
+    """Per-platform counts across canonical + parts."""
+    counts = {"ao3": 0, "ffn": 0, "wattpad": 0}
+
+    def _tally(path: Path):
+        try:
+            df = pl.read_parquet(path, columns=["platform"])
+            for platform, count in df.group_by("platform").len().iter_rows():
+                if platform in counts:
+                    counts[platform] += int(count)
+        except Exception:
+            pass
+
+    parquet_path, _ = _canonical_paths(fandom)
+    if parquet_path.exists():
+        _tally(parquet_path)
+    for parquet_path, _ in _list_parts(fandom):
+        _tally(parquet_path)
+
+    return counts
+
+
 def clear_fandom_local(fandom: str):
-    """Delete local storage for a fandom."""
+    """Delete local storage for a fandom (canonical + parts + lock)."""
     import shutil
     d = fandom_dir(fandom)
     if d.exists():

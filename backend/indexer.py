@@ -1,6 +1,9 @@
+import datetime
+import logging
 import os
 import sys
 import time
+import traceback
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import config
@@ -8,12 +11,100 @@ from data.fandoms import FANDOMS
 from data import progress
 from ai.embedder import embed_fics_batch
 from db.postgres import upsert_fic, get_fic_count, init_db, clear_fandom, migrate_embedding_dimensions
-from db.local_storage import upsert_fics_batch_local, clear_fandom_local
+from db.local_storage import upsert_fics_batch_local, clear_fandom_local, compact as compact_local
 from seleniumbase import SB
 import random
 
 MIN_WORDS = 20000
 WATTPAD_QUALITY_OFFSET = 0
+
+# Chrome flags to cap memory use per scraper. --disable-dev-shm-usage avoids
+# /dev/shm OOMs on small Linux boxes; --disk-cache-size=1 disables the on-disk
+# cache; --js-flags caps V8 old-space at 512MB.
+CHROME_MEMORY_FLAGS = [
+    "--disable-dev-shm-usage",
+    "--disable-extensions",
+    "--disk-cache-size=1",
+    "--media-cache-size=1",
+    "--disable-application-cache",
+    "--aggressive-cache-discard",
+    "--js-flags=--max-old-space-size=512",
+]
+
+# Logs go to backend/logs/<pid>-<timestamp>.log so parallel scrapers don't
+# collide. Full tracebacks always land here, even if the terminal closes.
+LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+
+
+def _open_browser():
+    """Open a fresh SB context with memory-capping Chrome flags."""
+    extra = " ".join(CHROME_MEMORY_FLAGS)
+    return SB(uc=True, headless=False, chromium_arg=extra)
+
+
+class BrowserSession:
+    """Selenium browser held open for the full scrape.
+
+    Use as: `with BrowserSession() as session: session.sb.open(url)`.
+    `session.tick()` is a no-op; kept only so existing per-page callers keep
+    working. The session does not cycle Chrome — closing/reopening re-triggers
+    the Cloudflare/terms interstitial, which means a human click-through every
+    time. Instead we rely on Chrome's memory flags + clear_browser_state().
+    """
+
+    def __init__(self, interstitial_seconds: int = 15):
+        self.interstitial_seconds = interstitial_seconds
+        self._ctx = None
+        self.sb = None
+        # The Cloudflare / age-gate interstitial only shows on a fresh browser;
+        # scrapers call interstitial_hold() after the first sb.open() to give
+        # the human time to click through. Flag flips once the hold has fired.
+        self._interstitial_held = False
+
+    def __enter__(self):
+        self._ctx = _open_browser()
+        self.sb = self._ctx.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        if self._ctx is not None:
+            try:
+                self._ctx.__exit__(None, None, None)
+            except Exception as e:
+                print(f"[browser] error closing session: {e}")
+            self._ctx = None
+            self.sb = None
+
+    def tick(self) -> bool:
+        """No-op kept so per-page callers still work.
+
+        Browser cycling was removed: closing/reopening Chrome re-triggered the
+        interstitial (terms/Cloudflare) and forced manual re-acceptance. The
+        whole scrape now shares one browser.
+        """
+        return False
+
+    def interstitial_hold(self, label: str = "") -> None:
+        """Pause once per fresh browser so a human can clear any interstitial.
+
+        Scrapers call this after the first sb.open() of the session. Fires
+        exactly once per open() / cycle; later calls are no-ops.
+        """
+        if self._interstitial_held or self.interstitial_seconds <= 0:
+            return
+        self._interstitial_held = True
+        tag = f"[{label}] " if label else "[browser] "
+        print(f"{tag}Waiting {self.interstitial_seconds}s — "
+              f"click through any interstitial now...")
+        time.sleep(self.interstitial_seconds)
+
+    def clear_browser_state(self):
+        """Cheap per-page clear of network cache + cookies (no restart)."""
+        try:
+            self.sb.driver.execute_cdp_cmd("Network.clearBrowserCache", {})
+            self.sb.driver.execute_cdp_cmd("Network.clearBrowserCookies", {})
+        except Exception:
+            pass
 
 
 def _store_batch(fics, embeddings, fandom_name: str) -> int:
@@ -38,16 +129,23 @@ def _store_batch(fics, embeddings, fandom_name: str) -> int:
 
     return stored
 
-def scrape_and_embed_ao3(fandom_name: str, sb, first_fandom: bool = False, start_page: int = 1, min_words: int = MIN_WORDS) -> int:
+def scrape_and_embed_ao3(fandom_name: str, session: "BrowserSession", start_page: int = 1, min_words: int = MIN_WORDS) -> int:
     from scrapers.ao3 import build_search_url, parse_results
     stored = 0
 
-    # Checkpoint: resume from saved page unless caller overrode start_page
+    # Checkpoint: resume from saved page unless caller overrode start_page.
+    # Page numbers are only valid for the min_words filter they were taken
+    # under, so a mismatch silently starts fresh.
     if start_page == 1:
-        resume = progress.get_resume_point(fandom_name, "ao3")
+        resume = progress.get_resume_point(fandom_name, "ao3", min_words=min_words)
         if "page" in resume:
             start_page = resume["page"]
-            print(f"[AO3] Resuming {fandom_name} at page {start_page}")
+            print(f"[AO3] Resuming {fandom_name} at page {start_page} (min_words={min_words:,})")
+        else:
+            saved = progress.get_resume_point(fandom_name, "ao3")
+            if "page" in saved and saved.get("min_words") != min_words:
+                print(f"[AO3] Ignoring checkpoint (saved min_words={saved.get('min_words')}, "
+                      f"now {min_words}) — starting fresh")
 
     page = start_page
 
@@ -55,42 +153,49 @@ def scrape_and_embed_ao3(fandom_name: str, sb, first_fandom: bool = False, start
         url = build_search_url("", fandom=fandom_name, page=page, min_words=min_words)
         print(f"\n[AO3] Fetching page {page}: {url}")
 
-        sb.open(url)
+        session.sb.open(url)
+        session.interstitial_hold("AO3")
+        time.sleep(1)
 
-        if page == start_page and first_fandom:
-            print("[AO3] Waiting 15s — click through any interstitial now...")
-            time.sleep(15)
-        elif page == start_page:
-            time.sleep(5)
-
-        try:
-            sb.wait_for_element("li.work.blurb.group", timeout=20)
-        except Exception:
-            print(f"[AO3] Page {page}: no results — done")
-            break
-
-        html = sb.get_page_source()
-        fics = parse_results(html)
+        # Retry up to 3 times with a page refresh. AO3 occasionally serves a
+        # blank/blocked page on long scrapes; a refresh usually clears it.
+        fics = None
+        for attempt in range(3):
+            try:
+                session.sb.wait_for_element("li.work.blurb.group", timeout=20)
+                html = session.sb.get_page_source()
+                fics = parse_results(html)
+                if fics:
+                    break
+            except Exception:
+                pass
+            if attempt < 2:
+                print(f"[AO3] Page {page}: no results on attempt {attempt + 1} — refreshing")
+                session.sb.refresh()
+                time.sleep(1)
 
         if not fics:
-            print(f"[AO3] Page {page}: empty — done")
+            print(f"[AO3] Page {page}: no results after 3 attempts — done")
             break
 
         print(f"[AO3] Page {page}: scraped {len(fics)} fics — embedding now...")
         embeddings = embed_fics_batch(fics, fandom=fandom_name)
         stored += _store_batch(fics, embeddings, fandom_name)
+        del fics, embeddings, html
 
-        # Checkpoint after each successful page — next run resumes here
-        progress.mark_progress(fandom_name, "ao3", page=page + 1)
+        # Checkpoint after each successful page — next run resumes here.
+        # Record min_words so a later run with a different filter discards it.
+        progress.mark_progress(fandom_name, "ao3", min_words=min_words, page=page + 1)
 
         page += 1
-        time.sleep(8)
+        session.tick()
 
     progress.mark_done(fandom_name, "ao3")
+    compact_local(fandom_name)
     return stored
 
 
-def scrape_and_embed_ffn(fandom_name: str, sb, first_fandom: bool = False) -> int:
+def scrape_and_embed_ffn(fandom_name: str, session: "BrowserSession") -> int:
     from scrapers.ffn import parse_results
     stored = 0
 
@@ -120,27 +225,21 @@ def scrape_and_embed_ffn(fandom_name: str, sb, first_fandom: bool = False) -> in
             page = 1
 
         label = "40k-100k" if word_len == 10 else "100k+"
-        first_page_of_bucket = page
 
         while True:
             url = f"https://www.fanfiction.net/{ffn_slug}/?srt=3&r=10&len={word_len}&p={page}"
             print(f"\n[FFN] Fetching page {page} ({label}): {url}")
 
-            sb.open(url)
-
-            if page == first_page_of_bucket and first_fandom:
-                print("[FFN] Waiting 15s for page to load...")
-                time.sleep(15)
-            elif page == first_page_of_bucket:
-                time.sleep(5)
+            session.sb.open(url)
+            session.interstitial_hold("FFN")
 
             try:
-                sb.wait_for_element("div.z-list", timeout=20)
+                session.sb.wait_for_element("div.z-list", timeout=20)
             except Exception:
                 print(f"[FFN] Page {page} ({label}): no results — done")
                 break
 
-            html = sb.get_page_source()
+            html = session.sb.get_page_source()
             fics = parse_results(html)
 
             if not fics:
@@ -150,43 +249,51 @@ def scrape_and_embed_ffn(fandom_name: str, sb, first_fandom: bool = False) -> in
             print(f"[FFN] Page {page} ({label}): scraped {len(fics)} fics — embedding now...")
             embeddings = embed_fics_batch(fics, fandom=fandom_name)
             stored += _store_batch(fics, embeddings, fandom_name)
+            del fics, embeddings, html
 
             progress.mark_progress(fandom_name, "ffn", word_len=word_len, page=page + 1)
 
             page += 1
-            delay = random.uniform(5, 10)
-            time.sleep(delay)
+            session.tick()
 
     progress.mark_done(fandom_name, "ffn")
+    compact_local(fandom_name)
     return stored
 
 
 def scrape_and_embed_wattpad(fandom_name: str, quality_offset: int = WATTPAD_QUALITY_OFFSET) -> int:
-    from scrapers.wattpad import search
+    """Stream Wattpad results: embed + store each page as it arrives.
+
+    The scraper yields pages of qualifying fics. We embed + persist each page
+    and discard the Fic objects before pulling the next page, keeping peak
+    memory at ~one page of fics instead of the whole fandom.
+    """
+    from scrapers.wattpad import search_iter
     stored = 0
+    found_any = False
 
     query = FANDOMS[fandom_name]["wattpad"]
-    fics = search(query, max_pages=0, quality_offset=quality_offset)
 
-    if not fics:
-        print(f"[Wattpad] No qualifying fics found for '{fandom_name}'")
-        progress.mark_done(fandom_name, "wattpad")
-        return 0
-
-    # Embed in batches of ~50 (matches scraper page size)
-    batch_size = 50
-    for batch_start in range(0, len(fics), batch_size):
-        batch = fics[batch_start:batch_start + batch_size]
-        print(f"[Wattpad] Embedding batch {batch_start // batch_size + 1} "
-              f"({len(batch)} fics)...")
+    for batch_num, batch in enumerate(
+        search_iter(query, max_pages=0, quality_offset=quality_offset), start=1
+    ):
+        if not batch:
+            continue
+        found_any = True
+        print(f"[Wattpad] Embedding batch {batch_num} ({len(batch)} fics)...")
         embeddings = embed_fics_batch(batch, fandom=fandom_name)
         stored += _store_batch(batch, embeddings, fandom_name)
+        del batch, embeddings
+
+    if not found_any:
+        print(f"[Wattpad] No qualifying fics found for '{fandom_name}'")
 
     progress.mark_done(fandom_name, "wattpad")
+    compact_local(fandom_name)
     return stored
 
 
-def _run_source(fandom_name: str, source: str, sb, first_fandom: bool,
+def _run_source(fandom_name: str, source: str, session,
                 start_page: int, min_words: int, wattpad_quality: int) -> int:
     """Run one source for one fandom, skipping if already marked done."""
     if progress.is_done(fandom_name, source):
@@ -194,18 +301,30 @@ def _run_source(fandom_name: str, source: str, sb, first_fandom: bool,
         return 0
 
     if source == "ao3":
-        return scrape_and_embed_ao3(fandom_name, sb, first_fandom=first_fandom,
+        return scrape_and_embed_ao3(fandom_name, session,
                                     start_page=start_page, min_words=min_words)
     if source == "ffn":
-        return scrape_and_embed_ffn(fandom_name, sb, first_fandom=first_fandom)
+        return scrape_and_embed_ffn(fandom_name, session)
     if source == "wattpad":
         return scrape_and_embed_wattpad(fandom_name, quality_offset=wattpad_quality)
     raise ValueError(f"Unknown source: {source}")
 
 
-def index_fandom(fandom_name: str, clear: bool = False, start_page: int = 1, wattpad_quality: int = WATTPAD_QUALITY_OFFSET, min_words: int = MIN_WORDS):
+def index_fandom(fandom_name: str, clear: bool = False, start_page: int = 1,
+                 wattpad_quality: int = WATTPAD_QUALITY_OFFSET,
+                 min_words: int = MIN_WORDS,
+                 sources: set[str] | None = None):
+    """Index a single fandom across one or more sources.
+
+    `sources` controls which backends run — defaults to all three. When a
+    source isn't in the set it's skipped entirely; its checkpoint is left
+    untouched so a later run can pick it up.
+    """
+    if sources is None:
+        sources = {"ao3", "ffn", "wattpad"}
+
     print(f"\n{'='*50}")
-    print(f"Indexing: {fandom_name} (min {min_words:,} words)")
+    print(f"Indexing: {fandom_name} (min {min_words:,} words, sources={sorted(sources)})")
     print(f"{'='*50}")
 
     if clear:
@@ -215,36 +334,38 @@ def index_fandom(fandom_name: str, clear: bool = False, start_page: int = 1, wat
 
     total_stored = 0
 
+    want_ao3 = "ao3" in sources
+    want_ffn = "ffn" in sources
+    want_wattpad = "wattpad" in sources
+
     ao3_done = progress.is_done(fandom_name, "ao3")
     ffn_done = progress.is_done(fandom_name, "ffn")
 
-    # Only open the browser if AO3 or FFN still has work left
-    if not (ao3_done and ffn_done):
-        with SB(uc=True, headless=False) as sb:
-            if not ao3_done:
-                ao3_stored = _run_source(fandom_name, "ao3", sb, first_fandom=True,
+    need_browser = (want_ao3 and not ao3_done) or (want_ffn and not ffn_done)
+    if need_browser:
+        with BrowserSession() as session:
+            if want_ao3 and not ao3_done:
+                ao3_stored = _run_source(fandom_name, "ao3", session,
                                          start_page=start_page, min_words=min_words,
                                          wattpad_quality=wattpad_quality)
                 print(f"\n[AO3] Done: {ao3_stored} fics stored")
                 total_stored += ao3_stored
 
-            if not ffn_done:
-                if not ao3_done:
-                    print("\nSwitching to FFN in 15s...")
-                    time.sleep(15)
-                ffn_stored = _run_source(fandom_name, "ffn", sb, first_fandom=True,
+            if want_ffn and not ffn_done:
+                if want_ao3 and not ao3_done:
+                    print("\nSwitching to FFN...")
+                ffn_stored = _run_source(fandom_name, "ffn", session,
                                          start_page=1, min_words=min_words,
                                          wattpad_quality=wattpad_quality)
                 print(f"\n[FFN] Done: {ffn_stored} fics stored")
                 total_stored += ffn_stored
-    else:
-        print("[AO3+FFN] Both already complete — skipping browser session")
 
-    wattpad_stored = _run_source(fandom_name, "wattpad", sb=None, first_fandom=False,
-                                 start_page=1, min_words=min_words,
-                                 wattpad_quality=wattpad_quality)
-    print(f"\n[Wattpad] Done: {wattpad_stored} fics stored")
-    total_stored += wattpad_stored
+    if want_wattpad:
+        wattpad_stored = _run_source(fandom_name, "wattpad", session=None,
+                                     start_page=1, min_words=min_words,
+                                     wattpad_quality=wattpad_quality)
+        print(f"\n[Wattpad] Done: {wattpad_stored} fics stored")
+        total_stored += wattpad_stored
 
     print(f"\n[Done] {fandom_name}: {total_stored} total fics indexed")
     return total_stored
@@ -264,53 +385,41 @@ def index_all(clear: bool = False, wattpad_quality: int = WATTPAD_QUALITY_OFFSET
     total = 0
 
     fandom_names = list(FANDOMS.keys())
-    browser_started = False
-    first_fandom_flag = True
 
-    # AO3+FFN pass under one browser session
-    sb_ctx = None
-    try:
-        for fandom_name in fandom_names:
-            if clear:
-                clear_fandom_local(fandom_name)
-                clear_fandom(fandom_name)
+    # AO3+FFN pass — one fresh browser per fandom. Reusing a single browser
+    # across all fandoms was the single biggest source of RSS growth; Chrome
+    # never releases DOM/JS heap memory between navigations.
+    for fandom_name in fandom_names:
+        if clear:
+            clear_fandom_local(fandom_name)
+            clear_fandom(fandom_name)
 
-            ao3_done = progress.is_done(fandom_name, "ao3")
-            ffn_done = progress.is_done(fandom_name, "ffn")
-            if ao3_done and ffn_done:
-                print(f"\n[Skip] {fandom_name}: AO3+FFN already complete")
-                continue
+        ao3_done = progress.is_done(fandom_name, "ao3")
+        ffn_done = progress.is_done(fandom_name, "ffn")
+        if ao3_done and ffn_done:
+            print(f"\n[Skip] {fandom_name}: AO3+FFN already complete")
+            continue
 
-            if not browser_started:
-                sb_ctx = SB(uc=True, headless=False)
-                sb = sb_ctx.__enter__()
-                browser_started = True
+        print(f"\n{'='*50}")
+        print(f"Indexing AO3+FFN: {fandom_name}")
+        print(f"{'='*50}")
 
-            print(f"\n{'='*50}")
-            print(f"Indexing AO3+FFN: {fandom_name}")
-            print(f"{'='*50}")
-
-            ao3_stored = _run_source(fandom_name, "ao3", sb,
-                                     first_fandom=first_fandom_flag,
-                                     start_page=1, min_words=MIN_WORDS,
-                                     wattpad_quality=wattpad_quality)
-            print(f"\n[AO3] Done: {ao3_stored} fics stored")
+        with BrowserSession() as session:
+            if not ao3_done:
+                ao3_stored = _run_source(fandom_name, "ao3", session,
+                                         start_page=1, min_words=MIN_WORDS,
+                                         wattpad_quality=wattpad_quality)
+                print(f"\n[AO3] Done: {ao3_stored} fics stored")
+                total += ao3_stored
 
             if not progress.is_done(fandom_name, "ffn"):
-                print("\nSwitching to FFN in 15s...")
-                time.sleep(15)
-
-            ffn_stored = _run_source(fandom_name, "ffn", sb,
-                                     first_fandom=first_fandom_flag,
-                                     start_page=1, min_words=MIN_WORDS,
-                                     wattpad_quality=wattpad_quality)
-            print(f"\n[FFN] Done: {ffn_stored} fics stored")
-
-            first_fandom_flag = False
-            total += ao3_stored + ffn_stored
-    finally:
-        if sb_ctx is not None:
-            sb_ctx.__exit__(None, None, None)
+                if not ao3_done:
+                    print("\nSwitching to FFN...")
+                ffn_stored = _run_source(fandom_name, "ffn", session,
+                                         start_page=1, min_words=MIN_WORDS,
+                                         wattpad_quality=wattpad_quality)
+                print(f"\n[FFN] Done: {ffn_stored} fics stored")
+                total += ffn_stored
 
     # Wattpad pass (no browser)
     for fandom_name in fandom_names:
@@ -320,7 +429,7 @@ def index_all(clear: bool = False, wattpad_quality: int = WATTPAD_QUALITY_OFFSET
         print(f"\n{'='*50}")
         print(f"Indexing Wattpad: {fandom_name}")
         print(f"{'='*50}")
-        wp = _run_source(fandom_name, "wattpad", sb=None, first_fandom=False,
+        wp = _run_source(fandom_name, "wattpad", session=None,
                          start_page=1, min_words=MIN_WORDS,
                          wattpad_quality=wattpad_quality)
         print(f"\n[Wattpad] Done: {wp} fics stored")
@@ -340,8 +449,8 @@ def index_ao3_only(fandom_name: str, start_page: int = 1, min_words: int = MIN_W
     print(f"\n{'='*50}")
     print(f"Indexing AO3: {fandom_name} (min {min_words:,} words)")
     print(f"{'='*50}")
-    with SB(uc=True, headless=False) as sb:
-        stored = scrape_and_embed_ao3(fandom_name, sb, first_fandom=True, start_page=start_page, min_words=min_words)
+    with BrowserSession() as session:
+        stored = scrape_and_embed_ao3(fandom_name, session, start_page=start_page, min_words=min_words)
         print(f"\n[AO3] Done: {stored} fics stored")
 
 
@@ -355,8 +464,8 @@ def index_ffn_only(fandom_name: str):
     print(f"\n{'='*50}")
     print(f"Indexing FFN: {fandom_name}")
     print(f"{'='*50}")
-    with SB(uc=True, headless=False) as sb:
-        stored = scrape_and_embed_ffn(fandom_name, sb, first_fandom=True)
+    with BrowserSession() as session:
+        stored = scrape_and_embed_ffn(fandom_name, session)
         print(f"\n[FFN] Done: {stored} fics stored")
 
 
@@ -374,14 +483,19 @@ def index_wattpad_only(fandom_name: str, wattpad_quality: int = WATTPAD_QUALITY_
     print(f"\n[Wattpad] Done: {stored} fics stored")
 
 
-def index_one(fandom_name: str, clear: bool = False, start_page: int = 1, wattpad_quality: int = WATTPAD_QUALITY_OFFSET, min_words: int = MIN_WORDS):
+def index_one(fandom_name: str, clear: bool = False, start_page: int = 1,
+              wattpad_quality: int = WATTPAD_QUALITY_OFFSET,
+              min_words: int = MIN_WORDS,
+              sources: set[str] | None = None):
     if fandom_name not in FANDOMS:
         print(f"Unknown fandom: '{fandom_name}'")
         print(f"Available: {list(FANDOMS.keys())}")
         return
     init_db()
     migrate_embedding_dimensions()
-    index_fandom(fandom_name, clear=clear, start_page=start_page, wattpad_quality=wattpad_quality, min_words=min_words)
+    index_fandom(fandom_name, clear=clear, start_page=start_page,
+                 wattpad_quality=wattpad_quality, min_words=min_words,
+                 sources=sources)
 
 
 def _parse_arg(argv, name: str) -> str | None:
@@ -392,60 +506,170 @@ def _parse_arg(argv, name: str) -> str | None:
     return None
 
 
+class _Tee:
+    """Mirror writes to the original stream and a log file. Lets us keep
+    full stdout/stderr on disk even when the terminal window is closed."""
+
+    def __init__(self, original, logfile):
+        self.original = original
+        self.logfile = logfile
+
+    def write(self, data):
+        try:
+            self.original.write(data)
+        except Exception:
+            pass
+        try:
+            self.logfile.write(data)
+            self.logfile.flush()
+        except Exception:
+            pass
+
+    def flush(self):
+        try:
+            self.original.flush()
+        except Exception:
+            pass
+        try:
+            self.logfile.flush()
+        except Exception:
+            pass
+
+    def __getattr__(self, name):
+        return getattr(self.original, name)
+
+
+def _setup_crash_logging() -> str:
+    """Tee stdout/stderr to a per-run log file. Returns the logfile path.
+
+    Also forces UTF-8 + replace-on-error on the console streams so a stray
+    non-cp1252 character (e.g. an arrow in a log line) can't crash a scrape
+    on a default Windows console.
+    """
+    # Force UTF-8 on the console with replace-on-error so unprintable chars
+    # become '?' instead of throwing UnicodeEncodeError.
+    for stream_name in ("stdout", "stderr"):
+        stream = getattr(sys, stream_name, None)
+        if stream is not None and hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
+
+    os.makedirs(LOG_DIR, exist_ok=True)
+    ts = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    path = os.path.join(LOG_DIR, f"indexer-{ts}-{os.getpid()}.log")
+    logfile = open(path, "a", encoding="utf-8", errors="replace", buffering=1)
+    sys.stdout = _Tee(sys.stdout, logfile)
+    sys.stderr = _Tee(sys.stderr, logfile)
+    print(f"[log] Writing full output to: {path}")
+    print(f"[log] Started at {datetime.datetime.now().isoformat()}")
+    print(f"[log] argv: {sys.argv}")
+    return path
+
+
+def _hold_terminal_on_crash(exc: BaseException, log_path: str) -> None:
+    """Print a loud crash banner and wait for user input so PowerShell stays open.
+
+    Without this, a fatal exception closes the window before you can read the
+    traceback. The full trace also lives in `log_path` if you miss it.
+    """
+    print("\n" + "=" * 70, flush=True)
+    print(" SCRAPER CRASHED ", flush=True)
+    print("=" * 70, flush=True)
+    traceback.print_exc()
+    print("=" * 70, flush=True)
+    print(f" Full log: {log_path}", flush=True)
+    print(f" Exception: {type(exc).__name__}: {exc}", flush=True)
+    print("=" * 70, flush=True)
+    print("\nPress Enter to close this window...", flush=True)
+    try:
+        input()
+    except (EOFError, KeyboardInterrupt):
+        pass
+
+
 if __name__ == "__main__":
-    argv = sys.argv
+    log_path = _setup_crash_logging()
+    try:
+        argv = sys.argv
 
-    # Handle checkpoint-management flags first (they exit early)
-    if "--restart" in argv:
-        progress.reset()
-        print("[progress] Cleared all checkpoints")
+        # Handle checkpoint-management flags first (they exit early)
+        if "--restart" in argv:
+            progress.reset()
+            print("[progress] Cleared all checkpoints")
 
-    restart_fandom = _parse_arg(argv, "--restart-fandom")
-    if restart_fandom:
-        progress.reset(fandom=restart_fandom)
-        print(f"[progress] Cleared checkpoint for fandom '{restart_fandom}'")
+        restart_fandom = _parse_arg(argv, "--restart-fandom")
+        if restart_fandom:
+            progress.reset(fandom=restart_fandom)
+            print(f"[progress] Cleared checkpoint for fandom '{restart_fandom}'")
 
-    restart_source = _parse_arg(argv, "--restart-source")
-    if restart_source:
-        progress.reset(source=restart_source)
-        print(f"[progress] Cleared checkpoint for source '{restart_source}'")
+        restart_source = _parse_arg(argv, "--restart-source")
+        if restart_source:
+            progress.reset(source=restart_source)
+            print(f"[progress] Cleared checkpoint for source '{restart_source}'")
 
-    if "--show-progress" in argv:
-        import json as _json
-        print(_json.dumps(progress.load(), indent=2))
-        sys.exit(0)
+        if "--show-progress" in argv:
+            import json as _json
+            print(_json.dumps(progress.load(), indent=2))
+            sys.exit(0)
 
-    # Positional fandom name (first non-flag arg, skipping values consumed by flags)
-    VALUE_FLAGS = {"--start-page", "--wattpad-quality", "--min-words",
-                   "--restart-fandom", "--restart-source"}
-    positional = []
-    skip_next = False
-    for i, a in enumerate(argv[1:]):
-        if skip_next:
-            skip_next = False
-            continue
-        if a in VALUE_FLAGS:
-            skip_next = True
-            continue
-        if a.startswith("--"):
-            continue
-        positional.append(a)
+        # Positional fandom name (first non-flag arg, skipping values consumed by flags)
+        VALUE_FLAGS = {"--start-page", "--wattpad-quality", "--min-words",
+                       "--restart-fandom", "--restart-source", "--sources"}
+        positional = []
+        skip_next = False
+        for i, a in enumerate(argv[1:]):
+            if skip_next:
+                skip_next = False
+                continue
+            if a in VALUE_FLAGS:
+                skip_next = True
+                continue
+            if a.startswith("--"):
+                continue
+            positional.append(a)
 
-    start_page = int(_parse_arg(argv, "--start-page") or 1)
-    wattpad_quality = int(_parse_arg(argv, "--wattpad-quality") or WATTPAD_QUALITY_OFFSET)
-    min_words = int(_parse_arg(argv, "--min-words") or MIN_WORDS)
-    should_clear = "--clear" in argv
+        start_page = int(_parse_arg(argv, "--start-page") or 1)
+        wattpad_quality = int(_parse_arg(argv, "--wattpad-quality") or WATTPAD_QUALITY_OFFSET)
+        min_words = int(_parse_arg(argv, "--min-words") or MIN_WORDS)
+        should_clear = "--clear" in argv
 
-    if positional:
-        fandom = positional[0]
-        if "--ao3-only" in argv:
-            index_ao3_only(fandom, start_page=start_page, min_words=min_words)
-        elif "--ffn-only" in argv:
-            index_ffn_only(fandom)
-        elif "--wattpad-only" in argv:
-            index_wattpad_only(fandom, wattpad_quality=wattpad_quality)
+        # --sources=ao3,ffn  picks an arbitrary subset. Legacy --*-only flags
+        # still work and are equivalent to --sources=<one>.
+        sources_raw = _parse_arg(argv, "--sources")
+        sources_set: set[str] | None = None
+        if sources_raw:
+            sources_set = {s.strip().lower() for s in sources_raw.split(",") if s.strip()}
+            unknown = sources_set - {"ao3", "ffn", "wattpad"}
+            if unknown:
+                print(f"[error] unknown source(s): {sorted(unknown)}; valid: ao3, ffn, wattpad")
+                sys.exit(2)
+            if not sources_set:
+                print("[error] --sources is empty")
+                sys.exit(2)
+
+        if positional:
+            fandom = positional[0]
+            if "--ao3-only" in argv:
+                index_ao3_only(fandom, start_page=start_page, min_words=min_words)
+            elif "--ffn-only" in argv:
+                index_ffn_only(fandom)
+            elif "--wattpad-only" in argv:
+                index_wattpad_only(fandom, wattpad_quality=wattpad_quality)
+            else:
+                index_one(fandom, clear=should_clear, start_page=start_page,
+                          wattpad_quality=wattpad_quality, min_words=min_words,
+                          sources=sources_set)
         else:
-            index_one(fandom, clear=should_clear, start_page=start_page,
-                      wattpad_quality=wattpad_quality, min_words=min_words)
-    else:
-        index_all(clear=should_clear, wattpad_quality=wattpad_quality)
+            index_all(clear=should_clear, wattpad_quality=wattpad_quality)
+
+        print(f"\n[log] Finished cleanly at {datetime.datetime.now().isoformat()}")
+    except KeyboardInterrupt:
+        print("\n[log] Interrupted by user (Ctrl-C)")
+        sys.exit(130)
+    except SystemExit:
+        raise
+    except BaseException as exc:
+        _hold_terminal_on_crash(exc, log_path)
+        sys.exit(1)

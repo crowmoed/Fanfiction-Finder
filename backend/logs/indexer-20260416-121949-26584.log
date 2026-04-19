@@ -1,0 +1,6 @@
+[log] Writing full output to: D:\Fanfiction-Finder\backend\logs\indexer-20260416-121949-26584.log
+[log] Started at 2026-04-16T12:19:49.150231
+[log] argv: ['indexer.py', '--show-progress']
+{
+  "fandoms": {}
+}

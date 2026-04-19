@@ -10,6 +10,12 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data.schema import Fic
 from data.fandoms import FANDOMS
 
+try:
+    import lxml  # noqa: F401
+    _BS_PARSER = "lxml"
+except ImportError:
+    _BS_PARSER = "html.parser"
+
 BASE_URL = "https://www.fanfiction.net"
 
 
@@ -28,53 +34,56 @@ def parse_int(text: Optional[str]) -> Optional[int]:
 
 
 def parse_results(html: str) -> list[Fic]:
-    soup = BeautifulSoup(html, "html.parser")
-    results = soup.select("div.z-list")
+    soup = BeautifulSoup(html, _BS_PARSER)
+    try:
+        results = soup.select("div.z-list")
 
-    if not results:
-        print("Warning: no results found")
-        return []
+        if not results:
+            print("Warning: no results found")
+            return []
 
-    fics = []
-    for work in results:
-        title_tag = work.select_one("a.stitle")
-        if not title_tag:
-            continue
+        fics = []
+        for work in results:
+            title_tag = work.select_one("a.stitle")
+            if not title_tag:
+                continue
 
-        title = title_tag.text.strip()
-        url = BASE_URL + title_tag["href"]
+            title = title_tag.text.strip()
+            url = BASE_URL + title_tag["href"]
 
-        summary_tag = work.select_one("div.z-padtop")
-        summary = summary_tag.text.strip() if summary_tag else None
+            summary_tag = work.select_one("div.z-padtop")
+            summary = summary_tag.text.strip() if summary_tag else None
 
-        stats_tag = work.select_one("div.z-padtop2")
-        stats_text = stats_tag.text if stats_tag else ""
+            stats_tag = work.select_one("div.z-padtop2")
+            stats_text = stats_tag.text if stats_tag else ""
 
-        word_count, kudos, tags = None, None, []
+            word_count, kudos, tags = None, None, []
 
-        for part in stats_text.split(" - "):
-            part = part.strip()
-            if part.startswith("Words:"):
-                word_count = parse_int(part.replace("Words:", "").strip())
-            elif part.startswith("Favs:"):
-                kudos = parse_int(part.replace("Favs:", "").strip())
-            elif "/" in part and not any(x in part for x in [
-                "Chapters:", "Words:", "Reviews:", "Favs:", "Follows:", "Updated:", "Published:"
-            ]):
-                tags = [t.strip() for t in part.split("/")]
+            for part in stats_text.split(" - "):
+                part = part.strip()
+                if part.startswith("Words:"):
+                    word_count = parse_int(part.replace("Words:", "").strip())
+                elif part.startswith("Favs:"):
+                    kudos = parse_int(part.replace("Favs:", "").strip())
+                elif "/" in part and not any(x in part for x in [
+                    "Chapters:", "Words:", "Reviews:", "Favs:", "Follows:", "Updated:", "Published:"
+                ]):
+                    tags = [t.strip() for t in part.split("/")]
 
-        fics.append(Fic(
-            title=title,
-            url=url,
-            platform="ffn",
-            summary=summary,
-            tags=tags,
-            word_count=word_count,
-            kudos=kudos,
-            hits=None
-        ))
+            fics.append(Fic(
+                title=title,
+                url=url,
+                platform="ffn",
+                summary=summary,
+                tags=tags,
+                word_count=word_count,
+                kudos=kudos,
+                hits=None
+            ))
 
-    return fics
+        return fics
+    finally:
+        soup.decompose()
 
 
 def search(fandom_name: str, pages: int = 1, sort: int = 3) -> list[Fic]:

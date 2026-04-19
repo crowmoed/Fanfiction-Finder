@@ -31,7 +31,7 @@ Create `backend/.env` with the required env vars — see [ARCHITECTURE.md §15](
 Serves the search API on `http://localhost:8000`.
 
 ```bash
-D: && cd D:\Fanfiction-Finder\backend
+cd D:\Fanfiction-Finder\backend
 pip install -r requirements.txt
 python db/postgres.py
 uvicorn api:app --reload --host 0.0.0.0 --port 8000
@@ -44,7 +44,7 @@ uvicorn api:app --reload --host 0.0.0.0 --port 8000
 Dev server on `http://localhost:3000`.
 
 ```bash
-D: && cd D:\Fanfiction-Finder\frontend
+cd D:\Fanfiction-Finder\frontend
 npm install
 npm run dev
 ```
@@ -56,7 +56,7 @@ npm run dev
 Run **outside Docker** — AO3 and FFN need a real Chrome window to bypass bot detection. Wattpad runs headlessly.
 
 ```bash
-D: && cd D:\Fanfiction-Finder\backend
+cd D:\Fanfiction-Finder\backend
 
 python indexer.py                             # all fandoms (AO3 + FFN + Wattpad)
 python indexer.py "Naruto"                    # one fandom
@@ -76,7 +76,7 @@ python indexer.py "Naruto" --wattpad-quality 5   # set Wattpad quality offset
 Clickable terminal UI for swapping fandom data between local storage and the live Neon database, plus scraping controls.
 
 ```bash
-D: && cd D:\Fanfiction-Finder\fanfic-devtool
+cd D:\Fanfiction-Finder\fanfic-devtool
 pip install -r requirements.txt
 python app.py
 ```
@@ -88,7 +88,7 @@ python app.py
 Frontend auto-deploys on push to `main` via Vercel. Backend is a manual push:
 
 ```bash
-D: && cd D:\Fanfiction-Finder\backend
+cd D:\Fanfiction-Finder\backend
 docker build -t fanficfinder-backend .
 docker tag fanficfinder-backend:latest 473157802304.dkr.ecr.us-east-1.amazonaws.com/fanficfinder-backend:latest
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 473157802304.dkr.ecr.us-east-1.amazonaws.com
@@ -98,7 +98,7 @@ docker push 473157802304.dkr.ecr.us-east-1.amazonaws.com/fanficfinder-backend:la
 Lazy frontend push (triggers the Vercel deploy):
 
 ```bash
-D: && cd D:\Fanfiction-Finder
+cd D:\Fanfiction-Finder
 git add .
 git commit -m "changes im lazy"
 git push

@@ -63,21 +63,8 @@ MIN_WORDS_OPTIONS = [
     ("100,000", 100000),
 ]
 
-PLATFORM_OPTIONS = [
-    ("All (AO3 + FFN + Wattpad)", "all"),
-    ("AO3 only", "ao3"),
-    ("FFN only", "ffn"),
-    ("Wattpad only", "wattpad"),
-]
-
-WATTPAD_QUALITY_OPTIONS = [
-    ("Default (0)", 0),
-    ("Looser (-1)", -1),
-    ("Looser (-2)", -2),
-    ("Stricter (+1)", 1),
-    ("Stricter (+2)", 2),
-]
-
+SCRAPE_SOURCES = ("ao3", "ffn", "wattpad")
+SOURCE_LABELS = {"ao3": "AO3", "ffn": "FFN", "wattpad": "Wattpad"}
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -95,12 +82,45 @@ def fmt_bytes(b):
 def get_local_fandoms():
     if not FANDOMS_DIR.exists():
         return []
+    from db.local_storage import get_local_fic_count
+
     result = []
     for d in sorted(FANDOMS_DIR.iterdir()):
-        if d.is_dir() and (d / "meta.json").exists():
-            meta = load_meta(d.name)
-            if meta:
-                result.append(meta)
+        if not d.is_dir():
+            continue
+        has_meta = (d / "meta.json").exists()
+        parts_dir = d / "parts"
+        has_parts = parts_dir.exists() and any(parts_dir.glob("fics_*.parquet"))
+        if not has_meta and not has_parts:
+            continue
+
+        meta = load_meta(d.name) if has_meta else {
+            "fandom_name": d.name,
+            "slug": d.name,
+            "fic_count": 0,
+            "parquet_size_mb": 0,
+            "npy_size_mb": 0,
+            "exported_at": "",
+        }
+        if not meta:
+            continue
+
+        fandom_name = meta.get("fandom_name", d.name)
+        try:
+            live_count = get_local_fic_count(fandom_name)
+        except Exception:
+            live_count = meta.get("fic_count", 0)
+        meta["fic_count"] = live_count
+
+        if has_parts:
+            part_bytes = sum(
+                p.stat().st_size for p in parts_dir.iterdir() if p.is_file()
+            )
+            meta["parts_size_mb"] = round(part_bytes / 1024 / 1024, 2)
+        else:
+            meta["parts_size_mb"] = 0
+
+        result.append(meta)
     return result
 
 
@@ -148,24 +168,25 @@ def get_fandom_list():
 
 
 def get_local_platform_counts(fandom: str):
-    """Get per-platform fic counts from local parquet for a fandom.
-
-    Scraped fics now live in local storage, not Neon, so coverage must read
-    from the parquet files under fanfic-devtool/fandoms/<slug>/fics.parquet.
-    """
-    counts = {"ao3": 0, "ffn": 0, "wattpad": 0}
-    slug = slugify(fandom)
-    parquet_path = fandom_dir(slug) / "fics.parquet"
-    if not parquet_path.exists():
-        return counts
+    """Get per-platform fic counts from local storage (canonical + in-flight parts)."""
     try:
-        df = pl.read_parquet(parquet_path, columns=["platform"])
-        for platform, count in df.group_by("platform").len().iter_rows():
-            if platform in counts:
-                counts[platform] = int(count)
+        from db.local_storage import get_platform_counts
+        return get_platform_counts(fandom)
     except Exception:
-        pass
-    return counts
+        return {"ao3": 0, "ffn": 0, "wattpad": 0}
+
+
+def get_local_fic_count(fandom: str, platform: str = "all") -> int:
+    """Return the number of fics currently in local storage for a fandom.
+
+    Includes any uncompacted part files written by an in-flight scrape, so
+    the running collected-count surfaces work that hasn't been merged yet.
+    """
+    try:
+        from db.local_storage import get_local_fic_count as _count
+        return _count(fandom, platform)
+    except Exception:
+        return 0
 
 
 # ─── Construct row widget ────────────────────────────────────────────────────
@@ -296,13 +317,10 @@ DataTable {
 #scrape-fandom-select {
     width: 1fr;
 }
-#scrape-platform-select {
-    width: 1fr;
-}
 #scrape-min-words-select {
     width: 1fr;
 }
-#scrape-quality-select {
+#scrape-quality-input {
     width: 1fr;
 }
 Select:focus > SelectCurrent {
@@ -351,7 +369,8 @@ class SwapApp(App):
         super().__init__()
         self._busy = False
         # Active scraper jobs keyed by fandom name. Each value is a dict:
-        #   { proc, platform, started_at, exit_code (None while running) }
+        #   { proc, sources (tuple of "ao3"/"ffn"/"wattpad"),
+        #     started_at, exit_code (None while running) }
         self._scrape_jobs: dict[str, dict] = {}
         self._local_fandoms: list[dict] = []
         self._construct_inputs: dict[str, dict] = {}
@@ -427,14 +446,16 @@ class SwapApp(App):
                             yield Label("Fandom:")
                             yield Select([], id="scrape-fandom-select", allow_blank=True)
                         with Horizontal(classes="scrape-option-row"):
-                            yield Label("Platform:")
-                            yield Select(PLATFORM_OPTIONS, value="all", id="scrape-platform-select", allow_blank=False)
+                            yield Label("Sources:")
+                            yield Checkbox("AO3", value=True, id="scrape-src-ao3")
+                            yield Checkbox("FFN", value=True, id="scrape-src-ffn")
+                            yield Checkbox("Wattpad", value=True, id="scrape-src-wattpad")
                         with Horizontal(classes="scrape-option-row"):
                             yield Label("Min word count:")
                             yield Select(MIN_WORDS_OPTIONS, value=20000, id="scrape-min-words-select", allow_blank=False)
                         with Horizontal(classes="scrape-option-row"):
                             yield Label("Wattpad quality:")
-                            yield Select(WATTPAD_QUALITY_OPTIONS, value=0, id="scrape-quality-select", allow_blank=False)
+                            yield Input(value="0", id="scrape-quality-input", type="integer", placeholder="e.g. -9, 0, 5")
                         with Horizontal(classes="scrape-option-row"):
                             yield Checkbox("Clear existing fics first", id="scrape-clear-cb")
                         with Horizontal():
@@ -443,6 +464,7 @@ class SwapApp(App):
                         yield Label("CHECKPOINT", classes="section-title")
                         yield Static("(select a fandom)", id="progress-status", classes="info-card")
                         with Horizontal():
+                            yield Button("Refresh", id="btn-progress-refresh", variant="default")
                             yield Button("Reset fandom", id="btn-progress-reset-fandom", variant="warning")
                             yield Button("Reset source", id="btn-progress-reset-source", variant="warning")
                             yield Button("Reset ALL", id="btn-progress-reset-all", variant="error")
@@ -475,12 +497,15 @@ class SwapApp(App):
                         yield Static(
                             "Scan local fandoms and remove orphans (missing parquet or npy).\n"
                             "Reports total disk usage under fanfic-devtool/fandoms/.\n\n"
-                            "Clear Fandom deletes the selected fandom's local files entirely.",
+                            "Clear Fandom deletes the selected fandom's local files entirely.\n"
+                            "Purge Null Vectors drops fics with all-zero/NaN embeddings locally "
+                            "and rows where embedding IS NULL in Neon.",
                             classes="info-card",
                         )
                         with Horizontal():
                             yield Button("Run Cleanup", id="btn-cleanup", variant="warning")
                             yield Button("Clear Fandom", id="btn-clear-fandom", variant="error")
+                            yield Button("Purge Null Vectors", id="btn-purge-null", variant="warning")
                         with Horizontal(classes="scrape-option-row"):
                             yield Label("Fandom to clear:")
                             yield Select([], id="cleanup-fandom-select", allow_blank=True)
@@ -502,7 +527,7 @@ class SwapApp(App):
         cov_tbl.cursor_type = "row"
 
         active_tbl = self.query_one("#active-table", DataTable)
-        active_tbl.add_columns("Fandom", "Platform", "Status", "Elapsed", "PID")
+        active_tbl.add_columns("Fandom", "Platform", "Status", "Collected", "Elapsed", "PID")
         active_tbl.cursor_type = "row"
 
         # Poll running jobs + checkpoint state every 2s for the Active tab.
@@ -600,6 +625,8 @@ class SwapApp(App):
             self.start_cleanup()
         elif btn == "btn-clear-fandom":
             self.start_clear_fandom()
+        elif btn == "btn-purge-null":
+            self.start_purge_null_vectors()
         # Progress-checkpoint buttons
         elif btn == "btn-progress-reset-all":
             self.reset_progress_all()
@@ -607,6 +634,8 @@ class SwapApp(App):
             self.reset_progress_fandom()
         elif btn == "btn-progress-reset-source":
             self.reset_progress_source()
+        elif btn == "btn-progress-refresh":
+            self._refresh_progress_status()
 
     def on_select_changed(self, event: Select.Changed) -> None:
         if event.select.id == "scrape-fandom-select":
@@ -638,18 +667,24 @@ class SwapApp(App):
     def reset_progress_source(self) -> None:
         sel = self.query_one("#scrape-fandom-select", Select)
         fandom = sel.value if sel.value is not Select.BLANK else None
-        psel = self.query_one("#scrape-platform-select", Select)
-        platform = psel.value if psel.value is not Select.BLANK else "all"
-        if platform == "all":
-            self.notify("Pick a specific platform (AO3/FFN/Wattpad) to reset one source.", severity="warning")
-            return
         if not fandom:
             self.notify("Select a fandom first.", severity="warning")
             return
+        enabled = [
+            src for src in SCRAPE_SOURCES
+            if self.query_one(f"#scrape-src-{src}", Checkbox).value
+        ]
+        if len(enabled) != 1:
+            self.notify(
+                "Enable exactly one source checkbox (AO3/FFN/Wattpad) to reset one source.",
+                severity="warning",
+            )
+            return
+        source = enabled[0]
         try:
             from data import progress as _progress
-            _progress.reset(fandom=fandom, source=platform)
-            self.notify(f"Checkpoint cleared for {fandom} / {platform}.", severity="warning")
+            _progress.reset(fandom=fandom, source=source)
+            self.notify(f"Checkpoint cleared for {fandom} / {source}.", severity="warning")
             self._refresh_progress_status()
         except Exception as e:
             self.notify(f"Reset failed: {e}", severity="error")
@@ -704,7 +739,11 @@ class SwapApp(App):
         tbl.clear()
         total_fics = 0
         for m in fandoms:
-            sz = m.get("parquet_size_mb", 0) + m.get("npy_size_mb", 0)
+            sz = (
+                m.get("parquet_size_mb", 0)
+                + m.get("npy_size_mb", 0)
+                + m.get("parts_size_mb", 0)
+            )
             saved = (m.get("exported_at") or "")[:10] or "-"
             count = m.get("fic_count", 0)
             total_fics += count
@@ -944,16 +983,28 @@ class SwapApp(App):
             fandom_names = []
 
             log("Loading + filtering local fandoms...")
+            try:
+                from db.local_storage import compact as compact_local
+            except Exception:
+                compact_local = None
             for slug, meta, min_words in selected:
                 name = meta.get("fandom_name", slug)
                 fandom_names.append(name)
 
+                # Fold any in-flight part files into the canonical parquet
+                # before reading. No-op if there are no parts.
+                if compact_local is not None:
+                    try:
+                        compact_local(name)
+                    except Exception as e:
+                        log(f"  warn: compact failed for {name}: {e}")
+
                 df = pl.read_parquet(fandom_dir(slug) / "fics.parquet")
                 embs = np.load(fandom_dir(slug) / "embeddings.npy")
                 if min_words > 0:
-                    mask = df["word_count"] >= min_words
+                    mask = (df["word_count"] >= min_words).fill_null(True)
+                    embs = embs[mask.to_numpy().astype(bool)]
                     df = df.filter(mask)
-                    embs = embs[mask.to_numpy()]
                 log(f"  {name}: {len(df):,} fics (min {min_words:,} words)")
                 all_fics.append(df)
                 all_embs.append(embs)
@@ -1173,9 +1224,8 @@ class SwapApp(App):
 
     def start_scrape(self) -> None:
         fandom_sel = self.query_one("#scrape-fandom-select", Select)
-        platform_sel = self.query_one("#scrape-platform-select", Select)
         min_words_sel = self.query_one("#scrape-min-words-select", Select)
-        quality_sel = self.query_one("#scrape-quality-select", Select)
+        quality_input = self.query_one("#scrape-quality-input", Input)
         clear_cb = self.query_one("#scrape-clear-cb", Checkbox)
 
         fandom = fandom_sel.value
@@ -1189,14 +1239,25 @@ class SwapApp(App):
             self.notify(f"'{fandom}' is already being scraped. See the Active tab.", severity="warning")
             return
 
-        platform = platform_sel.value if platform_sel.value is not Select.BLANK else "all"
+        sources = tuple(
+            src for src in SCRAPE_SOURCES
+            if self.query_one(f"#scrape-src-{src}", Checkbox).value
+        )
+        if not sources:
+            self.notify("Enable at least one source (AO3 / FFN / Wattpad).", severity="warning")
+            return
+
         min_words = min_words_sel.value if min_words_sel.value is not Select.BLANK else 20000
-        quality = quality_sel.value if quality_sel.value is not Select.BLANK else 0
+        try:
+            quality = int((quality_input.value or "0").strip())
+        except ValueError:
+            self.notify("Wattpad quality must be an integer.", severity="warning")
+            return
         clear = clear_cb.value
 
-        self._launch_scrape_job(fandom, platform, quality, clear, min_words)
+        self._launch_scrape_job(fandom, sources, quality, clear, min_words)
 
-    def _launch_scrape_job(self, fandom: str, platform: str, quality: int,
+    def _launch_scrape_job(self, fandom: str, sources: tuple[str, ...], quality: int,
                            clear: bool, min_words: int) -> None:
         """Launch a scraper subprocess and record it. Non-blocking."""
         import subprocess
@@ -1204,12 +1265,7 @@ class SwapApp(App):
         cmd = [sys.executable, "-u", str(BACKEND_DIR / "indexer.py"), fandom]
         if clear:
             cmd.append("--clear")
-        if platform == "ao3":
-            cmd.append("--ao3-only")
-        elif platform == "ffn":
-            cmd.append("--ffn-only")
-        elif platform == "wattpad":
-            cmd.append("--wattpad-only")
+        cmd.extend(["--sources", ",".join(sources)])
         cmd.extend(["--min-words", str(min_words)])
         if quality != 0:
             cmd.extend(["--wattpad-quality", str(quality)])
@@ -1231,18 +1287,18 @@ class SwapApp(App):
 
         self._scrape_jobs[fandom] = {
             "proc": proc,
-            "platform": platform,
+            "sources": sources,
             "started_at": time.time(),
             "exit_code": None,
         }
 
-        self._log("scrape-log", f"[{fandom}] launched (pid={proc.pid}, platform={platform})")
+        self._log("scrape-log", f"[{fandom}] launched (pid={proc.pid}, sources={'+'.join(sources)})")
         self._log("scrape-log", f"  cmd: {' '.join(cmd)}")
         self._refresh_active_grid()
 
     # ── Active scrapers grid ─────────────────────────────────────────────────
 
-    def _describe_checkpoint_status(self, fandom: str, platform: str) -> str:
+    def _describe_checkpoint_status(self, fandom: str, sources: tuple[str, ...]) -> str:
         """Read the progress file and render a human status string for a job."""
         try:
             from data import progress as _progress
@@ -1253,7 +1309,6 @@ class SwapApp(App):
         if not entry:
             return "starting..."
 
-        sources = ("ao3", "ffn", "wattpad") if platform == "all" else (platform,)
         parts = []
         for src in sources:
             s = entry.get(src)
@@ -1264,7 +1319,9 @@ class SwapApp(App):
                 parts.append(f"{src}: done")
                 continue
             if src == "ao3":
-                parts.append(f"ao3 p{s.get('page', '?')}")
+                mw = s.get("min_words")
+                mw_tag = f" @{mw//1000}k" if mw else ""
+                parts.append(f"ao3 p{s.get('page', '?')}{mw_tag}")
             elif src == "ffn":
                 wl = s.get("word_len")
                 bucket = "40k-100k" if wl == 10 else "100k+" if wl == 20 else "?"
@@ -1274,7 +1331,6 @@ class SwapApp(App):
             else:
                 parts.append(f"{src}: running")
 
-        # If "all" and earlier sources are done, surface the currently active one
         return " | ".join(parts)
 
     def _format_elapsed(self, started_at: float) -> str:
@@ -1308,11 +1364,11 @@ class SwapApp(App):
 
         for fandom, job in sorted(self._scrape_jobs.items()):
             proc = job["proc"]
-            platform = job["platform"]
+            sources = job.get("sources") or tuple(SCRAPE_SOURCES)
             exit_code = job.get("exit_code")
 
             if exit_code is None:
-                status = self._describe_checkpoint_status(fandom, platform)
+                status = self._describe_checkpoint_status(fandom, sources)
             elif exit_code == 0:
                 status = "FINISHED (ok)"
             else:
@@ -1320,7 +1376,13 @@ class SwapApp(App):
 
             elapsed = self._format_elapsed(job["started_at"])
             pid = str(proc.pid) if proc else "?"
-            tbl.add_row(fandom, platform, status, elapsed, pid, key=fandom)
+            # Sum collected fics across only the sources this job is running.
+            if len(sources) == len(SCRAPE_SOURCES):
+                collected = get_local_fic_count(fandom, "all")
+            else:
+                collected = sum(get_local_fic_count(fandom, s) for s in sources)
+            src_label = "+".join(sources) if len(sources) < len(SCRAPE_SOURCES) else "all"
+            tbl.add_row(fandom, src_label, status, f"{collected:,}", elapsed, pid, key=fandom)
 
     def stop_selected_job(self) -> None:
         tbl = self.query_one("#active-table", DataTable)
@@ -1551,6 +1613,13 @@ class SwapApp(App):
                 meta = d / "meta.json"
 
                 if not parquet.exists() or not npy.exists():
+                    # A scrape in progress writes to parts/ before the first
+                    # compaction. Don't delete those — only flag truly empty dirs.
+                    parts_dir = d / "parts"
+                    if parts_dir.exists() and any(parts_dir.glob("fics_*.parquet")):
+                        log(f"  parts-only: {d.name} (in-flight scrape, skipping)")
+                        kept += 1
+                        continue
                     log(f"  orphan: {d.name} (missing parquet or embeddings) — removing")
                     shutil.rmtree(d, ignore_errors=True)
                     removed += 1
@@ -1578,6 +1647,74 @@ class SwapApp(App):
 
             log(f"Kept {kept} fandom(s), removed {removed} orphan(s).")
             log(f"Local storage: {fmt_bytes(total_bytes)}")
+            log("Done.")
+            self.app.call_from_thread(self.load_all_data)
+        except Exception as e:
+            log(f"ERROR: {e}")
+        finally:
+            self._busy = False
+
+    def start_purge_null_vectors(self) -> None:
+        if self._busy:
+            self.notify("An operation is already running.", severity="warning")
+            return
+        self._log_clear("cleanup-log")
+        self.run_purge_null_vectors()
+
+    @work(thread=True)
+    def run_purge_null_vectors(self) -> None:
+        """Delete fics with null/zero embedding vectors from local parquet+npy
+        stores and from the Neon DB. A 'null vector' locally means an all-zero
+        or NaN row in embeddings.npy; in Neon it means embedding IS NULL.
+        """
+        self._busy = True
+        log = lambda m: self.app.call_from_thread(self._log, "cleanup-log", m)
+        try:
+            # ── Local stores ────────────────────────────────────────────────
+            log(f"Scanning {FANDOMS_DIR} for null-vector rows...")
+            local_removed = 0
+            local_scanned = 0
+            if FANDOMS_DIR.exists():
+                for d in sorted(FANDOMS_DIR.iterdir()):
+                    if not d.is_dir():
+                        continue
+                    parquet = d / "fics.parquet"
+                    npy = d / "embeddings.npy"
+                    if not parquet.exists() or not npy.exists():
+                        continue
+                    try:
+                        df = pl.read_parquet(parquet)
+                        embs = np.load(npy)
+                        if len(df) != embs.shape[0]:
+                            log(f"  {d.name}: row mismatch ({len(df)} vs {embs.shape[0]}) — skipping")
+                            continue
+                        local_scanned += len(df)
+                        bad = (~np.isfinite(embs).all(axis=1)) | (np.abs(embs).sum(axis=1) == 0)
+                        n_bad = int(bad.sum())
+                        if n_bad == 0:
+                            continue
+                        keep = ~bad
+                        df = df.filter(pl.Series(keep))
+                        embs = embs[keep]
+                        df.write_parquet(parquet)
+                        np.save(npy, embs)
+                        log(f"  {d.name}: removed {n_bad} null-vector fic(s)")
+                        local_removed += n_bad
+                    except Exception as e:
+                        log(f"  {d.name}: error ({e}) — skipping")
+            log(f"Local: {local_removed} removed, {local_scanned:,} scanned")
+
+            # ── Neon ────────────────────────────────────────────────────────
+            log("Deleting null embeddings from Neon...")
+            try:
+                engine = get_engine()
+                with engine.connect() as conn:
+                    result = conn.execute(text("DELETE FROM fics WHERE embedding IS NULL"))
+                    conn.commit()
+                    log(f"Neon: deleted {result.rowcount} row(s) with NULL embedding")
+            except Exception as e:
+                log(f"Neon: skipped ({e})")
+
             log("Done.")
             self.app.call_from_thread(self.load_all_data)
         except Exception as e:

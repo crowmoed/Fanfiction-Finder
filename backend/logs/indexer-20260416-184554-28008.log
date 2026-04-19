@@ -1,0 +1,2138 @@
+[log] Writing full output to: D:\Fanfiction-Finder\backend\logs\indexer-20260416-184554-28008.log
+[log] Started at 2026-04-16T18:45:54.801883
+[log] argv: ['D:\\Fanfiction-Finder\\backend\\indexer.py', 'Naruto', '--sources', 'ffn,wattpad', '--min-words', '10000', '--wattpad-quality', '-2']
+Database initialized.
+[migrate] Embedding column already 768 dims — no migration needed.
+
+==================================================
+Indexing: Naruto (min 10,000 words, sources=['ffn', 'wattpad'])
+==================================================
+[FFN] Resuming Naruto at word_len=10 page=584
+
+[FFN] Fetching page 584 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=584
+[FFN] Waiting 15s — click through any interstitial now...
+[FFN] Page 584 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 585 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=585
+[FFN] Page 585 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 586 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=586
+[FFN] Page 586 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 587 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=587
+[FFN] Page 587 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 588 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=588
+[FFN] Page 588 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 589 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=589
+[FFN] Page 589 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 590 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=590
+[FFN] Page 590 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 591 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=591
+[FFN] Page 591 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 592 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=592
+[FFN] Page 592 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 593 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=593
+[FFN] Page 593 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 594 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=594
+[FFN] Page 594 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 595 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=595
+[FFN] Page 595 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 596 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=596
+[FFN] Page 596 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 597 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=597
+[FFN] Page 597 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 598 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=598
+[FFN] Page 598 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 599 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=599
+[FFN] Page 599 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 600 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=600
+[FFN] Page 600 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 601 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=601
+[FFN] Page 601 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 602 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=602
+[FFN] Page 602 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 603 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=603
+[FFN] Page 603 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 604 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=604
+[FFN] Page 604 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 605 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=605
+[FFN] Page 605 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 606 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=606
+[FFN] Page 606 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 607 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=607
+[FFN] Page 607 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 608 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=608
+[FFN] Page 608 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 609 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=609
+[FFN] Page 609 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 610 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=610
+[FFN] Page 610 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 611 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=611
+[FFN] Page 611 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 612 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=612
+[FFN] Page 612 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 613 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=613
+[FFN] Page 613 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 614 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=614
+[FFN] Page 614 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 615 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=615
+[FFN] Page 615 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 616 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=616
+[FFN] Page 616 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 617 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=617
+[FFN] Page 617 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 618 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=618
+[FFN] Page 618 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 619 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=619
+[FFN] Page 619 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 620 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=620
+[FFN] Page 620 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 621 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=621
+[FFN] Page 621 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 622 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=622
+[FFN] Page 622 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 623 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=623
+[FFN] Page 623 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 624 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=624
+[FFN] Page 624 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 625 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=625
+[FFN] Page 625 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 626 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=626
+[FFN] Page 626 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 627 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=627
+[FFN] Page 627 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 628 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=628
+[FFN] Page 628 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 629 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=629
+[FFN] Page 629 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 630 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=630
+[FFN] Page 630 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 631 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=631
+[FFN] Page 631 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 632 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=632
+[FFN] Page 632 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 633 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=633
+[FFN] Page 633 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 634 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=634
+[FFN] Page 634 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 635 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=635
+[FFN] Page 635 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 636 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=636
+[FFN] Page 636 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 637 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=637
+[FFN] Page 637 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 638 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=638
+[FFN] Page 638 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 639 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=639
+[FFN] Page 639 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 640 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=640
+[FFN] Page 640 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 641 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=641
+[FFN] Page 641 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 642 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=642
+[FFN] Page 642 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 643 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=643
+[FFN] Page 643 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 644 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=644
+[FFN] Page 644 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 645 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=645
+[FFN] Page 645 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 646 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=646
+[FFN] Page 646 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 647 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=647
+[FFN] Page 647 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 648 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=648
+[FFN] Page 648 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 649 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=649
+[FFN] Page 649 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 650 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=650
+[FFN] Page 650 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 651 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=651
+[FFN] Page 651 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 652 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=652
+[FFN] Page 652 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 653 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=653
+[FFN] Page 653 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 654 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=654
+[FFN] Page 654 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 655 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=655
+[FFN] Page 655 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 656 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=656
+[FFN] Page 656 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 657 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=657
+[FFN] Page 657 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 658 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=658
+[FFN] Page 658 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 659 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=659
+[FFN] Page 659 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 660 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=660
+[FFN] Page 660 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 661 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=661
+[FFN] Page 661 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 662 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=662
+[FFN] Page 662 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 663 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=663
+[FFN] Page 663 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 664 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=664
+[FFN] Page 664 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 665 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=665
+[FFN] Page 665 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 666 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=666
+[FFN] Page 666 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 667 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=667
+[FFN] Page 667 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 668 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=668
+[FFN] Page 668 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 669 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=669
+[FFN] Page 669 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 670 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=670
+[FFN] Page 670 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 671 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=671
+[FFN] Page 671 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 672 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=672
+[FFN] Page 672 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 673 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=673
+[FFN] Page 673 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 674 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=674
+[FFN] Page 674 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 675 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=675
+[FFN] Page 675 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 676 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=676
+[FFN] Page 676 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 677 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=677
+[FFN] Page 677 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 678 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=678
+[FFN] Page 678 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 679 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=679
+[FFN] Page 679 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 680 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=680
+[FFN] Page 680 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 681 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=681
+[FFN] Page 681 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 682 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=682
+[FFN] Page 682 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 683 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=683
+[FFN] Page 683 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 684 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=684
+[FFN] Page 684 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 685 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=685
+[FFN] Page 685 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 686 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=686
+[FFN] Page 686 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 687 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=687
+[FFN] Page 687 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 688 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=688
+[FFN] Page 688 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 689 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=689
+[FFN] Page 689 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 690 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=690
+[FFN] Page 690 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 691 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=691
+[FFN] Page 691 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 692 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=692
+[FFN] Page 692 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 693 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=693
+[FFN] Page 693 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 694 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=694
+[FFN] Page 694 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 695 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=695
+[FFN] Page 695 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 696 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=696
+[FFN] Page 696 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 697 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=697
+[FFN] Page 697 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 698 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=698
+[FFN] Page 698 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 699 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=699
+[FFN] Page 699 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 700 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=700
+[FFN] Page 700 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 701 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=701
+[FFN] Page 701 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 702 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=702
+[FFN] Page 702 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 703 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=703
+[FFN] Page 703 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 704 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=704
+[FFN] Page 704 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 705 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=705
+[FFN] Page 705 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 706 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=706
+[FFN] Page 706 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 707 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=707
+[FFN] Page 707 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 708 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=708
+[FFN] Page 708 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 709 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=709
+[FFN] Page 709 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 710 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=710
+[FFN] Page 710 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 711 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=711
+[FFN] Page 711 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 712 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=712
+[FFN] Page 712 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 713 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=713
+[FFN] Page 713 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 714 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=714
+[FFN] Page 714 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 715 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=715
+[FFN] Page 715 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 716 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=716
+[FFN] Page 716 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 717 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=717
+[FFN] Page 717 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 718 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=718
+[FFN] Page 718 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 719 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=719
+[FFN] Page 719 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 720 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=720
+[FFN] Page 720 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 721 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=721
+[FFN] Page 721 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 722 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=722
+[FFN] Page 722 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 723 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=723
+[FFN] Page 723 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 724 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=724
+[FFN] Page 724 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 725 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=725
+[FFN] Page 725 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 726 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=726
+[FFN] Page 726 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 727 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=727
+[FFN] Page 727 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 728 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=728
+[FFN] Page 728 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 729 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=729
+[FFN] Page 729 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 730 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=730
+[FFN] Page 730 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 731 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=731
+[FFN] Page 731 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 732 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=732
+[FFN] Page 732 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 733 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=733
+[FFN] Page 733 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 734 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=734
+[FFN] Page 734 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 735 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=735
+[FFN] Page 735 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 736 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=736
+[FFN] Page 736 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 737 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=737
+[FFN] Page 737 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 738 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=738
+[FFN] Page 738 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 739 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=739
+[FFN] Page 739 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 740 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=740
+[FFN] Page 740 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 741 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=741
+[FFN] Page 741 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 742 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=742
+[FFN] Page 742 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 743 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=743
+[FFN] Page 743 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 744 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=744
+[FFN] Page 744 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 745 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=745
+[FFN] Page 745 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 746 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=746
+[FFN] Page 746 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 747 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=747
+[FFN] Page 747 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 748 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=748
+[FFN] Page 748 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 749 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=749
+[FFN] Page 749 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 750 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=750
+[FFN] Page 750 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 751 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=751
+[FFN] Page 751 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 752 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=752
+[FFN] Page 752 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 753 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=753
+[FFN] Page 753 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 754 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=754
+[FFN] Page 754 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 755 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=755
+[FFN] Page 755 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 756 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=756
+[FFN] Page 756 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 757 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=757
+[FFN] Page 757 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 758 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=758
+[FFN] Page 758 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 759 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=759
+[FFN] Page 759 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 760 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=760
+[FFN] Page 760 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 761 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=761
+[FFN] Page 761 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 762 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=762
+[FFN] Page 762 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 763 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=763
+[FFN] Page 763 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 764 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=764
+[FFN] Page 764 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 765 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=765
+[FFN] Page 765 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 766 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=766
+[FFN] Page 766 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 767 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=767
+[FFN] Page 767 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 768 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=768
+[FFN] Page 768 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 769 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=769
+[FFN] Page 769 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 770 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=770
+[FFN] Page 770 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 771 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=771
+[FFN] Page 771 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 772 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=772
+[FFN] Page 772 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 773 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=773
+[FFN] Page 773 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 774 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=774
+[FFN] Page 774 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 775 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=775
+[FFN] Page 775 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 776 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=776
+[FFN] Page 776 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 777 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=777
+[FFN] Page 777 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 778 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=778
+[FFN] Page 778 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 779 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=779
+[FFN] Page 779 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 780 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=780
+[FFN] Page 780 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 781 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=781
+[FFN] Page 781 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 782 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=782
+[FFN] Page 782 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 783 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=783
+[FFN] Page 783 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 784 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=784
+[FFN] Page 784 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 785 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=785
+[FFN] Page 785 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 786 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=786
+[FFN] Page 786 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 787 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=787
+[FFN] Page 787 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 788 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=788
+[FFN] Page 788 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 789 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=789
+[FFN] Page 789 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 790 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=790
+[FFN] Page 790 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 791 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=791
+[FFN] Page 791 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 792 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=792
+[FFN] Page 792 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 793 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=793
+[FFN] Page 793 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 794 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=794
+[FFN] Page 794 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 795 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=795
+[FFN] Page 795 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 796 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=796
+[FFN] Page 796 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 797 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=797
+[FFN] Page 797 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 798 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=798
+[FFN] Page 798 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 799 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=799
+[FFN] Page 799 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 800 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=800
+[FFN] Page 800 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 801 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=801
+[FFN] Page 801 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 802 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=802
+[FFN] Page 802 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 803 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=803
+[FFN] Page 803 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 804 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=804
+[FFN] Page 804 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 805 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=805
+[FFN] Page 805 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 806 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=806
+[FFN] Page 806 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 807 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=807
+[FFN] Page 807 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 808 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=808
+[FFN] Page 808 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 809 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=809
+[FFN] Page 809 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 810 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=810
+[FFN] Page 810 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 811 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=811
+[FFN] Page 811 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 812 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=812
+[FFN] Page 812 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 813 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=813
+[FFN] Page 813 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 814 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=814
+[FFN] Page 814 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 815 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=815
+[FFN] Page 815 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 816 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=816
+[FFN] Page 816 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 817 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=817
+[FFN] Page 817 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 818 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=818
+[FFN] Page 818 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 819 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=819
+[FFN] Page 819 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 820 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=820
+[FFN] Page 820 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 821 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=821
+[FFN] Page 821 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 822 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=822
+[FFN] Page 822 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 823 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=823
+[FFN] Page 823 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 824 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=824
+[FFN] Page 824 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 825 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=825
+[FFN] Page 825 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 826 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=826
+[FFN] Page 826 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 827 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=827
+[FFN] Page 827 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 828 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=828
+[FFN] Page 828 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 829 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=829
+[FFN] Page 829 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 830 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=830
+[FFN] Page 830 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 831 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=831
+[FFN] Page 831 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 832 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=832
+[FFN] Page 832 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 833 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=833
+[FFN] Page 833 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 834 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=834
+[FFN] Page 834 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 835 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=835
+[FFN] Page 835 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 836 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=836
+[FFN] Page 836 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 837 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=837
+[FFN] Page 837 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 838 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=838
+[FFN] Page 838 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 839 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=839
+[FFN] Page 839 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 840 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=840
+[FFN] Page 840 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 841 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=841
+[FFN] Page 841 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 842 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=842
+[FFN] Page 842 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 843 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=843
+[FFN] Page 843 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 844 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=844
+[FFN] Page 844 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 845 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=845
+[FFN] Page 845 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 846 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=846
+[FFN] Page 846 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 847 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=847
+[FFN] Page 847 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 848 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=848
+[FFN] Page 848 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 849 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=849
+[FFN] Page 849 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 850 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=850
+[FFN] Page 850 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 851 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=851
+[FFN] Page 851 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 852 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=852
+[FFN] Page 852 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 853 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=853
+[FFN] Page 853 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 854 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=854
+[FFN] Page 854 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 855 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=855
+[FFN] Page 855 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 856 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=856
+[FFN] Page 856 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 857 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=857
+[FFN] Page 857 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 858 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=858
+[FFN] Page 858 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 859 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=859
+[FFN] Page 859 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 860 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=860
+[FFN] Page 860 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 861 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=861
+[FFN] Page 861 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 862 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=862
+[FFN] Page 862 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 863 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=863
+[FFN] Page 863 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 864 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=864
+[FFN] Page 864 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 865 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=865
+[FFN] Page 865 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 866 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=866
+[FFN] Page 866 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 867 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=867
+[FFN] Page 867 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 868 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=868
+[FFN] Page 868 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 869 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=869
+[FFN] Page 869 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 870 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=870
+[FFN] Page 870 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 871 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=871
+[FFN] Page 871 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 872 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=872
+[FFN] Page 872 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 873 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=873
+[FFN] Page 873 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 874 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=874
+[FFN] Page 874 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 875 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=875
+[FFN] Page 875 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 876 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=876
+[FFN] Page 876 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 877 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=877
+[FFN] Page 877 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 878 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=878
+[FFN] Page 878 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 879 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=879
+[FFN] Page 879 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 880 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=880
+[FFN] Page 880 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 881 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=881
+[FFN] Page 881 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 882 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=882
+[FFN] Page 882 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 883 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=883
+[FFN] Page 883 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 884 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=884
+[FFN] Page 884 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 885 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=885
+[FFN] Page 885 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 886 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=886
+[FFN] Page 886 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 887 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=887
+[FFN] Page 887 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 888 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=888
+[FFN] Page 888 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 889 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=889
+[FFN] Page 889 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 890 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=890
+[FFN] Page 890 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 891 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=891
+[FFN] Page 891 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 892 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=892
+[FFN] Page 892 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 893 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=893
+[FFN] Page 893 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 894 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=894
+[FFN] Page 894 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 895 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=895
+[FFN] Page 895 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 896 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=896
+[FFN] Page 896 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 897 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=897
+[FFN] Page 897 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 898 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=898
+[FFN] Page 898 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 899 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=899
+[FFN] Page 899 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 900 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=900
+[FFN] Page 900 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 901 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=901
+[FFN] Page 901 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 902 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=902
+[FFN] Page 902 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 903 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=903
+[FFN] Page 903 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 904 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=904
+[FFN] Page 904 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 905 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=905
+[FFN] Page 905 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 906 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=906
+[FFN] Page 906 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 907 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=907
+[FFN] Page 907 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 908 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=908
+[FFN] Page 908 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 909 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=909
+[FFN] Page 909 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 910 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=910
+[FFN] Page 910 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 911 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=911
+[FFN] Page 911 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 912 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=912
+[FFN] Page 912 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 913 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=913
+[FFN] Page 913 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 914 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=914
+[FFN] Page 914 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 915 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=915
+[FFN] Page 915 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 916 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=916
+[FFN] Page 916 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 917 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=917
+[FFN] Page 917 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 918 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=918
+[FFN] Page 918 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 919 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=919
+[FFN] Page 919 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 920 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=920
+[FFN] Page 920 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 921 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=921
+[FFN] Page 921 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 922 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=922
+[FFN] Page 922 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 923 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=923
+[FFN] Page 923 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 924 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=924
+[FFN] Page 924 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 925 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=925
+[FFN] Page 925 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 926 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=926
+[FFN] Page 926 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 927 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=927
+[FFN] Page 927 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 928 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=928
+[FFN] Page 928 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 929 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=929
+[FFN] Page 929 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 930 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=930
+[FFN] Page 930 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 931 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=931
+[FFN] Page 931 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 932 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=932
+[FFN] Page 932 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 933 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=933
+[FFN] Page 933 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 934 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=934
+[FFN] Page 934 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 935 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=935
+[FFN] Page 935 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 936 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=936
+[FFN] Page 936 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 937 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=937
+[FFN] Page 937 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 938 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=938
+[FFN] Page 938 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 939 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=939
+[FFN] Page 939 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 940 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=940
+[FFN] Page 940 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 941 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=941
+[FFN] Page 941 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 942 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=942
+[FFN] Page 942 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 943 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=943
+[FFN] Page 943 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 944 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=944
+[FFN] Page 944 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 945 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=945
+[FFN] Page 945 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 946 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=946
+[FFN] Page 946 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 947 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=947
+[FFN] Page 947 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 948 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=948
+[FFN] Page 948 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 949 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=949
+[FFN] Page 949 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 950 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=950
+[FFN] Page 950 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 951 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=951
+[FFN] Page 951 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 952 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=952
+[FFN] Page 952 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 953 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=953
+[FFN] Page 953 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 954 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=954
+[FFN] Page 954 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 955 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=955
+[FFN] Page 955 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 956 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=956
+[FFN] Page 956 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 957 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=957
+[FFN] Page 957 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 958 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=958
+[FFN] Page 958 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 959 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=959
+[FFN] Page 959 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 960 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=960
+[FFN] Page 960 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 961 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=961
+[FFN] Page 961 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 962 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=962
+[FFN] Page 962 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 963 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=963
+[FFN] Page 963 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 964 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=964
+[FFN] Page 964 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 965 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=965
+[FFN] Page 965 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 966 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=966
+[FFN] Page 966 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 967 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=967
+[FFN] Page 967 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 968 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=968
+[FFN] Page 968 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 969 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=969
+[FFN] Page 969 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 970 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=970
+[FFN] Page 970 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 971 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=971
+[FFN] Page 971 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 972 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=972
+[FFN] Page 972 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 973 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=973
+[FFN] Page 973 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 974 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=974
+[FFN] Page 974 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 975 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=975
+[FFN] Page 975 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 976 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=976
+[FFN] Page 976 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 977 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=977
+[FFN] Page 977 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 978 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=978
+[FFN] Page 978 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 979 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=979
+[FFN] Page 979 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 980 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=980
+[FFN] Page 980 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 981 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=981
+[FFN] Page 981 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 982 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=982
+[FFN] Page 982 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 983 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=983
+[FFN] Page 983 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 984 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=984
+[FFN] Page 984 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 985 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=985
+[FFN] Page 985 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 986 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=986
+[FFN] Page 986 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 987 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=987
+[FFN] Page 987 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 988 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=988
+[FFN] Page 988 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 989 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=989
+[FFN] Page 989 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 990 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=990
+[FFN] Page 990 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 991 (40k-100k): https://www.fanfiction.net/anime/Naruto/?srt=3&r=10&len=10&p=991
+[FFN] Page 991 (40k-100k): scraped 25 fics — embedding now...
+
+======================================================================
+ SCRAPER CRASHED 
+======================================================================
+Traceback (most recent call last):
+  File "D:\Fanfiction-Finder\backend\indexer.py", line 661, in <module>
+    index_one(fandom, clear=should_clear, start_page=start_page,
+  File "D:\Fanfiction-Finder\backend\indexer.py", line 496, in index_one
+    index_fandom(fandom_name, clear=clear, start_page=start_page,
+  File "D:\Fanfiction-Finder\backend\indexer.py", line 357, in index_fandom
+    ffn_stored = _run_source(fandom_name, "ffn", session,
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Fanfiction-Finder\backend\indexer.py", line 307, in _run_source
+    return scrape_and_embed_ffn(fandom_name, session)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Fanfiction-Finder\backend\indexer.py", line 250, in scrape_and_embed_ffn
+    embeddings = embed_fics_batch(fics, fandom=fandom_name)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Fanfiction-Finder\backend\ai\embedder.py", line 140, in embed_fics_batch
+    result = _embed_batch(batch)
+             ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\tenacity\__init__.py", line 331, in wrapped_f
+    return copy(f, *args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\tenacity\__init__.py", line 393, in <lambda>
+    self._add_action_func(lambda rs: rs.outcome.result())
+                                     ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "D:\Fanfiction-Finder\backend\ai\embedder.py", line 66, in _embed_batch
+    return client.models.embed_content(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\google\genai\models.py", line 5725, in embed_content
+    return self._embed_content(model=model, contents=contents, config=config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\google\genai\models.py", line 4725, in _embed_content
+    response = self._api_client.request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\google\genai\_api_client.py", line 1402, in request
+    response = self._request(http_request, http_options, stream=False)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\google\genai\_api_client.py", line 1238, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\tenacity\__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+          ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\tenacity\__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\google\genai\_api_client.py", line 1215, in _request_once
+    errors.APIError.raise_for_response(response)
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\google\genai\errors.py", line 134, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+  File "C:\Users\notcr\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\google\genai\errors.py", line 161, in raise_error
+    raise ServerError(status_code, response_json, response)
+google.genai.errors.ServerError: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}}
+======================================================================
+ Full log: D:\Fanfiction-Finder\backend\logs\indexer-20260416-184554-28008.log
+ Exception: ServerError: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}}
+======================================================================
+
+Press Enter to close this window...

@@ -1,0 +1,548 @@
+[log] Writing full output to: D:\Fanfiction-Finder\backend\logs\indexer-20260417-132936-35880.log
+[log] Started at 2026-04-17T13:29:36.843233
+[log] argv: ['D:\\Fanfiction-Finder\\backend\\indexer.py', 'Genshin Impact', '--sources', 'ao3,ffn,wattpad', '--min-words', '20000', '--wattpad-quality', '2']
+Database initialized.
+[migrate] Embedding column already 768 dims — no migration needed.
+
+==================================================
+Indexing: Genshin Impact (min 20,000 words, sources=['ao3', 'ffn', 'wattpad'])
+==================================================
+
+[AO3] Fetching page 1: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=1&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Waiting 15s — click through any interstitial now...
+[AO3] Page 1: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 2: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=2&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 2: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 3: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=3&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 3: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 4: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=4&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 4: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 5: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=5&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 5: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 6: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=6&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 6: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 7: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=7&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 7: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 8: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=8&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 8: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 9: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=9&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 9: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 10: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=10&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 10: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 11: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=11&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 11: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 12: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=12&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 12: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 13: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=13&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 13: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 14: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=14&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 14: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 15: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=15&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 15: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 16: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=16&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 16: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 17: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=17&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 17: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 18: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=18&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 18: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 19: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=19&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 19: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 20: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=20&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 20: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 21: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=21&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 21: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 22: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=22&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 22: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 23: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=23&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 23: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 24: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=24&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 24: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 25: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=25&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 25: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 26: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=26&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 26: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 27: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=27&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 27: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 28: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=28&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 28: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 29: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=29&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 29: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 30: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=30&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 30: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 31: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=31&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 31: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 32: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=32&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 32: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 33: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=33&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 33: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 34: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=34&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 34: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 35: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=35&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 35: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 36: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=36&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 36: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 37: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=37&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 37: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 38: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=38&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 38: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 39: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=39&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 39: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 40: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=40&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 40: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 41: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=41&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 41: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 42: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=42&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 42: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 43: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=43&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 43: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 44: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=44&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 44: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 45: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=45&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 45: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 46: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=46&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 46: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 47: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=47&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 47: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 48: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=48&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 48: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 49: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=49&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 49: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 50: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=50&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 50: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 51: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=51&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 51: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 52: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=52&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 52: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 53: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=53&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 53: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 54: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=54&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 54: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 55: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=55&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 55: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 56: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=56&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 56: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 57: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=57&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 57: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 58: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=58&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 58: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 59: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=59&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 59: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 60: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=60&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 60: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 61: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=61&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 61: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 62: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=62&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 62: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 63: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=63&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 63: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 64: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=64&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 64: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 65: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=65&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 65: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 66: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=66&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 66: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 67: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=67&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 67: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 68: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=68&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 68: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 69: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=69&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 69: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 70: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=70&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 70: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 71: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=71&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 71: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 72: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=72&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 72: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 73: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=73&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 73: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 74: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=74&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 74: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 75: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=75&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 75: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 76: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=76&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 76: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 77: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=77&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 77: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 78: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=78&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 78: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 79: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=79&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 79: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 80: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=80&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 80: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 81: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=81&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 81: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 82: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=82&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 82: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 83: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=83&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 83: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 84: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=84&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 84: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 85: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=85&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 85: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 86: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=86&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 86: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 87: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=87&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 87: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 88: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=88&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 88: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 89: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=89&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 89: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 90: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=90&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 90: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 91: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=91&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 91: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 92: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=92&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 92: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 93: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=20000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=93&tag_id=原神+|+Genshin+Impact+(Video+Game)
+[AO3] Page 93: no results on attempt 1 — refreshing
+[AO3] Page 93: no results on attempt 2 — refreshing
+[AO3] Page 93: no results after 3 attempts — done
+[local] Compacted 'Genshin Impact': 2120 rows -> 1840 unique
+
+[AO3] Done: 1840 fics stored
+
+Switching to FFN...
+
+[FFN] Fetching page 1 (40k-100k): https://www.fanfiction.net/game/Genshin-Impact/?srt=3&r=10&len=10&p=1
+[FFN] Page 1 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 2 (40k-100k): https://www.fanfiction.net/game/Genshin-Impact/?srt=3&r=10&len=10&p=2
+[FFN] Page 2 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 3 (40k-100k): https://www.fanfiction.net/game/Genshin-Impact/?srt=3&r=10&len=10&p=3
+[FFN] Page 3 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 4 (40k-100k): https://www.fanfiction.net/game/Genshin-Impact/?srt=3&r=10&len=10&p=4
+[FFN] Page 4 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 5 (40k-100k): https://www.fanfiction.net/game/Genshin-Impact/?srt=3&r=10&len=10&p=5
+[FFN] Page 5 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 6 (40k-100k): https://www.fanfiction.net/game/Genshin-Impact/?srt=3&r=10&len=10&p=6
+[FFN] Page 6 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 7 (40k-100k): https://www.fanfiction.net/game/Genshin-Impact/?srt=3&r=10&len=10&p=7
+[FFN] Page 7 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+[FFN] Fetching page 8 (40k-100k): https://www.fanfiction.net/game/Genshin-Impact/?srt=3&r=10&len=10&p=8
+[FFN] Page 8 (40k-100k): scraped 25 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 25 fics to local storage
+
+======================================================================
+ SCRAPER CRASHED 
+======================================================================
+Traceback (most recent call last):
+  File "D:\Fanfiction-Finder\backend\indexer.py", line 661, in <module>
+    index_one(fandom, clear=should_clear, start_page=start_page,
+  File "D:\Fanfiction-Finder\backend\indexer.py", line 496, in index_one
+    index_fandom(fandom_name, clear=clear, start_page=start_page,
+  File "D:\Fanfiction-Finder\backend\indexer.py", line 357, in index_fandom
+    ffn_stored = _run_source(fandom_name, "ffn", session,
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Fanfiction-Finder\backend\indexer.py", line 307, in _run_source
+    return scrape_and_embed_ffn(fandom_name, session)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Fanfiction-Finder\backend\indexer.py", line 254, in scrape_and_embed_ffn
+    progress.mark_progress(fandom_name, "ffn", word_len=word_len, page=page + 1)
+  File "D:\Fanfiction-Finder\backend\data\progress.py", line 155, in mark_progress
+    _save(data)
+  File "D:\Fanfiction-Finder\backend\data\progress.py", line 109, in _save
+    os.replace(tmp, PROGRESS_PATH)
+PermissionError: [WinError 5] Access is denied: 'D:\\Fanfiction-Finder\\backend\\data\\.progress_zc4tj2jn.tmp' -> 'D:\\Fanfiction-Finder\\backend\\data\\scrape_progress.json'
+======================================================================
+ Full log: D:\Fanfiction-Finder\backend\logs\indexer-20260417-132936-35880.log
+ Exception: PermissionError: [WinError 5] Access is denied: 'D:\\Fanfiction-Finder\\backend\\data\\.progress_zc4tj2jn.tmp' -> 'D:\\Fanfiction-Finder\\backend\\data\\scrape_progress.json'
+======================================================================
+
+Press Enter to close this window...

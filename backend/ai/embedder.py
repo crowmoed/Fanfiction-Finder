@@ -141,8 +141,6 @@ def embed_fics_batch(fics: list, fandom: str = None, batch_size: int = 25) -> li
         normalized = [_normalize(e.values) for e in result.embeddings]
         all_embeddings.extend(normalized)
         print(f"  Embedded batch {i//batch_size + 1}/{(len(texts)-1)//batch_size + 1}")
-        if i + batch_size < len(texts):
-            time.sleep(1)
 
     return all_embeddings
 

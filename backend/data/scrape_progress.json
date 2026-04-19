@@ -1,9 +1,25 @@
 {
   "fandoms": {
-    "Naruto": {
+    "Genshin Impact": {
+      "ao3": {
+        "done": true,
+        "min_words": 20000,
+        "page": 671
+      },
+      "ffn": {
+        "done": true,
+        "word_len": 20,
+        "page": 16
+      },
+      "wattpad": {
+        "done": true
+      }
+    },
+    "NCT": {
       "ao3": {
         "done": false,
-        "page": 7
+        "min_words": 10000,
+        "page": 39
       }
     }
   }

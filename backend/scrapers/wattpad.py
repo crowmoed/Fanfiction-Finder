@@ -23,6 +23,7 @@ import random
 import statistics
 import sys
 import os
+from typing import Iterator
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data.schema import Fic
@@ -278,8 +279,6 @@ def calibrate(query: str, session: requests.Session, quality_offset: int = 0) ->
         if total and (page + 1) * LIMIT >= total:
             break
 
-        time.sleep(random.uniform(1.0, 2.0))
-
     if not ratios or total is None:
         # Fallback: very loose filter if calibration fails
         return {
@@ -332,19 +331,14 @@ def parse_story(story: dict) -> Fic:
 
 # ── Main search ──────────────────────────────────────────────────────────────
 
-def search(query: str, max_pages: int = 0, quality_offset: int = 0) -> list[Fic]:
-    """
-    Search Wattpad with dynamic quality filtering.
+def search_iter(query: str, max_pages: int = 0, quality_offset: int = 0) -> Iterator[list[Fic]]:
+    """Streaming version of search() — yields one list of Fic objects per page.
 
-    Phase 1: Samples first pages to calibrate fandom-specific thresholds.
-    Phase 2: Paginates through all results using calibrated filter.
+    Callers embed + persist each yielded batch before pulling the next page,
+    keeping peak memory at ~one page of fics. The `seen_ids` dedup set still
+    grows with the full corpus but is lightweight (just strings).
 
-    Args:
-        query: Search keyword (e.g. "naruto", "harry potter")
-        max_pages: Max pages to fetch in phase 2 (0 = no limit, paginate until exhausted)
-
-    Returns:
-        List of Fic objects that passed quality filtering
+    Yields empty lists on pages where nothing qualified, so callers can skip.
     """
     session = _make_session()
 
@@ -370,7 +364,7 @@ def search(query: str, max_pages: int = 0, quality_offset: int = 0) -> list[Fic]
     print(f"\n[Wattpad] ── Scraping with calibrated filter (min ratio: {min_ratio:.2%}) ──")
 
     seen_ids: set[str] = set()
-    results: list[Fic] = []
+    total_qualified = 0
     pages_fetched = 0
     budget_exhausted = False
 
@@ -406,8 +400,7 @@ def search(query: str, max_pages: int = 0, quality_offset: int = 0) -> list[Fic]
                 print(f"[Wattpad] No stories at offset {offset} — shard done")
                 break
 
-            page_qualified = 0
-            page_new = 0
+            page_batch: list[Fic] = []
             for story in stories:
                 if not _is_valid_story(story):
                     continue
@@ -420,16 +413,26 @@ def search(query: str, max_pages: int = 0, quality_offset: int = 0) -> list[Fic]
                     continue
                 seen_ids.add(sid)
 
-                results.append(parse_story(story))
-                page_qualified += 1
-                page_new += 1
+                page_batch.append(parse_story(story))
 
+            page_qualified = len(page_batch)
             shard_qualified += page_qualified
+            total_qualified += page_qualified
             print(f"[Wattpad] {shard_label} page {pages_fetched + 1}: "
-                  f"{len(stories)} fetched, {page_qualified} qualified, "
-                  f"{page_new} new (total unique: {len(results)})")
+                  f"{len(stories)} fetched, {page_qualified} qualified "
+                  f"(total unique: {total_qualified})")
 
             pages_fetched += 1
+            has_next = bool(data.get("nextUrl"))
+
+            # Yield this page's qualifying fics (may be empty). Caller embeds
+            # + persists, then GCs them before we pull the next page.
+            yield page_batch
+            del page_batch, stories, data
+
+            if not has_next:
+                print(f"[Wattpad] {shard_label} no nextUrl — shard done")
+                break
 
             if EARLY_STOP_ENABLED:
                 if page_qualified == 0:
@@ -450,21 +453,27 @@ def search(query: str, max_pages: int = 0, quality_offset: int = 0) -> list[Fic]
                 print(f"[Wattpad] {shard_label} hit offset cap ({OFFSET_CAP}) — shard done")
                 break
 
-            if not data.get("nextUrl"):
-                print(f"[Wattpad] {shard_label} no nextUrl — shard done")
-                break
-
-            time.sleep(random.uniform(1.5, 3.0))
-
         print(f"[Wattpad] Shard {shard_label} done: {shard_qualified} qualified")
         if budget_exhausted:
             break
 
-    print(f"\n[Wattpad] Done: {len(results)} unique qualifying fics from "
+    print(f"\n[Wattpad] Done: {total_qualified} unique qualifying fics from "
           f"{pages_fetched} pages across {len(shards)} shards")
     if pages_fetched:
-        print(f"[Wattpad] Pass rate: {len(results)}/{pages_fetched * LIMIT} "
-              f"({len(results) / (pages_fetched * LIMIT):.1%})")
+        print(f"[Wattpad] Pass rate: {total_qualified}/{pages_fetched * LIMIT} "
+              f"({total_qualified / (pages_fetched * LIMIT):.1%})")
+
+
+def search(query: str, max_pages: int = 0, quality_offset: int = 0) -> list[Fic]:
+    """Eager wrapper around search_iter — accumulates all pages into a list.
+
+    Kept for back-compat with callers that want the full result set at once
+    (notably the `__main__` smoke test). The indexer uses search_iter directly
+    to avoid the memory spike of holding the full corpus.
+    """
+    results: list[Fic] = []
+    for batch in search_iter(query, max_pages=max_pages, quality_offset=quality_offset):
+        results.extend(batch)
     return results
 
 

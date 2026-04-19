@@ -1,0 +1,4 @@
+[log] Writing full output to: D:\Fanfiction-Finder\backend\logs\indexer-20260416-121955-6696.log
+[log] Started at 2026-04-16T12:19:55.608722
+[log] argv: ['indexer.py', 'Harry Potter', '--sources', 'bogus']
+[error] unknown source(s): ['bogus']; valid: ao3, ffn, wattpad

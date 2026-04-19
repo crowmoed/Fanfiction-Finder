@@ -1,0 +1,378 @@
+[log] Writing full output to: D:\Fanfiction-Finder\backend\logs\indexer-20260416-153616-27308.log
+[log] Started at 2026-04-16T15:36:16.787716
+[log] argv: ['D:\\Fanfiction-Finder\\backend\\indexer.py', 'Naruto', '--sources', 'ao3,ffn,wattpad', '--min-words', '10000']
+Database initialized.
+[migrate] Embedding column already 768 dims — no migration needed.
+
+==================================================
+Indexing: Naruto (min 10,000 words, sources=['ao3', 'ffn', 'wattpad'])
+==================================================
+[AO3] Resuming Naruto at page 792 (min_words=10,000)
+
+[AO3] Fetching page 792: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=792&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Waiting 15s — click through any interstitial now...
+[AO3] Page 792: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 793: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=793&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 793: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 794: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=794&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 794: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 795: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=795&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 795: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 796: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=796&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 796: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 797: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=797&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 797: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 798: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=798&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 798: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 799: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=799&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 799: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 800: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=800&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 800: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 801: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=801&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 801: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 802: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=802&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 802: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 803: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=803&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 803: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 804: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=804&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 804: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 805: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=805&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 805: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 806: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=806&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 806: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 807: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=807&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 807: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 808: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=808&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 808: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 809: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=809&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 809: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 810: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=810&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 810: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 811: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=811&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 811: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 812: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=812&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 812: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 813: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=813&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 813: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 814: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=814&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 814: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 815: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=815&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 815: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 816: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=816&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 816: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 817: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=817&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 817: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 818: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=818&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 818: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 819: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=819&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 819: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 820: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=820&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 820: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 821: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=821&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 821: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 822: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=822&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 822: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 823: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=823&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 823: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 824: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=824&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 824: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 825: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=825&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 825: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 826: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=826&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 826: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 827: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=827&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 827: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 828: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=828&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 828: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 829: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=829&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 829: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 830: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=830&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 830: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 831: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=831&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 831: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 832: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=832&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 832: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 833: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=833&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 833: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 834: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=834&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 834: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 835: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=835&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 835: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 836: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=836&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 836: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 837: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=837&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 837: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 838: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=838&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 838: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 839: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=839&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 839: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 840: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=840&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 840: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 841: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=841&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 841: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 842: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=842&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 842: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 843: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=843&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 843: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 844: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=844&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 844: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 845: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=845&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 845: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 846: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=846&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 846: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 847: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=847&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 847: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 848: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=848&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 848: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 849: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=849&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 849: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 850: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=850&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 850: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 851: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=851&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 851: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 852: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=852&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 852: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 853: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=853&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 853: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 854: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=854&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 854: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 855: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=855&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 855: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 856: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=856&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 856: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 857: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=857&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 857: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 858: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=858&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 858: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 859: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=859&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 859: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 860: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=860&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 860: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 861: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=861&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 861: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 862: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=862&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 862: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 863: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=863&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 863: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 864: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=864&tag_id=Naruto+(Anime+*a*+Manga)
+[AO3] Page 864: scraped 20 fics — embedding now...
+  Embedded batch 1/1
+  [local] Saved 20 fics to local storage
+
+[AO3] Fetching page 865: https://archiveofourown.org/works?commit=Sort+and+Filter&work_search%5Bsort_column%5D=kudos_count&work_search%5Bother_tag_names%5D=&work_search%5Bexcluded_tag_names%5D=&work_search%5Bcrossover%5D=&work_search%5Bcomplete%5D=&work_search%5Bwords_from%5D=10000&work_search%5Bwords_to%5D=&work_search%5Bdate_from%5D=&work_search%5Bdate_to%5D=&work_search%5Bquery%5D=&work_search%5Blanguage_id%5D=&page=865&tag_id=Naruto+(Anime+*a*+Manga)
