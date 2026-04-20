@@ -10,7 +10,7 @@ FANDOMS = {
     # Anime
     "Naruto":               {"ao3": "Naruto (Anime & Manga)",                              "ffn": "anime/Naruto",                         "wattpad": "naruto"},
     "Attack on Titan":      {"ao3": "Shingeki no Kyojin | Attack on Titan",                "ffn": "anime/Attack-on-Titan",                "wattpad": "attack on titan"},
-    "My Hero Academia":     {"ao3": "Boku no Hero Academia | My Hero Academia",            "ffn": "anime/My-Hero-Academia",               "wattpad": "bnha"},
+    "My Hero Academia":     {"ao3": "僕のヒーローアカデミア | Boku no Hero Academia | My Hero Academia (Anime & Manga)",            "ffn": "anime/My-Hero-Academia",               "wattpad": "bnha"},
     "Fullmetal Alchemist":  {"ao3": "Fullmetal Alchemist - All Media Types",               "ffn": "anime/Fullmetal-Alchemist",            "wattpad": "fullmetal alchemist"},
     "Death Note":           {"ao3": "Death Note (Anime & Manga)",                          "ffn": "anime/Death-Note",                     "wattpad": "death note"},
     "Hunter x Hunter":      {"ao3": "Hunter X Hunter",                                     "ffn": "anime/Hunter-X-Hunter",                "wattpad": "hunter x hunter"},

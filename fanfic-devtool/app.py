@@ -506,6 +506,7 @@ class SwapApp(App):
                             yield Button("Run Cleanup", id="btn-cleanup", variant="warning")
                             yield Button("Clear Fandom", id="btn-clear-fandom", variant="error")
                             yield Button("Purge Null Vectors", id="btn-purge-null", variant="warning")
+                            yield Button("Clear Duplicates", id="btn-clear-dupes", variant="warning")
                         with Horizontal(classes="scrape-option-row"):
                             yield Label("Fandom to clear:")
                             yield Select([], id="cleanup-fandom-select", allow_blank=True)
@@ -627,6 +628,8 @@ class SwapApp(App):
             self.start_clear_fandom()
         elif btn == "btn-purge-null":
             self.start_purge_null_vectors()
+        elif btn == "btn-clear-dupes":
+            self.start_clear_duplicates()
         # Progress-checkpoint buttons
         elif btn == "btn-progress-reset-all":
             self.reset_progress_all()
@@ -1712,6 +1715,82 @@ class SwapApp(App):
                     result = conn.execute(text("DELETE FROM fics WHERE embedding IS NULL"))
                     conn.commit()
                     log(f"Neon: deleted {result.rowcount} row(s) with NULL embedding")
+            except Exception as e:
+                log(f"Neon: skipped ({e})")
+
+            log("Done.")
+            self.app.call_from_thread(self.load_all_data)
+        except Exception as e:
+            log(f"ERROR: {e}")
+        finally:
+            self._busy = False
+
+    def start_clear_duplicates(self) -> None:
+        if self._busy:
+            self.notify("An operation is already running.", severity="warning")
+            return
+        self._log_clear("cleanup-log")
+        self.run_clear_duplicates()
+
+    @work(thread=True)
+    def run_clear_duplicates(self) -> None:
+        """Remove duplicate fics (same url) from local parquet+npy stores and
+        from Neon. Keeps the first occurrence of each url."""
+        self._busy = True
+        log = lambda m: self.app.call_from_thread(self._log, "cleanup-log", m)
+        try:
+            log(f"Scanning {FANDOMS_DIR} for duplicate urls...")
+            local_removed = 0
+            local_scanned = 0
+            if FANDOMS_DIR.exists():
+                for d in sorted(FANDOMS_DIR.iterdir()):
+                    if not d.is_dir():
+                        continue
+                    parquet = d / "fics.parquet"
+                    npy = d / "embeddings.npy"
+                    if not parquet.exists() or not npy.exists():
+                        continue
+                    try:
+                        df = pl.read_parquet(parquet)
+                        embs = np.load(npy)
+                        if len(df) != embs.shape[0]:
+                            log(f"  {d.name}: row mismatch ({len(df)} vs {embs.shape[0]}) — skipping")
+                            continue
+                        if "url" not in df.columns:
+                            log(f"  {d.name}: no url column — skipping")
+                            continue
+                        local_scanned += len(df)
+                        df_idx = df.with_row_index("_rowidx")
+                        keep_idx = (
+                            df_idx.group_by("url", maintain_order=True)
+                            .agg(pl.col("_rowidx").first())
+                            .get_column("_rowidx")
+                            .sort()
+                            .to_numpy()
+                        )
+                        n_dupe = len(df) - len(keep_idx)
+                        if n_dupe == 0:
+                            continue
+                        df_kept = df[keep_idx.tolist()]
+                        embs_kept = embs[keep_idx]
+                        df_kept.write_parquet(parquet)
+                        np.save(npy, embs_kept)
+                        log(f"  {d.name}: removed {n_dupe} duplicate(s)")
+                        local_removed += n_dupe
+                    except Exception as e:
+                        log(f"  {d.name}: error ({e}) — skipping")
+            log(f"Local: {local_removed} duplicate(s) removed, {local_scanned:,} scanned")
+
+            log("Deleting duplicate urls from Neon (keeping lowest id per url)...")
+            try:
+                engine = get_engine()
+                with engine.connect() as conn:
+                    result = conn.execute(text(
+                        "DELETE FROM fics WHERE id NOT IN ("
+                        "SELECT MIN(id) FROM fics GROUP BY url)"
+                    ))
+                    conn.commit()
+                    log(f"Neon: deleted {result.rowcount} duplicate row(s)")
             except Exception as e:
                 log(f"Neon: skipped ({e})")
 

@@ -22,8 +22,6 @@ def build_search_url(query: str, fandom: Optional[str] = None, page: int = 1, mi
     ao3_tag = FANDOMS[fandom]["ao3"]
     if ao3_tag is None:
         return None
-    encoded_tag = ao3_tag.replace(" ", "+").replace("&", "*a*")
-    
     params = [
         ("commit", "Sort and Filter"),
         ("work_search[sort_column]", "kudos_count"),
@@ -38,12 +36,10 @@ def build_search_url(query: str, fandom: Optional[str] = None, page: int = 1, mi
         ("work_search[query]", ""),
         ("work_search[language_id]", ""),
         ("page", str(page)),
+        ("tag_id", ao3_tag),
     ]
 
-    param_string = urlencode(
-        params,
-        quote_via=quote_plus
-    ) + f"&tag_id={encoded_tag}"
+    param_string = urlencode(params, quote_via=quote_plus)
 
     return f"https://archiveofourown.org/works?{param_string}"
 

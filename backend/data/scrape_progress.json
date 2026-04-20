@@ -17,9 +17,67 @@
     },
     "NCT": {
       "ao3": {
-        "done": false,
+        "done": true,
         "min_words": 10000,
-        "page": 139
+        "page": 732
+      },
+      "ffn": {
+        "done": true
+      },
+      "wattpad": {
+        "done": true
+      }
+    },
+    "Attack on Titan": {
+      "ao3": {
+        "done": true,
+        "min_words": 10000,
+        "page": 990
+      },
+      "ffn": {
+        "done": true,
+        "word_len": 20,
+        "page": 126
+      },
+      "wattpad": {
+        "done": true
+      }
+    },
+    "Doctor Who": {
+      "ao3": {
+        "done": true,
+        "min_words": 10000,
+        "page": 391
+      },
+      "ffn": {
+        "done": true,
+        "word_len": 20,
+        "page": 198
+      },
+      "wattpad": {
+        "done": true
+      }
+    },
+    "My Hero Academia": {
+      "ao3": {
+        "done": true,
+        "min_words": 40000,
+        "page": 963
+      },
+      "ffn": {
+        "done": true,
+        "word_len": 20,
+        "page": 225
+      },
+      "wattpad": {
+        "done": true
+      }
+    },
+    "Percy Jackson": {
+      "ao3": {
+        "done": false,
+        "min_words": 5000,
+        "page": 324
       }
     }
   }

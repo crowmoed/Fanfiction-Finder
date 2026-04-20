@@ -1,0 +1,13 @@
+[log] Writing full output to: D:\Fanfiction-Finder\backend\logs\indexer-20260419-034959-23524.log
+[log] Started at 2026-04-19T03:50:00.175102
+[log] argv: ['D:\\Fanfiction-Finder\\backend\\indexer.py', 'Attack on Titan', '--sources', 'ao3,ffn', '--min-words', '10000', '--wattpad-quality', '-7']
+Database initialized.
+[migrate] Embedding column already 768 dims — no migration needed.
+
+==================================================
+Indexing: Attack on Titan (min 10,000 words, sources=['ao3', 'ffn'])
+==================================================
+
+[Done] Attack on Titan: 0 total fics indexed
+
+[log] Finished cleanly at 2026-04-19T03:50:01.657083
