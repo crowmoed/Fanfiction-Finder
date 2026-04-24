@@ -4,7 +4,9 @@
       "Read",
       "Write",
       "Edit",
-      "Bash(*)"
+      "Bash(*)",
+      "WebSearch",
+      "WebFetch(domain:www.fanfiction.net)"
     ]
   }
 }

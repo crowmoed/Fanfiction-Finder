@@ -4,6 +4,8 @@ frontend/out/
 .env
 .env.*
 fandoms/
-**/constructed/*.npy
+**/constructed/
 __pycache__/
 *.pyc
+backend/logs/
+*.log

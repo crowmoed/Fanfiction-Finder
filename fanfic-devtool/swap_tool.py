@@ -474,6 +474,167 @@ def push(
     console.print()
 
 
+# ─── PUSH-COMBINED: constructed/combined.{parquet,npy} → live DB ──────────
+
+@app.command(name="push-combined")
+def push_combined(
+    parquet: Path = typer.Option(
+        Path(__file__).parent / "constructed" / "combined.parquet",
+        "--parquet", "-p", help="Path to combined parquet file",
+    ),
+    embeddings: Path = typer.Option(
+        Path(__file__).parent / "constructed" / "combined.npy",
+        "--embeddings", "-e", help="Path to combined embeddings .npy file",
+    ),
+    yes: bool = typer.Option(False, "--yes", "-y", help="Skip confirmation prompts"),
+    skip_index: bool = typer.Option(False, "--skip-index", help="Don't rebuild HNSW index after insert"),
+):
+    """Push constructed/combined.parquet + combined.npy to the live DB (DATABASE_URL)."""
+
+    if not parquet.exists():
+        console.print(f"[red]Parquet not found: {parquet}[/red]")
+        raise typer.Exit(1)
+    if not embeddings.exists():
+        console.print(f"[red]Embeddings not found: {embeddings}[/red]")
+        raise typer.Exit(1)
+
+    console.print(f"\n[bold]Loading:[/bold]")
+    console.print(f"  Parquet:    {parquet}")
+    console.print(f"  Embeddings: {embeddings}")
+
+    df = pl.read_parquet(parquet)
+    embs = np.load(embeddings)
+
+    total_fics = len(df)
+    if len(embs) != total_fics:
+        console.print(
+            f"[red]Row mismatch: parquet has {total_fics:,} rows but "
+            f"embeddings has {len(embs):,}.[/red]"
+        )
+        raise typer.Exit(1)
+
+    if embs.shape[1] != EMBEDDING_DIMS:
+        console.print(
+            f"[red]Embedding dim mismatch: got {embs.shape[1]}, expected {EMBEDDING_DIMS}.[/red]"
+        )
+        raise typer.Exit(1)
+
+    est_size_mb = df.estimated_size("mb") + embs.nbytes / 1024 / 1024
+    console.print(f"\n[bold]Ready to push:[/bold] {total_fics:,} fics, ~{est_size_mb:.1f} MB")
+
+    db_url = os.getenv("DATABASE_URL", "")
+    host_hint = db_url.split("@")[-1].split("/")[0] if "@" in db_url else "(unknown)"
+    console.print(f"  Target host: [cyan]{host_hint}[/cyan]")
+
+    if not yes:
+        console.print("\n[yellow]⚠ This will TRUNCATE the live fics table and replace all data.[/yellow]")
+        if not Confirm.ask("Proceed?"):
+            console.print("[dim]Aborted.[/dim]")
+            raise typer.Exit(0)
+
+    engine = get_engine()
+
+    with engine.connect() as conn:
+        console.print("\n[dim]Ensuring pgvector extension...[/dim]")
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        conn.commit()
+
+        console.print("[dim]Ensuring fics table exists...[/dim]")
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS fics (
+                id          TEXT PRIMARY KEY,
+                title       TEXT NOT NULL,
+                url         TEXT NOT NULL,
+                platform    TEXT NOT NULL,
+                summary     TEXT,
+                tags        TEXT,
+                word_count  INTEGER,
+                kudos       INTEGER,
+                hits        INTEGER,
+                fandom      TEXT,
+                embedding   vector(768),
+                indexed_at  TIMESTAMPTZ DEFAULT NOW()
+            )
+        """))
+        conn.commit()
+
+        console.print("[dim]Dropping HNSW index if exists...[/dim]")
+        conn.execute(text("DROP INDEX IF EXISTS fics_embedding_idx"))
+        conn.commit()
+
+        console.print("[dim]Truncating fics table...[/dim]")
+        conn.execute(text("TRUNCATE TABLE fics"))
+        conn.commit()
+
+        console.print("[bold]Inserting fics...[/bold]")
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TaskProgressColumn(),
+            console=console,
+        ) as progress:
+            task = progress.add_task("Uploading...", total=total_fics)
+
+            BATCH_SIZE = 500
+            for batch_start in range(0, total_fics, BATCH_SIZE):
+                batch_end = min(batch_start + BATCH_SIZE, total_fics)
+                batch_df = df.slice(batch_start, batch_end - batch_start)
+                batch_embs = embs[batch_start:batch_end]
+
+                def _clean(v):
+                    return v.replace("\x00", "") if isinstance(v, str) else v
+
+                values = []
+                params = {}
+                for i, row in enumerate(batch_df.iter_rows(named=True)):
+                    j = batch_start + i
+                    emb_str = "[" + ",".join(f"{x:.8f}" for x in batch_embs[i]) + "]"
+
+                    key = f"b{j}"
+                    values.append(
+                        f"(:{key}_id, :{key}_title, :{key}_url, :{key}_platform, "
+                        f":{key}_summary, :{key}_tags, :{key}_word_count, "
+                        f":{key}_kudos, :{key}_hits, :{key}_fandom, "
+                        f":{key}_indexed_at, CAST(:{key}_emb AS vector))"
+                    )
+                    params[f"{key}_id"] = _clean(row["id"])
+                    params[f"{key}_title"] = _clean(row["title"])
+                    params[f"{key}_url"] = _clean(row["url"])
+                    params[f"{key}_platform"] = _clean(row["platform"])
+                    params[f"{key}_summary"] = _clean(row.get("summary"))
+                    params[f"{key}_tags"] = _clean(row.get("tags"))
+                    params[f"{key}_word_count"] = row.get("word_count")
+                    params[f"{key}_kudos"] = row.get("kudos")
+                    params[f"{key}_hits"] = row.get("hits")
+                    params[f"{key}_fandom"] = _clean(row.get("fandom"))
+                    params[f"{key}_indexed_at"] = row.get("indexed_at")
+                    params[f"{key}_emb"] = emb_str
+
+                sql = (
+                    "INSERT INTO fics (id, title, url, platform, summary, tags, "
+                    "word_count, kudos, hits, fandom, indexed_at, embedding) VALUES "
+                    + ", ".join(values)
+                    + " ON CONFLICT (id) DO NOTHING"
+                )
+                conn.execute(text(sql), params)
+                conn.commit()
+                progress.update(task, advance=batch_end - batch_start)
+
+        if not skip_index:
+            console.print("\n[bold]Rebuilding HNSW index...[/bold] (this may take a while)")
+            start = time.time()
+            conn.execute(text(
+                "CREATE INDEX fics_embedding_idx ON fics "
+                "USING hnsw (embedding vector_cosine_ops) "
+                "WITH (m = 16, ef_construction = 64)"
+            ))
+            conn.commit()
+            console.print(f"  Index built in {time.time() - start:.1f}s")
+
+    console.print(f"\n[green]✓ Pushed {total_fics:,} fics[/green]\n")
+
+
 # ─── NUKE: Clear Neon ──────────────────────────────────────────────────────
 
 @app.command()

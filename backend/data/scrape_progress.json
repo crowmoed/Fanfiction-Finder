@@ -75,9 +75,88 @@
     },
     "Percy Jackson": {
       "ao3": {
-        "done": false,
+        "done": true,
         "min_words": 5000,
-        "page": 324
+        "page": 773
+      },
+      "ffn": {
+        "done": false,
+        "word_len": 10,
+        "page": 470
+      },
+      "wattpad": {
+        "done": true
+      }
+    },
+    "Kamisama Kiss": {
+      "ao3": {
+        "done": true,
+        "min_words": 0,
+        "page": 22
+      },
+      "ffn": {
+        "done": true,
+        "word_len": 0,
+        "page": 22
+      },
+      "wattpad": {
+        "done": true
+      }
+    },
+    "Harry Potter": {
+      "ao3": {
+        "done": true,
+        "min_words": 100000,
+        "page": 80
+      },
+      "ffn": {
+        "done": true,
+        "word_len": 100,
+        "page": 651
+      },
+      "wattpad": {
+        "done": true
+      }
+    },
+    "Heated Rivalry": {
+      "ao3": {
+        "done": true,
+        "min_words": 5000,
+        "page": 528
+      },
+      "ffn": {
+        "done": true
+      },
+      "wattpad": {
+        "done": true
+      }
+    },
+    "K-Pop Demon Hunters": {
+      "ao3": {
+        "done": true,
+        "min_words": 0,
+        "page": 799
+      },
+      "ffn": {
+        "done": true
+      },
+      "wattpad": {
+        "done": true
+      }
+    },
+    "One Piece": {
+      "ao3": {
+        "done": true,
+        "min_words": 10000,
+        "page": 903
+      },
+      "ffn": {
+        "done": true,
+        "word_len": 10,
+        "page": 429
+      },
+      "wattpad": {
+        "done": true
       }
     }
   }

@@ -466,6 +466,8 @@ export default function HomePage() {
           <span style={{ color: 'var(--accent)' }}>◆</span>
           <span>indexes ao3 · ffn · wattpad</span>
           <span style={{ color: 'var(--accent)' }}>◆</span>
+          <span>300k+ fics indexed</span>
+          <span style={{ color: 'var(--accent)' }}>◆</span>
           <span>not affiliated with any of them</span>
         </footer>
       )}

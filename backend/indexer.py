@@ -195,66 +195,105 @@ def scrape_and_embed_ao3(fandom_name: str, session: "BrowserSession", start_page
     return stored
 
 
-def scrape_and_embed_ffn(fandom_name: str, session: "BrowserSession") -> int:
+# FFN's `len=X` query param filters to stories with >= X thousand words.
+# Only a fixed set of values is accepted by the site — other values are
+# silently ignored and return all results.
+_FFN_LEN_VALUES = (1, 5, 10, 20, 40, 50, 60, 80, 100)
+
+
+def _ffn_len_for(min_words: int) -> int:
+    """Largest FFN `len` bucket <= min_words (in thousands). 0 = no filter."""
+    if min_words <= 0:
+        return 0
+    target = min_words // 1000
+    chosen = 0
+    for v in _FFN_LEN_VALUES:
+        if v <= target:
+            chosen = v
+        else:
+            break
+    return chosen
+
+
+def _ffn_bucket_label(word_len: int) -> str:
+    if word_len == 0:
+        return "all"
+    return f"{word_len}k+"
+
+
+def scrape_and_embed_ffn(fandom_name: str, session: "BrowserSession",
+                         min_words: int = MIN_WORDS) -> int:
     from scrapers.ffn import parse_results
     stored = 0
 
     ffn_slug = FANDOMS[fandom_name]["ffn"]
 
-    word_lens = [10, 20]
+    word_len = _ffn_len_for(min_words)
 
-    # Checkpoint: resume from saved (word_len, page) if present
+    # Checkpoint: resume from saved (word_len, page) if it matches the
+    # bucket we're about to scrape. Different bucket = stale, start fresh.
     resume = progress.get_resume_point(fandom_name, "ffn")
-    resume_word_len = resume.get("word_len")
-    resume_page = resume.get("page", 1)
-    resumed = False
+    saved_word_len = resume.get("word_len")
+    if saved_word_len is not None and saved_word_len != word_len:
+        print(f"[FFN] Ignoring checkpoint (saved word_len={saved_word_len}, "
+              f"now {word_len}) — starting fresh")
+        page = 1
+    else:
+        page = resume.get("page", 1)
+        if page > 1:
+            print(f"[FFN] Resuming {fandom_name} at word_len={word_len} page={page}")
 
-    for word_len in word_lens:
-        # Skip buckets we've already finished
-        if resume_word_len is not None and not resumed:
-            if word_len < resume_word_len:
-                continue
-            if word_len == resume_word_len:
-                page = resume_page
-                resumed = True
-                print(f"[FFN] Resuming {fandom_name} at word_len={word_len} page={page}")
-            else:
-                page = 1
-                resumed = True
-        else:
-            page = 1
+    label = _ffn_bucket_label(word_len)
+    len_param = f"&len={word_len}" if word_len > 0 else ""
 
-        label = "40k-100k" if word_len == 10 else "100k+"
+    # FFN's `len` param filters by >= Xk words, but it's coarser than our
+    # min_words (buckets: 1/5/10/20/40/50/60/80/100k). Post-filter to catch
+    # fics between the bucket threshold and min_words.
+    needs_post_filter = min_words > word_len * 1000
 
-        while True:
-            url = f"https://www.fanfiction.net/{ffn_slug}/?srt=3&r=10&len={word_len}&p={page}"
-            print(f"\n[FFN] Fetching page {page} ({label}): {url}")
+    while True:
+        url = f"https://www.fanfiction.net/{ffn_slug}/?srt=3&r=10{len_param}&p={page}"
+        print(f"\n[FFN] Fetching page {page} ({label}): {url}")
 
-            session.sb.open(url)
-            session.interstitial_hold("FFN")
+        session.sb.open(url)
+        session.interstitial_hold("FFN")
 
-            try:
-                session.sb.wait_for_element("div.z-list", timeout=20)
-            except Exception:
-                print(f"[FFN] Page {page} ({label}): no results — done")
-                break
+        try:
+            session.sb.wait_for_element("div.z-list", timeout=20)
+        except Exception:
+            print(f"[FFN] Page {page} ({label}): no results — done")
+            break
 
-            html = session.sb.get_page_source()
-            fics = parse_results(html)
+        html = session.sb.get_page_source()
+        fics = parse_results(html)
 
-            if not fics:
-                print(f"[FFN] Page {page} ({label}): empty — done")
-                break
+        if not fics:
+            print(f"[FFN] Page {page} ({label}): empty — done")
+            break
 
-            print(f"[FFN] Page {page} ({label}): scraped {len(fics)} fics — embedding now...")
-            embeddings = embed_fics_batch(fics, fandom=fandom_name)
-            stored += _store_batch(fics, embeddings, fandom_name)
-            del fics, embeddings, html
+        if needs_post_filter:
+            before = len(fics)
+            fics = [f for f in fics if (f.word_count or 0) >= min_words]
+            dropped = before - len(fics)
+            if dropped:
+                print(f"[FFN] Page {page} ({label}): dropped {dropped} fics under {min_words:,} words")
 
+        if not fics:
+            print(f"[FFN] Page {page} ({label}): all fics filtered out — continuing")
             progress.mark_progress(fandom_name, "ffn", word_len=word_len, page=page + 1)
-
             page += 1
             session.tick()
+            continue
+
+        print(f"[FFN] Page {page} ({label}): scraped {len(fics)} fics — embedding now...")
+        embeddings = embed_fics_batch(fics, fandom=fandom_name)
+        stored += _store_batch(fics, embeddings, fandom_name)
+        del fics, embeddings, html
+
+        progress.mark_progress(fandom_name, "ffn", word_len=word_len, page=page + 1)
+
+        page += 1
+        session.tick()
 
     progress.mark_done(fandom_name, "ffn")
     compact_local(fandom_name)
@@ -304,7 +343,7 @@ def _run_source(fandom_name: str, source: str, session,
         return scrape_and_embed_ao3(fandom_name, session,
                                     start_page=start_page, min_words=min_words)
     if source == "ffn":
-        return scrape_and_embed_ffn(fandom_name, session)
+        return scrape_and_embed_ffn(fandom_name, session, min_words=min_words)
     if source == "wattpad":
         return scrape_and_embed_wattpad(fandom_name, quality_offset=wattpad_quality)
     raise ValueError(f"Unknown source: {source}")
