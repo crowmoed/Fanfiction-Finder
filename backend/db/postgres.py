@@ -150,6 +150,116 @@ def search_similar(query_embedding: list[float], fandom: str | None, limit: int 
     return fics
 
 
+PLATFORMS = ("ao3", "ffn", "wattpad")
+RRF_K = 60  # Standard RRF constant — dampens impact of low-ranked results.
+
+
+def search_rrf(
+    embeddings: list[list[float]],
+    fandom: str | None,
+    per_platform_limit: int = 40,
+    total_limit: int = 100,
+) -> list[Fic]:
+    """Vector search across multiple query embeddings, fused via Reciprocal Rank Fusion.
+
+    Runs one ranked vector search per embedding per platform (AO3, FFN, Wattpad) in a single
+    SQL round trip, scores each fic by RRF across every ranked list it appears in, and
+    returns the top candidates. Per-platform quotas guarantee FFN and Wattpad get
+    representation in the candidate pool even when AO3's tag-rich embeddings dominate.
+
+    Args:
+        embeddings: list of query embedding vectors (e.g. 3 HyDE + 1 raw = 4 lists)
+        fandom: optional fandom filter; None searches across all fandoms
+        per_platform_limit: top-N per (embedding, platform) pulled into the fusion pool
+        total_limit: max fics returned after fusion
+    """
+    if not embeddings:
+        return []
+
+    fandom_clause = "AND fandom = :fandom" if fandom is not None else ""
+    params: dict = {"per_limit": per_platform_limit}
+    if fandom is not None:
+        params["fandom"] = fandom
+
+    # Build one ranked CTE per (embedding, platform) pair, UNION them, then RRF-score.
+    # pgvector's <=> is cosine distance; ORDER BY distance asc → lower rank number = better match.
+    ranked_ctes = []
+    for e_idx, emb in enumerate(embeddings):
+        params[f"emb{e_idx}"] = str(emb)  # pgvector accepts "[0.1, 0.2, ...]" text form
+        for platform in PLATFORMS:
+            cte_name = f"r_{e_idx}_{platform}"
+            params[f"plat_{e_idx}_{platform}"] = platform
+            ranked_ctes.append(f"""
+                {cte_name} AS (
+                    SELECT id, ROW_NUMBER() OVER (ORDER BY embedding <=> CAST(:emb{e_idx} AS vector)) AS rnk
+                    FROM fics
+                    WHERE embedding IS NOT NULL
+                      AND platform = :plat_{e_idx}_{platform}
+                      {fandom_clause}
+                    ORDER BY embedding <=> CAST(:emb{e_idx} AS vector)
+                    LIMIT :per_limit
+                )
+            """)
+
+    union_parts = [f"SELECT id, rnk FROM r_{e_idx}_{platform}"
+                   for e_idx in range(len(embeddings))
+                   for platform in PLATFORMS]
+    union_sql = " UNION ALL ".join(union_parts)
+
+    sql = f"""
+        WITH {", ".join(ranked_ctes)},
+        fused AS (
+            SELECT id, SUM(1.0 / ({RRF_K} + rnk)) AS rrf_score
+            FROM ({union_sql}) ranked
+            GROUP BY id
+        )
+        SELECT f.id, f.title, f.url, f.platform, f.summary, f.tags,
+               f.word_count, f.kudos, f.hits, fused.rrf_score
+        FROM fused
+        JOIN fics f ON f.id = fused.id
+        ORDER BY fused.rrf_score DESC
+        LIMIT :total_limit
+    """
+    params["total_limit"] = total_limit
+
+    with engine.connect() as conn:
+        rows = conn.execute(text(sql), params).all()
+
+    return [
+        Fic(
+            title=r.title,
+            url=r.url,
+            platform=r.platform,
+            summary=r.summary,
+            tags=r.tags.split(", ") if r.tags else [],
+            word_count=r.word_count,
+            kudos=r.kudos,
+            hits=r.hits,
+        )
+        for r in rows
+    ]
+
+
+def ensure_vector_index():
+    """Create an HNSW index on fics.embedding if missing. HNSW gives sub-linear
+    ANN search vs. the default sequential scan — a large win at 4 query vectors
+    across 3 platforms per search.
+    """
+    with engine.connect() as conn:
+        conn.execute(text(
+            "CREATE INDEX IF NOT EXISTS fics_embedding_hnsw "
+            "ON fics USING hnsw (embedding vector_cosine_ops)"
+        ))
+        # Partial index on platform speeds up per-platform ranked CTEs.
+        conn.execute(text(
+            "CREATE INDEX IF NOT EXISTS fics_platform_idx ON fics (platform)"
+        ))
+        conn.execute(text(
+            "CREATE INDEX IF NOT EXISTS fics_fandom_platform_idx ON fics (fandom, platform)"
+        ))
+        conn.commit()
+
+
 def get_fic_count(fandom: str = None) -> int:
     """Return total fics indexed, optionally filtered by fandom."""
     with Session(engine) as session:

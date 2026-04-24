@@ -10,7 +10,7 @@ from data.fandoms import FANDOMS
 from ai.embedder import embed_query
 from ai.query_enhancer import enhance_query
 from ai.ranker import rank
-from db.postgres import search_similar, get_fic_count, get_indexed_fandoms, get_admin_stats, engine
+from db.postgres import search_rrf, get_fic_count, get_indexed_fandoms, get_admin_stats, ensure_vector_index, engine
 from sqlalchemy import text
 
 from auth.auth import verify_google_token, create_jwt
@@ -22,12 +22,7 @@ import stripe
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Safe migration — adds indexed_at column if it doesn't exist yet
-    with engine.connect() as conn:
-        conn.execute(text(
-            "ALTER TABLE fics ADD COLUMN IF NOT EXISTS indexed_at TIMESTAMPTZ DEFAULT NOW()"
-        ))
-        conn.commit()
+    # ensure_vector_index()  # skip on startup — HNSW build blocks if index is missing
     yield
 
 
@@ -171,37 +166,26 @@ async def search(
     raw_embedding = embed_query(q)
     print(f"[search] raw embedding ready ({len(raw_embedding)} dims)", flush=True)
 
-    # Step 3: Multi-angle HyDE search — 3 blended at varying ratios + 1 pure raw; merge results
-    # fic_id -> (fic, best_position): lower position = higher cosine similarity
-    merged: dict[str, tuple] = {}
+    # Step 3: Build query embeddings — 3 HyDE blends at varying ratios + 1 pure raw.
+    # All embeddings fuse via Reciprocal Rank Fusion in one SQL round trip with
+    # per-platform quotas (AO3/FFN/Wattpad), so no platform gets crowded out.
     descriptions = enriched.semantic_descriptions
     is_fallback = len(descriptions) == 1
-
-    # Normal: desc1=0.8/0.2, desc2=0.7/0.3, desc3=0.5/0.5. Fallback: single desc at 0.7/0.3.
     blend_ratios = [0.7] if is_fallback else [0.8, 0.7, 0.5]
 
-    for angle_idx, (description, hyde_weight) in enumerate(zip(descriptions, blend_ratios)):
+    query_embeddings = [raw_embedding]
+    for description, hyde_weight in zip(descriptions, blend_ratios):
         hyde_embedding = embed_query(description)
         blended = _blend_embeddings(hyde_embedding, raw_embedding, hyde_weight=hyde_weight)
-        results = search_similar(blended, fandom=search_fandom, limit=50)
-        print(f"[search] angle {angle_idx + 1}: blend {hyde_weight}/{round(1 - hyde_weight, 1)}, {len(results)} results", flush=True)
-        for pos, fic in enumerate(results):
-            fic_id = f"{fic.platform}:{fic.url}"
-            if fic_id not in merged or pos < merged[fic_id][1]:
-                merged[fic_id] = (fic, pos)
+        query_embeddings.append(blended)
 
-    # Final search: pure raw query embedding, no blend
-    raw_results = search_similar(raw_embedding, fandom=search_fandom, limit=50)
-    print(f"[search] raw search: {len(raw_results)} results", flush=True)
-    for pos, fic in enumerate(raw_results):
-        fic_id = f"{fic.platform}:{fic.url}"
-        if fic_id not in merged or pos < merged[fic_id][1]:
-            merged[fic_id] = (fic, pos)
-
-    # Deduplicated by best position (proxy for highest similarity), capped at 100
-    candidates = [fic for fic, _ in sorted(merged.values(), key=lambda x: x[1])][:100]
-    total_searches = len(blend_ratios) + 1
-    print(f"[search] {len(candidates)} unique candidates after {total_searches} search(es)", flush=True)
+    candidates = search_rrf(
+        embeddings=query_embeddings,
+        fandom=search_fandom,
+        per_platform_limit=40,
+        total_limit=100,
+    )
+    print(f"[search] RRF fused {len(query_embeddings)} embeddings → {len(candidates)} candidates", flush=True)
 
     # Step 4: AI rank the candidates against the original user query
     ranked = rank(fics=candidates, query=q)
