@@ -6,7 +6,8 @@
       "Edit",
       "Bash(*)",
       "WebSearch",
-      "WebFetch(domain:www.fanfiction.net)"
+      "WebFetch(domain:www.fanfiction.net)",
+      "PowerShell(*)"
     ]
   }
 }

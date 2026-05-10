@@ -183,7 +183,7 @@ async def search(
         embeddings=query_embeddings,
         fandom=search_fandom,
         per_platform_limit=40,
-        total_limit=100,
+        total_limit=None,
     )
     print(f"[search] RRF fused {len(query_embeddings)} embeddings → {len(candidates)} candidates", flush=True)
 

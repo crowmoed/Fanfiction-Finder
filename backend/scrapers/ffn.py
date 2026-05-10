@@ -59,16 +59,48 @@ def parse_results(html: str) -> list[Fic]:
 
             word_count, kudos, tags = None, None, []
 
-            for part in stats_text.split(" - "):
-                part = part.strip()
+            # FFN listing stats format:
+            #   "Rated: T - English - Romance/Drama - Harry P., Hermione G. - Chapters: 12
+            #    - Words: 45,000 - Reviews: 300 - Favs: 500 - Follows: 400
+            #    - Updated: ... - Published: ... - Status: Complete - id: 12345"
+            # Only Words/Favs are numeric stats; everything else (rating, language,
+            # genre, characters/pairings, status) is a meaningful tag signal. FFN's
+            # tag culture is thin, so extract every descriptor we can find.
+            LABELED_STATS = ("Chapters:", "Words:", "Reviews:", "Favs:", "Follows:",
+                             "Updated:", "Published:", "id:")
+
+            parts = [p.strip() for p in stats_text.split(" - ") if p.strip()]
+            for idx, part in enumerate(parts):
                 if part.startswith("Words:"):
                     word_count = parse_int(part.replace("Words:", "").strip())
-                elif part.startswith("Favs:"):
+                    continue
+                if part.startswith("Favs:"):
                     kudos = parse_int(part.replace("Favs:", "").strip())
-                elif "/" in part and not any(x in part for x in [
-                    "Chapters:", "Words:", "Reviews:", "Favs:", "Follows:", "Updated:", "Published:"
-                ]):
-                    tags = [t.strip() for t in part.split("/")]
+                    continue
+                if any(part.startswith(label) for label in LABELED_STATS):
+                    continue
+
+                if part.startswith("Rated:"):
+                    rating = part.replace("Rated:", "").strip()
+                    if rating:
+                        tags.append(f"Rated {rating}")
+                    continue
+                if part.startswith("Status:"):
+                    status = part.replace("Status:", "").strip()
+                    if status:
+                        tags.append(status)
+                    continue
+
+                # Unlabeled descriptors appear in a predictable order near the start:
+                #   [language] - [genre(s)] - [characters/pairings]
+                # Language is a single word; genre uses "/"; characters use ",".
+                if idx <= 4:
+                    if "/" in part:
+                        tags.extend(t.strip() for t in part.split("/") if t.strip())
+                    elif "," in part:
+                        tags.extend(t.strip() for t in part.split(",") if t.strip())
+                    elif part and not part[0].isdigit():
+                        tags.append(part)
 
             fics.append(Fic(
                 title=title,

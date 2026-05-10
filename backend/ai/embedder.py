@@ -87,20 +87,20 @@ def _normalize(vector: list[float]) -> list[float]:
 
 
 def _format_fic_text(summary: str | None, tags: list[str], fandom: str | None = None) -> str:
-    """Format fic metadata for embedding: Tags → Fandom → Summary.
-    
-    Tags go first because:
-    - Transformers give disproportionate attention to early tokens
-    - Gemini truncates at 2048 tokens; tags are the primary matching signal
-    - Comma-separated with label reads as natural language (better than JSON)
+    """Format fic metadata for embedding: Summary → Fandom → Tags.
+
+    Summary leads because it's the one signal every platform has in comparable
+    richness. FFN has a much thinner tagging culture than AO3 (avg ~15 chars of
+    tags vs AO3's ~630), so tag-first ordering was systematically under-weighting
+    FFN fics. Summary-first normalizes the embedding signal across platforms.
     """
     parts = []
-    if tags:
-        parts.append(f"Tags: {', '.join(tags)}")
-    if fandom:
-        parts.append(f"Fandom: {fandom}")
     if summary:
         parts.append(f"Summary: {summary}")
+    if fandom:
+        parts.append(f"Fandom: {fandom}")
+    if tags:
+        parts.append(f"Tags: {', '.join(tags)}")
     return "\n".join(parts)
 
 

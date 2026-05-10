@@ -158,7 +158,7 @@ def search_rrf(
     embeddings: list[list[float]],
     fandom: str | None,
     per_platform_limit: int = 40,
-    total_limit: int = 100,
+    total_limit: int | None = 100,
 ) -> list[Fic]:
     """Vector search across multiple query embeddings, fused via Reciprocal Rank Fusion.
 
@@ -171,7 +171,7 @@ def search_rrf(
         embeddings: list of query embedding vectors (e.g. 3 HyDE + 1 raw = 4 lists)
         fandom: optional fandom filter; None searches across all fandoms
         per_platform_limit: top-N per (embedding, platform) pulled into the fusion pool
-        total_limit: max fics returned after fusion
+        total_limit: max fics returned after fusion; None returns all deduped candidates
     """
     if not embeddings:
         return []
@@ -206,6 +206,12 @@ def search_rrf(
                    for platform in PLATFORMS]
     union_sql = " UNION ALL ".join(union_parts)
 
+    if total_limit is not None:
+        limit_clause = "LIMIT :total_limit"
+        params["total_limit"] = total_limit
+    else:
+        limit_clause = ""
+
     sql = f"""
         WITH {", ".join(ranked_ctes)},
         fused AS (
@@ -218,9 +224,8 @@ def search_rrf(
         FROM fused
         JOIN fics f ON f.id = fused.id
         ORDER BY fused.rrf_score DESC
-        LIMIT :total_limit
+        {limit_clause}
     """
-    params["total_limit"] = total_limit
 
     with engine.connect() as conn:
         rows = conn.execute(text(sql), params).all()
