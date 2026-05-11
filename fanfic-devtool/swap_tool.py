@@ -68,6 +68,23 @@ def slugify(fandom: str) -> str:
     return fandom.lower().replace(" ", "_").replace("/", "_").replace(".", "")
 
 
+def _ensure_tag_list(value) -> list[str]:
+    """Coerce a tags cell to list[str] for binding to a Postgres text[] column.
+
+    Handles legacy parquet files where tags were a comma-joined string.
+    """
+    if value is None or value == "":
+        return []
+    if isinstance(value, list):
+        return [str(t) for t in value]
+    if isinstance(value, str):
+        return [t.strip() for t in value.split(", ") if t.strip()]
+    try:
+        return [str(t) for t in value]
+    except TypeError:
+        return []
+
+
 def fandom_dir(fandom_slug: str) -> Path:
     return FANDOMS_DIR / fandom_slug
 
@@ -437,7 +454,7 @@ def push(
                     params[f"{key}_url"] = row["url"]
                     params[f"{key}_platform"] = row["platform"]
                     params[f"{key}_summary"] = row.get("summary")
-                    params[f"{key}_tags"] = row.get("tags")
+                    params[f"{key}_tags"] = _ensure_tag_list(row.get("tags"))
                     params[f"{key}_word_count"] = row.get("word_count")
                     params[f"{key}_kudos"] = row.get("kudos")
                     params[f"{key}_hits"] = row.get("hits")
@@ -547,7 +564,7 @@ def push_combined(
                 url         TEXT NOT NULL,
                 platform    TEXT NOT NULL,
                 summary     TEXT,
-                tags        TEXT,
+                tags        text[],
                 word_count  INTEGER,
                 kudos       INTEGER,
                 hits        INTEGER,
@@ -603,7 +620,7 @@ def push_combined(
                     params[f"{key}_url"] = _clean(row["url"])
                     params[f"{key}_platform"] = _clean(row["platform"])
                     params[f"{key}_summary"] = _clean(row.get("summary"))
-                    params[f"{key}_tags"] = _clean(row.get("tags"))
+                    params[f"{key}_tags"] = _ensure_tag_list(row.get("tags"))
                     params[f"{key}_word_count"] = row.get("word_count")
                     params[f"{key}_kudos"] = row.get("kudos")
                     params[f"{key}_hits"] = row.get("hits")

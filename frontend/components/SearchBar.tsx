@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { type Fandom, type FandomInfo } from '@/lib/schema/types';
+import { type Fandom, type FandomInfo, type FicResult } from '@/lib/schema/types';
 
 const EXAMPLES = [
   'enemies to lovers slow burn over 100k words',
@@ -11,7 +11,7 @@ const EXAMPLES = [
 ];
 
 interface SearchBarProps {
-  onSearch: (prompt: string, fandom: Fandom) => void;
+  onSearch: (prompt: string, fandom: Fandom, cachedResults?: FicResult[], strict?: boolean) => void;
   isSearching: boolean;
   compact?: boolean;
   initialPrompt?: string;
@@ -29,6 +29,7 @@ export default function SearchBar({
 }: SearchBarProps) {
   const [prompt, setPrompt] = useState(initialPrompt);
   const [fandom, setFandom] = useState<Fandom>(initialFandom);
+  const [strict, setStrict] = useState(false);
   const [fandoms, setFandoms] = useState<FandomInfo[]>([]);
   const [placeholder, setPlaceholder] = useState('');
   const [fireworks, setFireworks] = useState<{ id: number; x: number; y: number; color: string }[]>([]);
@@ -118,8 +119,8 @@ export default function SearchBar({
     const full = appendToPrompt
       ? `${prompt.trim()}, ${appendToPrompt}`
       : prompt.trim();
-    onSearch(full, fandom);
-  }, [prompt, fandom, isSearching, onSearch, appendToPrompt]);
+    onSearch(full, fandom, undefined, strict);
+  }, [prompt, fandom, isSearching, onSearch, appendToPrompt, strict]);
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter') handleSubmit();
@@ -269,6 +270,14 @@ export default function SearchBar({
             </>
           )}
         </select>
+        <label className="flex items-center gap-1.5 text-xs font-mono ml-2 cursor-pointer" style={{ color: 'var(--text-secondary)' }}>
+          <input
+            type="checkbox"
+            checked={strict}
+            onChange={(e) => setStrict(e.target.checked)}
+          />
+          Strict mode
+        </label>
       </div>}
     </div>
   );

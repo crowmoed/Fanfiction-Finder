@@ -140,6 +140,7 @@ async def search(
     q: str = Query(..., description="Natural language search query"),
     fandom: Optional[str] = Query(None, description="Fandom name from /fandoms"),
     limit: int = Query(20, ge=1, le=100, description="Number of results to return"),
+    strict: bool = Query(False, description="Apply enhancer-extracted filters as hard SQL WHERE clauses (debug toggle)"),
     user: dict = Depends(check_search_limit),
 ):
     if not fandom:
@@ -155,12 +156,33 @@ async def search(
     print(f"\n[search] ── new request ──────────────────", flush=True)
     print(f"[search] fandom : {fandom!r}", flush=True)
     print(f"[search] query  : {q!r}", flush=True)
+    print(f"[search] strict mode: {strict}", flush=True)
 
     search_fandom = None if is_all_fandoms else fandom
 
     # Step 1: Enhance the query (HyDE — generate 3 hypothetical fic descriptions at different angles)
     enriched = enhance_query(q, fandom=search_fandom)
     print(f"[search] enhanced query ready ({len(enriched.semantic_descriptions)} descriptions)", flush=True)
+
+    # Build hard-filter dict from enhancer output (only when strict=True).
+    # Schema-supported filters: min_word_count, max_word_count, excluded_tags.
+    # rating/warnings/completion_status are logged but skipped — those columns don't exist.
+    filters: dict = {}
+    if strict:
+        ao3 = enriched.ao3_filters or {}
+        ffn = enriched.ffn_filters or {}
+        mins = [v for v in [ao3.get("min_word_count"), ffn.get("min_words")] if v]
+        maxs = [v for v in [ao3.get("max_word_count"), ffn.get("max_words")] if v]
+        if mins:
+            filters["min_word_count"] = min(mins)
+        if maxs:
+            filters["max_word_count"] = max(maxs)
+        if enriched.excluded_tags:
+            filters["excluded_tags"] = enriched.excluded_tags
+        for key in ("rating", "warnings", "completion_status"):
+            ffn_key = key.replace("completion_status", "status")
+            if ao3.get(key) or ffn.get(ffn_key):
+                print(f"[search] filter '{key}' requested but column not in schema — ignored", flush=True)
 
     # Step 2: Embed raw query once (shared across all angles)
     raw_embedding = embed_query(q)
@@ -184,6 +206,7 @@ async def search(
         fandom=search_fandom,
         per_platform_limit=40,
         total_limit=None,
+        filters=filters or None,
     )
     print(f"[search] RRF fused {len(query_embeddings)} embeddings → {len(candidates)} candidates", flush=True)
 

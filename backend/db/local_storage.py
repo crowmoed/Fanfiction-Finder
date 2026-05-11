@@ -143,6 +143,33 @@ def _list_parts(fandom: str) -> list[tuple[Path, Path]]:
     return pairs
 
 
+_TAGS_LEGACY_WARNED = False
+
+
+def _normalize_tags_column(df: pl.DataFrame) -> pl.DataFrame:
+    """Migrate legacy comma-string `tags` columns to `list[str]` at read time.
+
+    Older part/canonical files were written when `tags` was a single comma-joined
+    string; newer files write `list[str]`. Concatenation across schema versions
+    fails without this normalization.
+    """
+    if "tags" not in df.columns:
+        return df
+    dtype = df.schema["tags"]
+    if dtype == pl.Utf8:
+        global _TAGS_LEGACY_WARNED
+        if not _TAGS_LEGACY_WARNED:
+            print("[local] Found legacy comma-string tags in parquet — converting to list[str] on read.")
+            _TAGS_LEGACY_WARNED = True
+        df = df.with_columns(
+            pl.when(pl.col("tags").is_null() | (pl.col("tags") == ""))
+            .then(pl.lit([], dtype=pl.List(pl.Utf8)))
+            .otherwise(pl.col("tags").str.split(", "))
+            .alias("tags")
+        )
+    return df
+
+
 # ── Canonical IO (used by devtool and compaction) ────────────────────────────
 
 def _canonical_paths(fandom: str) -> tuple[Path, Path]:
@@ -154,7 +181,7 @@ def _load_canonical(fandom: str) -> tuple[Optional[pl.DataFrame], Optional[np.nd
     parquet_path, npy_path = _canonical_paths(fandom)
     if parquet_path.exists() and npy_path.exists():
         try:
-            return pl.read_parquet(parquet_path), np.load(npy_path)
+            return _normalize_tags_column(pl.read_parquet(parquet_path)), np.load(npy_path)
         except Exception:
             return None, None
     return None, None
@@ -200,7 +227,7 @@ def _row_from_fic(fic, fandom: str, now: str) -> dict:
         "url": fic.url,
         "platform": fic.platform,
         "summary": fic.summary,
-        "tags": ", ".join(fic.tags) if fic.tags else None,
+        "tags": list(fic.tags) if fic.tags else [],
         "word_count": fic.word_count,
         "kudos": fic.kudos,
         "hits": fic.hits,
@@ -265,7 +292,7 @@ def compact(fandom: str) -> int:
 
         for parquet_path, npy_path in parts:
             try:
-                dfs.append(pl.read_parquet(parquet_path))
+                dfs.append(_normalize_tags_column(pl.read_parquet(parquet_path)))
                 emb_arrays.append(np.load(npy_path))
             except Exception as e:
                 print(f"  [local] Skipping unreadable part {parquet_path.name}: {e}")

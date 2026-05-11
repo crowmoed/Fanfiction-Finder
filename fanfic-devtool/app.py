@@ -42,7 +42,7 @@ from textual.widgets import (
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 sys.path.insert(0, str(Path(__file__).parent))
-from swap_tool import FANDOMS_DIR, fandom_dir, get_engine, load_meta, save_meta, slugify
+from swap_tool import FANDOMS_DIR, _ensure_tag_list, fandom_dir, get_engine, load_meta, save_meta, slugify
 
 # Add backend to path for scraper imports
 BACKEND_DIR = Path(__file__).parent.parent / "backend"
@@ -1119,7 +1119,7 @@ class SwapApp(App):
                         params.update({
                             f"{k}_id": row["id"], f"{k}_title": row["title"],
                             f"{k}_url": row["url"], f"{k}_platform": row["platform"],
-                            f"{k}_summary": row.get("summary"), f"{k}_tags": row.get("tags"),
+                            f"{k}_summary": row.get("summary"), f"{k}_tags": _ensure_tag_list(row.get("tags")),
                             f"{k}_word_count": row.get("word_count"), f"{k}_kudos": row.get("kudos"),
                             f"{k}_hits": row.get("hits"), f"{k}_fandom": row.get("fandom"),
                             f"{k}_indexed_at": row.get("indexed_at"), f"{k}_emb": emb_str,
@@ -1198,7 +1198,7 @@ class SwapApp(App):
                         url TEXT NOT NULL,
                         platform TEXT NOT NULL,
                         summary TEXT,
-                        tags TEXT,
+                        tags text[],
                         word_count INTEGER,
                         kudos INTEGER,
                         hits INTEGER,

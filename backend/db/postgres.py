@@ -4,6 +4,7 @@ import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import create_engine, Column, String, Integer, Text, Float, DateTime, text, func as sqlfunc
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import declarative_base, Session
 from pgvector.sqlalchemy import Vector
 import config
@@ -29,7 +30,7 @@ class FicRecord(Base):
     url = Column(String, nullable=False)
     platform = Column(String, nullable=False)
     summary = Column(Text)
-    tags = Column(Text)                          # stored as comma-separated string
+    tags = Column(ARRAY(Text))
     word_count = Column(Integer)
     kudos = Column(Integer)
     hits = Column(Integer)
@@ -94,6 +95,138 @@ def migrate_embedding_dimensions():
         print(f"[migrate] ⚠️  ALL existing embeddings are now NULL — re-index all fandoms!")
 
 
+def migrate_tags_to_array():
+    """Convert fics.tags from Text (comma-joined) to text[] in a single transaction.
+
+    Idempotent: detects current column type and no-ops if already an array.
+    Empty/NULL tag strings become empty arrays (not NULL) so downstream code
+    can treat tags uniformly as a list.
+    """
+    with engine.begin() as conn:
+        type_row = conn.execute(text(
+            "SELECT data_type FROM information_schema.columns "
+            "WHERE table_name = 'fics' AND column_name = 'tags'"
+        )).fetchone()
+
+        if type_row is None:
+            print("[migrate-tags] No tags column found — nothing to migrate.")
+            return
+
+        data_type = type_row[0]
+        if data_type == "ARRAY":
+            print("[migrate-tags] tags is already text[] — no-op.")
+            return
+        if data_type != "text":
+            print(f"[migrate-tags] Unexpected data_type '{data_type}' — aborting.")
+            return
+
+        pre_count = conn.execute(text("SELECT COUNT(*) FROM fics")).scalar()
+        print(f"[migrate-tags] Pre-migration row count: {pre_count}")
+
+        conn.execute(text("ALTER TABLE fics ADD COLUMN tags_arr text[]"))
+        conn.execute(text(
+            "UPDATE fics SET tags_arr = string_to_array(tags, ', ') "
+            "WHERE tags IS NOT NULL AND tags != ''"
+        ))
+        conn.execute(text(
+            "UPDATE fics SET tags_arr = ARRAY[]::text[] "
+            "WHERE tags IS NULL OR tags = ''"
+        ))
+        conn.execute(text("ALTER TABLE fics DROP COLUMN tags"))
+        conn.execute(text("ALTER TABLE fics RENAME COLUMN tags_arr TO tags"))
+
+        post_count = conn.execute(text("SELECT COUNT(*) FROM fics")).scalar()
+        null_count = conn.execute(text(
+            "SELECT COUNT(*) FROM fics WHERE tags IS NULL"
+        )).scalar()
+        empty_count = conn.execute(text(
+            "SELECT COUNT(*) FROM fics WHERE array_length(tags, 1) IS NULL"
+        )).scalar()
+        print(f"[migrate-tags] Post-migration row count: {post_count}")
+        print(f"[migrate-tags] Rows with NULL tags (should be 0): {null_count}")
+        print(f"[migrate-tags] Rows with empty tag arrays: {empty_count}")
+
+        sample = conn.execute(text(
+            "SELECT id, title, tags FROM fics "
+            "WHERE array_length(tags, 1) > 0 LIMIT 5"
+        )).fetchall()
+        print("[migrate-tags] Sample rows:")
+        for row in sample:
+            print(f"  {row.id} | {row.title} | {row.tags}")
+
+
+def add_search_text_column():
+    """Add a generated tsvector column `search_text` on fics + GIN index for BM25.
+
+    Combines title (weight A), tags (weight B), and summary (weight C) into a single
+    tsvector populated automatically by Postgres. Idempotent — no-op if the column
+    already exists.
+    """
+    with engine.begin() as conn:
+        existing = conn.execute(text(
+            "SELECT data_type FROM information_schema.columns "
+            "WHERE table_name = 'fics' AND column_name = 'search_text'"
+        )).fetchone()
+
+        if existing is not None:
+            print(f"[add-search-text] search_text column already exists (type={existing[0]}) — no-op.")
+            return
+
+        row_count = conn.execute(text("SELECT COUNT(*) FROM fics")).scalar()
+        print(f"[add-search-text] Pre-ALTER row count: {row_count}")
+
+        conn.execute(text("""
+            ALTER TABLE fics ADD COLUMN search_text tsvector GENERATED ALWAYS AS (
+              setweight(to_tsvector('english', coalesce(title, '')), 'A') ||
+              setweight(to_tsvector('english', array_to_string(coalesce(tags, ARRAY[]::text[]), ' ')), 'B') ||
+              setweight(to_tsvector('english', coalesce(summary, '')), 'C')
+            ) STORED
+        """))
+        print("[add-search-text] Added generated search_text tsvector column.")
+
+        conn.execute(text(
+            "CREATE INDEX IF NOT EXISTS fics_search_text_idx ON fics USING GIN (search_text)"
+        ))
+        print("[add-search-text] Created GIN index fics_search_text_idx.")
+
+        col_info = conn.execute(text(
+            "SELECT data_type, udt_name FROM information_schema.columns "
+            "WHERE table_name = 'fics' AND column_name = 'search_text'"
+        )).fetchone()
+        print(f"[add-search-text] Column confirmed: data_type={col_info[0]}, udt_name={col_info[1]}")
+
+        idx_exists = conn.execute(text(
+            "SELECT indexname FROM pg_indexes "
+            "WHERE tablename = 'fics' AND indexname = 'fics_search_text_idx'"
+        )).fetchone()
+        print(f"[add-search-text] Index confirmed: {idx_exists[0] if idx_exists else 'MISSING'}")
+
+        null_count = conn.execute(text(
+            "SELECT COUNT(*) FROM fics WHERE search_text IS NULL"
+        )).scalar()
+        print(f"[add-search-text] Rows with NULL search_text (should be 0): {null_count}")
+
+        samples = conn.execute(text(
+            "SELECT id, title, search_text FROM fics WHERE search_text IS NOT NULL LIMIT 3"
+        )).fetchall()
+        print("[add-search-text] Sample populated rows:")
+        for row in samples:
+            tsv_preview = str(row.search_text)[:200]
+            print(f"  {row.id} | {row.title}")
+            print(f"    search_text: {tsv_preview}...")
+
+        print("[add-search-text] Sample BM25 query for 'time travel':")
+        bm25_rows = conn.execute(text("""
+            SELECT id, title, ts_rank_cd(search_text, q) AS rank
+            FROM fics, plainto_tsquery('english', 'time travel') AS q
+            WHERE search_text @@ q
+            ORDER BY rank DESC
+            LIMIT 5
+        """)).fetchall()
+        for row in bm25_rows:
+            print(f"  rank={row.rank:.4f} | {row.id} | {row.title}")
+
+
 def upsert_fic(fic: Fic, fandom: str, embedding: list[float]):
     """Insert or update a fic record with its embedding."""
     fic_id = f"{fic.platform}:{fic.url}"
@@ -107,7 +240,7 @@ def upsert_fic(fic: Fic, fandom: str, embedding: list[float]):
         record.url = fic.url
         record.platform = fic.platform
         record.summary = fic.summary
-        record.tags = ", ".join(fic.tags)
+        record.tags = list(fic.tags) if fic.tags else []
         record.word_count = fic.word_count
         record.kudos = fic.kudos
         record.hits = fic.hits
@@ -142,7 +275,7 @@ def search_similar(query_embedding: list[float], fandom: str | None, limit: int 
             url=r.url,
             platform=r.platform,
             summary=r.summary,
-            tags=r.tags.split(", ") if r.tags else [],
+            tags=list(r.tags) if r.tags else [],
             word_count=r.word_count,
             kudos=r.kudos,
             hits=r.hits
@@ -159,6 +292,7 @@ def search_rrf(
     fandom: str | None,
     per_platform_limit: int = 40,
     total_limit: int | None = 100,
+    filters: dict | None = None,
 ) -> list[Fic]:
     """Vector search across multiple query embeddings, fused via Reciprocal Rank Fusion.
 
@@ -172,6 +306,8 @@ def search_rrf(
         fandom: optional fandom filter; None searches across all fandoms
         per_platform_limit: top-N per (embedding, platform) pulled into the fusion pool
         total_limit: max fics returned after fusion; None returns all deduped candidates
+        filters: optional dict of hard filters applied to each ranked CTE. Recognized keys:
+            min_word_count (int), max_word_count (int), excluded_tags (list[str]).
     """
     if not embeddings:
         return []
@@ -180,6 +316,29 @@ def search_rrf(
     params: dict = {"per_limit": per_platform_limit}
     if fandom is not None:
         params["fandom"] = fandom
+
+    # Build extra WHERE fragment from filters. Filter keys are not user-controlled
+    # (set by the API layer), values bound as SQL params — never f-string'd.
+    filter_clauses: list[str] = []
+    applied_log: list[str] = []
+    if filters:
+        min_wc = filters.get("min_word_count")
+        if isinstance(min_wc, int) and min_wc > 0:
+            filter_clauses.append("AND word_count IS NOT NULL AND word_count >= :min_word_count")
+            params["min_word_count"] = min_wc
+            applied_log.append(f"min_word_count={min_wc}")
+        max_wc = filters.get("max_word_count")
+        if isinstance(max_wc, int) and max_wc > 0:
+            filter_clauses.append("AND word_count IS NOT NULL AND word_count <= :max_word_count")
+            params["max_word_count"] = max_wc
+            applied_log.append(f"max_word_count={max_wc}")
+        excluded = filters.get("excluded_tags")
+        if isinstance(excluded, list) and excluded:
+            filter_clauses.append("AND NOT (tags && CAST(:excluded_tags AS text[]))")
+            params["excluded_tags"] = excluded
+            applied_log.append(f"excluded_tags={excluded}")
+    filter_fragment = " ".join(filter_clauses)
+    print(f"[search_rrf] filters applied: {', '.join(applied_log) if applied_log else 'none'}", flush=True)
 
     # Build one ranked CTE per (embedding, platform) pair, UNION them, then RRF-score.
     # pgvector's <=> is cosine distance; ORDER BY distance asc → lower rank number = better match.
@@ -196,6 +355,7 @@ def search_rrf(
                     WHERE embedding IS NOT NULL
                       AND platform = :plat_{e_idx}_{platform}
                       {fandom_clause}
+                      {filter_fragment}
                     ORDER BY embedding <=> CAST(:emb{e_idx} AS vector)
                     LIMIT :per_limit
                 )
@@ -236,7 +396,7 @@ def search_rrf(
             url=r.url,
             platform=r.platform,
             summary=r.summary,
-            tags=r.tags.split(", ") if r.tags else [],
+            tags=list(r.tags) if r.tags else [],
             word_count=r.word_count,
             kudos=r.kudos,
             hits=r.hits,
@@ -344,4 +504,11 @@ def clear_fandom(fandom: str):
 
         
 if __name__ == "__main__":
-    init_db()
+    if len(sys.argv) > 1 and sys.argv[1] == "migrate-tags":
+        migrate_tags_to_array()
+    elif len(sys.argv) > 1 and sys.argv[1] == "add-search-text":
+        add_search_text_column()
+    else:
+        print("Usage: python -m db.postgres [migrate-tags | add-search-text]")
+        print("(no arg) — runs init_db()")
+        init_db()
