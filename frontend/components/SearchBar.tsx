@@ -11,7 +11,7 @@ const EXAMPLES = [
 ];
 
 interface SearchBarProps {
-  onSearch: (prompt: string, fandom: Fandom, cachedResults?: FicResult[], strict?: boolean) => void;
+  onSearch: (prompt: string, fandom: Fandom, cachedResults?: FicResult[]) => void;
   isSearching: boolean;
   compact?: boolean;
   initialPrompt?: string;
@@ -29,7 +29,6 @@ export default function SearchBar({
 }: SearchBarProps) {
   const [prompt, setPrompt] = useState(initialPrompt);
   const [fandom, setFandom] = useState<Fandom>(initialFandom);
-  const [strict, setStrict] = useState(false);
   const [fandoms, setFandoms] = useState<FandomInfo[]>([]);
   const [placeholder, setPlaceholder] = useState('');
   const [fireworks, setFireworks] = useState<{ id: number; x: number; y: number; color: string }[]>([]);
@@ -119,8 +118,8 @@ export default function SearchBar({
     const full = appendToPrompt
       ? `${prompt.trim()}, ${appendToPrompt}`
       : prompt.trim();
-    onSearch(full, fandom, undefined, strict);
-  }, [prompt, fandom, isSearching, onSearch, appendToPrompt, strict]);
+    onSearch(full, fandom, undefined);
+  }, [prompt, fandom, isSearching, onSearch, appendToPrompt]);
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter') handleSubmit();
@@ -270,14 +269,6 @@ export default function SearchBar({
             </>
           )}
         </select>
-        <label className="flex items-center gap-1.5 text-xs font-mono ml-2 cursor-pointer" style={{ color: 'var(--text-secondary)' }}>
-          <input
-            type="checkbox"
-            checked={strict}
-            onChange={(e) => setStrict(e.target.checked)}
-          />
-          Strict mode
-        </label>
       </div>}
     </div>
   );

@@ -69,7 +69,7 @@ export default function HomePage() {
   };
 
   const handleSearch = useCallback(
-    async (prompt: string, fandom: Fandom, cachedResults?: FicResult[], strict?: boolean) => {
+    async (prompt: string, fandom: Fandom, cachedResults?: FicResult[]) => {
       if (!isLoggedIn) {
         setAuthPrompt(true);
         return;
@@ -85,7 +85,7 @@ export default function HomePage() {
         cachedResults = cached?.cachedResults;
       }
 
-      await search(prompt, fandom, cachedResults, getAuthHeader(), strict);
+      await search(prompt, fandom, cachedResults, getAuthHeader());
     },
     [search, getCachedEntry, isLoggedIn, getAuthHeader]
   );

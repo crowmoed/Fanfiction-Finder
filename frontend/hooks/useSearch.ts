@@ -38,7 +38,6 @@ export function useSearch() {
     fandom: string,
     cachedResults?: FicResult[],
     authHeaders?: Record<string, string>,
-    strict?: boolean
   ) => {
     // Abort any in-progress search
     abortRef.current?.abort();
@@ -72,7 +71,7 @@ export function useSearch() {
       const response = await fetch('/api/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders },
-        body: JSON.stringify({ prompt, fandom, strict: strict === true }),
+        body: JSON.stringify({ prompt, fandom, strict: true }),
         signal: controller.signal,
       });
 
