@@ -123,7 +123,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
+    <div className="min-h-screen paper-grid-bg">
       {/* ─── Sticky Header ──────────────────────────────────────────────── */}
       <header
         className="sticky top-0 z-40 h-14 flex items-center justify-between px-6"
