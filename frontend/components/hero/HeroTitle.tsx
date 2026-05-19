@@ -14,9 +14,9 @@ export function HeroTitle() {
           'var(--aurora-4)',
         ]}
       >
-        Fanfic
+        Semantic
       </AuroraText>{' '}
-      Finder
+      Archive
     </h1>
   );
 }

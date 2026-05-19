@@ -56,7 +56,7 @@ export function WordRotate({ words, duration = 2400, className, style }: WordRot
           inset: 0,
           display: 'inline-flex',
           alignItems: 'baseline',
-          justifyContent: 'flex-start',
+          justifyContent: 'center',
           transform,
           opacity,
           filter,
