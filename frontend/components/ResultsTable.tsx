@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
 import type {
@@ -60,6 +60,17 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
   const [kudosFilter, setKudosFilter] = useState<KudosFilter>('all');
   const [tagFilter, setTagFilter] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      el.scrollTop += e.deltaY;
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
 
   const availableTags = useMemo(() => {
     const freq = new Map<string, number>();
