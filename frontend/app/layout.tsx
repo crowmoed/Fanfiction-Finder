@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
-import { Instrument_Serif, Newsreader, IBM_Plex_Mono } from 'next/font/google';
+import { Instrument_Serif, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import Providers from './providers';
+import { GravityGridBackground } from '@/components/ambient/GravityGridBackground';
+import { SmoothScroll } from '@/components/ambient/SmoothScroll';
 
 const instrumentSerif = Instrument_Serif({
   weight: '400',
@@ -11,19 +13,19 @@ const instrumentSerif = Instrument_Serif({
   display: 'swap',
 });
 
-const newsreader = Newsreader({
-  weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
+const inter = Inter({
+  weight: ['400', '500', '600', '700'],
+  style: ['normal'],
   subsets: ['latin'],
-  variable: '--font-newsreader',
+  variable: '--font-inter',
   display: 'swap',
 });
 
-const plexMono = IBM_Plex_Mono({
+const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '500', '600'],
   style: ['normal', 'italic'],
   subsets: ['latin'],
-  variable: '--font-plex-mono',
+  variable: '--font-jetbrains-mono',
   display: 'swap',
 });
 
@@ -36,10 +38,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${instrumentSerif.variable} ${newsreader.variable} ${plexMono.variable}`}
+      className={`${instrumentSerif.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >
       <body className="font-sans" style={{ backgroundColor: 'var(--bg-primary)' }}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <SmoothScroll />
+          <GravityGridBackground />
+          <div className="relative z-10">{children}</div>
+        </Providers>
       </body>
     </html>
   );

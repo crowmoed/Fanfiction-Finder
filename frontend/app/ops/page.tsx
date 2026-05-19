@@ -41,7 +41,7 @@ function getStatus(stat: FandomStat): { label: string; color: string } {
   const age = stat.last_indexed ? (Date.now() - new Date(stat.last_indexed).getTime()) / 86_400_000 : Infinity;
   if (age > 60) return { label: 'Stale', color: 'text-yellow-400' };
   if (stat.ao3_count === 0 || stat.ffn_count === 0 || stat.wattpad_count === 0) return { label: 'Partial', color: 'text-blue-400' };
-  return { label: 'Good', color: 'text-green-400' };
+  return { label: 'Good', color: 'text-[#8B4E2F]' };
 }
 
 function fmt(n: number): string {

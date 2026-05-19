@@ -7,9 +7,9 @@ interface ScoreBarProps {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 80) return 'var(--score-high)';
-  if (score >= 50) return 'var(--score-mid)';
-  return 'var(--score-low)';
+  if (score >= 80) return '#10B981';
+  if (score >= 50) return '#65A30D';
+  return '#84A98C';
 }
 
 export default function ScoreBar({ score }: ScoreBarProps) {

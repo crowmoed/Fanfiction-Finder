@@ -32,10 +32,10 @@ const config: Config = {
         'status-wip': 'var(--status-wip)',
       },
       fontFamily: {
-        serif: ['var(--font-instrument-serif)', 'Georgia', 'serif'],
-        display: ['var(--font-instrument-serif)', 'Georgia', 'serif'],
-        sans: ['var(--font-newsreader)', 'Georgia', 'serif'],
-        mono: ['var(--font-plex-mono)', 'Consolas', 'monospace'],
+        serif: ['var(--font-instrument-serif)', 'Instrument Serif', 'serif'],
+        display: ['var(--font-instrument-serif)', 'Instrument Serif', 'serif'],
+        sans: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-jetbrains-mono)', 'JetBrains Mono', 'monospace'],
       },
       maxWidth: {
         content: '960px',
@@ -52,8 +52,21 @@ const config: Config = {
           '50%': { transform: 'scale(1.3)', opacity: '0.6' },
         },
         shimmer: {
-          '0%': { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
+          from: { backgroundPosition: '0 0' },
+          to: { backgroundPosition: '-200% 0' },
+        },
+        aurora: {
+          '0%': { backgroundPosition: '0% 50%' },
+          '100%': { backgroundPosition: '100% 50%' },
+        },
+        shine: {
+          '0%': { backgroundPosition: '0% 0%' },
+          '50%': { backgroundPosition: '100% 100%' },
+          '100%': { backgroundPosition: '0% 0%' },
+        },
+        'word-rotate': {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         fadeSlideUp: {
           '0%': { opacity: '0', transform: 'translateY(8px)' },
@@ -70,7 +83,10 @@ const config: Config = {
       },
       animation: {
         pulse: 'pulse 1.5s ease-in-out infinite',
-        shimmer: 'shimmer 1.5s linear infinite',
+        aurora: 'aurora 10s ease-in-out infinite alternate',
+        shimmer: 'shimmer 2.5s linear infinite',
+        shine: 'shine 14s linear infinite',
+        'word-rotate': 'word-rotate 0.4s ease-out',
         'fade-slide-up': 'fadeSlideUp 200ms ease-out forwards',
         'scale-in': 'scaleIn 200ms ease-out forwards',
       },

@@ -9,60 +9,74 @@
  *  not a SaaS dashboard.
  *  ------------------------------------------------------------------ */
 :root {
-  /* Surfaces — warmer, paper-like cream */
-  --bg-primary: #F4EFE6;
-  --bg-secondary: #ECE5D8;
-  --bg-elevated: #FBF7EE;
-  --bg-hover: #E6DECB;
+  /* Surfaces — old-book parchment, neutral */
+  --bg-primary: #ECE7D5;
+  --bg-secondary: #DED7BE;
+  --bg-elevated: #F4F0DF;
+  --bg-hover: #CFC8AC;
 
-  /* Text — near-black ink, not pure black */
-  --text-primary: #1A1814;
-  --text-secondary: #4A4338;
-  --text-tertiary: #8C8373;
+  /* Text — sumi ink */
+  --text-primary: #14130F;
+  --text-secondary: #34302A;
+  --text-tertiary: #756F60;
 
-  /* Borders — warm taupe, slightly visible */
-  --border-default: #C9BFAA;
-  --border-subtle: #D9D0BC;
-  --border-ink: #1A1814;
+  /* Borders — bark, neutral */
+  --border-default: #A89F88;
+  --border-subtle: #C6BEA6;
+  --border-ink: #14130F;
 
-  /* Accent — warm coral/brick (indie zine vibe) */
-  --accent: #C5432A;
-  --accent-light: #FBE3DB;
-  --accent-hover: #9E3320;
+  /* Accent — warm orange (dominant) */
+  --accent: #C9621E;
+  --accent-light: #F7DDC4;
+  --accent-hover: #9E4612;
 
-  /* Secondary accent — mustard, for highlights/stickers */
-  --accent-alt: #C9932A;
-  --accent-alt-light: #F8EBC8;
+  /* Secondary accent — burnt amber (for hover/depth) */
+  --accent-alt: #B85F3D;
+  --accent-alt-light: #F2D9C7;
 
-  /* Platform badges — desaturated, stamp-like */
+  /* Platform badges — keep the canonical platform colors */
   --ao3-red: #7A1F14;
   --ao3-red-bg: #F4D9D1;
   --ffn-blue: #27436B;
   --ffn-blue-bg: #D9E0EC;
-  --wattpad-orange: #B45A1E;
-  --wattpad-orange-bg: #F6DFC8;
+  --wattpad-orange: #B85F3D;
+  --wattpad-orange-bg: #F2D9C7;
 
-  /* Score heat */
-  --score-high: #4A7A3A;
-  --score-mid: #B86A1C;
+  /* Score heat — orange intensity */
+  --score-high: #9E4612;
+  --score-mid: #C9621E;
   --score-low: #8C8373;
 
   /* Status */
-  --status-complete: #4A7A3A;
-  --status-wip: #B86A1C;
+  --status-complete: #9E4612;
+  --status-wip: #8C8373;
 
-  /* Shadows — offset ink shadow (the signature indie drop-shadow) */
-  --shadow-sm: 2px 2px 0 rgba(26, 24, 20, 0.9);
-  --shadow-md: 3px 3px 0 rgba(26, 24, 20, 0.9);
-  --shadow-lg: 5px 5px 0 rgba(26, 24, 20, 0.9);
-  --shadow-soft: 0 2px 6px rgba(26, 24, 20, 0.08);
+  /* Shadows — sumi ink offset shadow */
+  --shadow-sm: 2px 2px 0 rgba(18, 22, 17, 0.9);
+  --shadow-md: 3px 3px 0 rgba(18, 22, 17, 0.9);
+  --shadow-lg: 5px 5px 0 rgba(18, 22, 17, 0.9);
+  --shadow-soft: 0 2px 6px rgba(18, 22, 17, 0.08);
 
-  /* Background texture */
+  /* Background texture — old library page, neutral parchment */
   --paper-grid:
-    linear-gradient(rgba(26, 24, 20, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(26, 24, 20, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at 8% 12%, rgba(197, 67, 42, 0.07), transparent 28%),
+    linear-gradient(rgba(20, 19, 15, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 19, 15, 0.022) 1px, transparent 1px),
     var(--bg-primary);
+
+  /* Aurora — adjacent warm tones, burnt → amber → coral */
+  --aurora-1: #9E4612;
+  --aurora-2: #C9621E;
+  --aurora-3: #B85F3D;
+  --aurora-4: #C9621E;
+
+  /* Gravity grid - bark on parchment */
+  --grid-line: rgba(60, 50, 35, 0.45);
+  --grid-vignette: rgba(60, 50, 35, 0.08);
+
+  /* Shine border — burnt into amber */
+  --shine-1: #9E4612;
+  --shine-2: #C9621E;
+  --shine-3: #B85F3D;
 }
 
 /* Subtle paper grain — gives every surface a hint of texture without
@@ -82,8 +96,10 @@ body {
 }
 
 .paper-grid-bg {
-  background: var(--paper-grid);
-  background-size: 32px 32px, 32px 32px, auto, auto;
+  background:
+    linear-gradient(rgba(20, 19, 15, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 19, 15, 0.022) 1px, transparent 1px);
+  background-size: 32px 32px, 32px 32px;
 }
 
 /* Scrollbar hide utility */
@@ -155,6 +171,7 @@ table {
 /* Line clamp utilities */
 .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
 .line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 .line-clamp-5 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; }
 
 /* Faster snap transitions — avoids the "smooth SaaS" glide */
@@ -239,4 +256,54 @@ button, a, select, input {
 .indie-press:active {
   transform: translate(3px, 3px);
   box-shadow: 0 0 0 rgba(26, 24, 20, 0);
+}
+
+@keyframes aurora {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+@keyframes shine {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes beamDash {
+  0% { stroke-dashoffset: 80; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes boxReveal {
+  0% { transform: scaleX(1); transform-origin: left; }
+  100% { transform: scaleX(0); transform-origin: right; }
+}
+
+@keyframes word-rotate {
+  0%   { opacity: 0; transform: translateY(8px); filter: blur(2px); }
+  60%  { opacity: 1; transform: translateY(0); filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes emeraldShine {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+
+  .motion-safe-only {
+    animation: none !important;
+    transition: none !important;
+  }
 }
