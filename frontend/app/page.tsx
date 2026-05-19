@@ -257,7 +257,7 @@ export default function HomePage() {
         )}
 
         {(appState === 'loading' || appState === 'results') && (
-          <div>
+          <div className="flex h-[calc(100vh-56px)] flex-col overflow-hidden">
             <div className="sticky top-14 z-30 border-b px-4 py-3 sm:hidden" style={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-default)' }}>
               <PromptSearchBar
                 onSearch={handleSearch}
@@ -291,7 +291,7 @@ export default function HomePage() {
 
             {isSearching && results.length === 0 && <ArchitectureBeam />}
 
-            <div className="mx-auto px-4 py-6 sm:px-6" style={{ maxWidth: '1200px' }}>
+            <div className="mx-auto min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6" style={{ maxWidth: '1200px' }}>
               {isLoggedIn && user?.tier === 'free' && (user?.searches_used ?? 0) >= 2 ? (
                 <RateLimitBlock onUpgrade={handleUpgrade} />
               ) : (
