@@ -106,6 +106,13 @@ body {
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Translucent scrollbar — used on results table and fandom dropdown */
+.scrollbar-translucent { scrollbar-width: thin; scrollbar-color: rgba(20, 19, 15, 0.25) transparent; }
+.scrollbar-translucent::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-translucent::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-translucent::-webkit-scrollbar-thumb { background-color: rgba(20, 19, 15, 0.25); border-radius: 9999px; }
+.scrollbar-translucent::-webkit-scrollbar-thumb:hover { background-color: rgba(20, 19, 15, 0.45); }
+
 /* Skeleton — pulsing block instead of gradient shimmer (more honest) */
 .shimmer-bar {
   background-color: var(--bg-secondary);

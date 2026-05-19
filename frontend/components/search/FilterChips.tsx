@@ -70,12 +70,9 @@ export function FilterChips({ fandom, onFandomChange, compact = false }: FilterC
 
       {open && (
         <div
-          className="absolute left-0 top-full z-50 mt-2 w-64 overflow-y-auto rounded-lg border p-1.5 shadow-md"
-          style={{ maxHeight: '16rem' }}
-          style={{
-            backgroundColor: 'var(--bg-elevated)',
-            borderColor: 'var(--text-primary)',
-          }}
+          className="scrollbar-translucent absolute left-0 top-full z-50 mt-2 w-64 overflow-y-auto rounded-lg border p-1.5 shadow-md"
+          style={{ maxHeight: '16rem', backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--text-primary)' }}
+          onWheel={(e) => e.stopPropagation()}
         >
           {fandoms.map((item) => {
             const selected = item.name === fandom;
