@@ -19,16 +19,16 @@ export function GravityGridBackground() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-0" style={{ opacity: 0.62 }}>
       <RippleGrid
-        gridColor="rgba(60, 50, 35, 0.42)"
+        gridColor="rgba(0, 0, 0, 0.42)"
         gridSize={40}
         gridThickness={0.9}
         rippleIntensity={0}
         fadeDistance={2.5}
-        vignetteStrength={1.2}
+        vignetteStrength={0.2}
         glowIntensity={0}
         opacity={0.55}
         mouseInteraction
-        mouseInteractionRadius={0.25}
+        mouseInteractionRadius={1.0}
         enableRainbow={false}
       />
     </div>

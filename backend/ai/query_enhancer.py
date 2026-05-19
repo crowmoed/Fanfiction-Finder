@@ -16,6 +16,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import boto3
 from pydantic import BaseModel
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 # ── Client setup ──────────────────────────────────────────────────────────────
 
@@ -109,6 +110,20 @@ Example output:
 Respond ONLY with the JSON object. No markdown, no backticks, no preamble."""
 
 
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=8),
+    reraise=True,
+)
+def _invoke_enhancer(payload: dict):
+    return bedrock.invoke_model(
+        modelId=HAIKU_MODEL,
+        body=json.dumps(payload),
+        contentType="application/json",
+        accept="application/json",
+    )
+
+
 # ── Main function ─────────────────────────────────────────────────────────────
 
 def enhance_query(user_query: str, fandom: str = None) -> EnrichedQuery:
@@ -139,12 +154,7 @@ def enhance_query(user_query: str, fandom: str = None) -> EnrichedQuery:
             ],
         }
 
-        response = bedrock.invoke_model(
-            modelId=HAIKU_MODEL,
-            body=json.dumps(payload),
-            contentType="application/json",
-            accept="application/json",
-        )
+        response = _invoke_enhancer(payload)
 
         body = json.loads(response["body"].read())
         print(f"[query_enhancer] raw body: {json.dumps(body)}", flush=True)
@@ -157,6 +167,10 @@ def enhance_query(user_query: str, fandom: str = None) -> EnrichedQuery:
             raw = raw.strip()
         data = json.loads(raw)
         enriched = EnrichedQuery(**data)
+
+        if len(enriched.semantic_descriptions) != 3:
+            print(f"[query_enhancer] WARNING: expected 3 semantic_descriptions, got {len(enriched.semantic_descriptions)} — falling back", flush=True)
+            raise ValueError(f"semantic_descriptions length {len(enriched.semantic_descriptions)} != 3")
 
         for i, desc in enumerate(enriched.semantic_descriptions):
             print(f"[query_enhancer] semantic_descriptions[{i}]: {desc[:80]}...", flush=True)

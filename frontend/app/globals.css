@@ -74,9 +74,9 @@
   --grid-vignette: rgba(60, 50, 35, 0.08);
 
   /* Shine border — burnt into amber */
-  --shine-1: #9E4612;
-  --shine-2: #C9621E;
-  --shine-3: #B85F3D;
+  --shine-1: #000000;
+  --shine-2: #ff663b;
+  --shine-3: #000000;
 }
 
 /* Subtle paper grain — gives every surface a hint of texture without

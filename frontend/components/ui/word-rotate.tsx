@@ -29,25 +29,43 @@ export function WordRotate({ words, duration = 2400, className, style }: WordRot
     };
   }, [duration, index, words.length]);
 
-  const transform =
-    phase === 'in' ? 'translateY(0)' : 'translateY(-8px)';
+  const transform = phase === 'in' ? 'translateY(0)' : 'translateY(-8px)';
   const opacity = phase === 'in' ? 1 : 0;
   const filter = phase === 'in' ? 'blur(0)' : 'blur(2px)';
+
+  const widest = words.reduce((longest, word) => (word.length > longest.length ? word : longest), '');
 
   return (
     <span
       className={className}
       style={{
         ...style,
+        position: 'relative',
         display: 'inline-block',
-        transform,
-        opacity,
-        filter,
-        transition: 'opacity 320ms ease, transform 320ms ease, filter 320ms ease',
-        willChange: 'transform, opacity, filter',
+        whiteSpace: 'nowrap',
+        verticalAlign: 'baseline',
       }}
     >
-      {words[index]}
+      {/* invisible sizer — locks width to the longest word */}
+      <span aria-hidden style={{ visibility: 'hidden', display: 'inline-block' }}>
+        {widest}
+      </span>
+      <span
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'inline-flex',
+          alignItems: 'baseline',
+          justifyContent: 'flex-start',
+          transform,
+          opacity,
+          filter,
+          transition: 'opacity 320ms ease, transform 320ms ease, filter 320ms ease',
+          willChange: 'transform, opacity, filter',
+        }}
+      >
+        {words[index]}
+      </span>
     </span>
   );
 }

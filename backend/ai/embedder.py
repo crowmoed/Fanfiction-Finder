@@ -38,12 +38,12 @@ def _is_rate_limit(exc: BaseException) -> bool:
 @retry(
     retry=retry_if_exception(_is_rate_limit),
     wait=wait_exponential(multiplier=1, min=2, max=30),
-    stop=stop_after_attempt(3),
+    stop=stop_after_attempt(5),
     before_sleep=before_sleep_log(logger, logging.WARNING),
     reraise=True,
 )
 def _embed_single(contents, task_type: str, title: str = None):
-    """Single embed_content call with up to 3 retries on rate-limit errors."""
+    """Single embed_content call with up to 5 retries on rate-limit errors."""
     kwargs = dict(task_type=task_type, output_dimensionality=EMBEDDING_DIMS)
     if title is not None:
         kwargs['title'] = title

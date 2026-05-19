@@ -87,7 +87,7 @@ export default function RippleGrid({
 
       const t = 1 - dist / radius;
       const falloff = t * t * (3 - 2 * t);
-      const pullStrength = 0.09 * mouse.influence * radius;
+      const pullStrength = 0.025 * mouse.influence * radius;
       const pull = falloff * pullStrength;
       return {
         x: x + (dx / dist) * pull,

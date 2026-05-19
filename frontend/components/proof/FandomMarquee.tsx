@@ -11,13 +11,13 @@ const FANDOMS_PLACEHOLDER = [
   'Hannibal', 'The Magnus Archives', 'Critical Role', 'Yuri!!! on Ice',
   'Lord of the Rings', 'The Hobbit', 'Twilight', 'Skyrim', 'Undertale',
   'Minecraft', 'The Last of Us', 'Arcane', 'Overwatch', 'Sailor Moon',
-  'Buffy', 'Gilmore Girls', 'Our Flag Means Death', '911', 'Star Trek',
+  'Buffy', 'Gilmore Girls', 'Our Flag Means Death', 'Star Trek',
   'The X-Files', 'Batman', 'Daredevil', 'House MD', 'Succession',
 ];
 
 export function FandomMarquee() {
   return (
-    <Marquee className="py-4" pauseOnHover speed={58}>
+    <Marquee className="py-4" pauseOnHover speed={108}>
       {FANDOMS_PLACEHOLDER.map((name) => (
         <span key={name} className="mx-6 font-sans text-sm" style={{ color: 'var(--text-tertiary)' }}>
           {name}

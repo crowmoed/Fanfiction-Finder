@@ -274,6 +274,7 @@ def search_similar(query_embedding: list[float], fandom: str | None, limit: int 
             title=r.title,
             url=r.url,
             platform=r.platform,
+            fandom=r.fandom,
             summary=r.summary,
             tags=list(r.tags) if r.tags else [],
             word_count=r.word_count,
@@ -379,7 +380,7 @@ def search_rrf(
             FROM ({union_sql}) ranked
             GROUP BY id
         )
-        SELECT f.id, f.title, f.url, f.platform, f.summary, f.tags,
+        SELECT f.id, f.title, f.url, f.platform, f.fandom, f.summary, f.tags,
                f.word_count, f.kudos, f.hits, fused.rrf_score
         FROM fused
         JOIN fics f ON f.id = fused.id
@@ -395,6 +396,7 @@ def search_rrf(
             title=r.title,
             url=r.url,
             platform=r.platform,
+            fandom=r.fandom,
             summary=r.summary,
             tags=list(r.tags) if r.tags else [],
             word_count=r.word_count,

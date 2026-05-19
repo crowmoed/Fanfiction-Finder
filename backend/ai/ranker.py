@@ -10,7 +10,7 @@ from data.schema import Fic
 
 bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
-CHUNK_SIZE = 100
+CHUNK_SIZE = 200
 
 
 def _build_prompt(fic_list: list[dict], query: str) -> str:
@@ -22,7 +22,13 @@ def _build_prompt(fic_list: list[dict], query: str) -> str:
     Use absolute scores — if most fics are a strong match, most should score 70-90. If most are weak, most should score low.
     Do NOT spread scores artificially across the full range. Ties are fine.
 
-    SCORING PRIORITY: The summary is the primary signal. It describes the actual
+    SCORING PRIORITY: When the user query implies a specific fandom or character,
+    fandom-match is a HARD requirement. A fic from the wrong fandom should score
+    below 30 regardless of trope match. When the user query implies length (e.g.
+    'long', 'epic', 'short'), use word_count as a tiebreaker: prefer fics matching
+    the implied length.
+
+    The summary is the primary signal. It describes the actual
     plot, characters, and tone of the fic in the author's own words. Weight it
     most heavily. Use the title as a secondary signal. Tags are high-signal
     structured metadata (especially on AO3) — when they directly match query
@@ -56,6 +62,8 @@ def _rank_chunk(fics_chunk: list[Fic], query: str, chunk_idx: int, base_offset: 
         {
             "index": i,
             "title": fic.title,
+            "fandom": fic.fandom,
+            "word_count": fic.word_count,
             "summary": fic.summary or "",
             "tags": _format_tags(fic.tags or []),
         }
@@ -113,9 +121,9 @@ def rank(fics: list[Fic], query: str) -> list[Fic]:
                 score_map.update(fut.result())
                 succeeded += 1
             except Exception as e:
-                print(f"[ranker] chunk {idx} failed ({type(e).__name__}: {e}); assigning neutral score 50", flush=True)
+                print(f"[ranker] DEGRADED: chunk {idx} failed ({type(e).__name__}: {e}); sorting these fics to bottom", flush=True)
                 for local_i in range(len(chunk_fics)):
-                    score_map.setdefault(offset + local_i, 50)
+                    score_map.setdefault(offset + local_i, None)
 
     if succeeded == 0:
         print("[ranker] DEGRADED: all chunks failed; falling back to kudos sort", flush=True)

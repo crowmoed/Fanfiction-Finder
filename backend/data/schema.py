@@ -5,6 +5,7 @@ class Fic(BaseModel):
     title: str
     url: str
     platform: str
+    fandom: Optional[str] = None
     summary: Optional[str] = None
     tags: list[str] = []
     word_count: Optional[int] = None
