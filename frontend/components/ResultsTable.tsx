@@ -171,20 +171,17 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
       />
 
       <div
-        className="overflow-hidden"
+        ref={containerRef}
+        className="overflow-auto"
         style={{
           backgroundColor: 'var(--bg-elevated)',
           border: '1.5px solid var(--text-primary)',
           borderRadius: '4px',
           boxShadow: 'var(--shadow-md)',
+          maxHeight: 'calc(100vh - 180px)',
         }}
       >
-        <div
-          ref={containerRef}
-          className="overflow-auto"
-          style={{ maxHeight: '70vh' }}
-        >
-          <table className="w-full border-collapse text-sm" style={{ minWidth: '1100px' }}>
+        <table className="w-full border-collapse text-sm" style={{ minWidth: '1100px' }}>
             <thead className="sticky top-0 z-10" style={{ backgroundColor: 'var(--bg-secondary)' }}>
               <tr>
                 {COLUMNS.map((col) => {
@@ -332,7 +329,6 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
               {paddingBottom > 0 && <tr key="__vpad-bottom"><td style={{ height: paddingBottom }} /></tr>}
             </tbody>
           </table>
-        </div>
       </div>
     </div>
   );

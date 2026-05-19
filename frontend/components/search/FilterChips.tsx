@@ -70,7 +70,8 @@ export function FilterChips({ fandom, onFandomChange, compact = false }: FilterC
 
       {open && (
         <div
-          className="absolute left-0 top-full z-50 mt-2 max-h-72 w-64 overflow-auto rounded-lg border p-1.5 shadow-md"
+          className="absolute left-0 top-full z-50 mt-2 w-64 overflow-y-auto rounded-lg border p-1.5 shadow-md"
+          style={{ maxHeight: '16rem' }}
           style={{
             backgroundColor: 'var(--bg-elevated)',
             borderColor: 'var(--text-primary)',
