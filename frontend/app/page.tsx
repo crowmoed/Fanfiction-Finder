@@ -35,10 +35,21 @@ export default function HomePage() {
   const [authPrompt, setAuthPrompt] = useState(false);
   const [resultsView, setResultsView] = usePersistedResultsView();
 
-  const { search, results, isSearching, isRanked, error } = useSearch();
+  const { search, results, isSearching, isRanked, error, reset } = useSearch();
   const { history, addEntry, clearHistory, getCachedEntry, getByShareId } = useSearchHistory();
   const isMobile = useIsMobile();
   const { user, isLoggedIn, getAuthHeader } = useAuth();
+
+  const sharedRestoredRef = useRef(false);
+
+  const handleGoHome = useCallback(() => {
+    reset();
+    setCurrentQuery('');
+    setCurrentFandom('');
+    setAppState('empty');
+    sharedRestoredRef.current = true;
+    window.history.replaceState({}, '', '/');
+  }, [reset]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -49,7 +60,6 @@ export default function HomePage() {
     if (query) setCurrentQuery(query);
   }, []);
 
-  const sharedRestoredRef = useRef(false);
   useEffect(() => {
     if (sharedRestoredRef.current) return;
     if (!isLoggedIn) return;
@@ -168,7 +178,7 @@ export default function HomePage() {
         }}
       >
         <button
-          onClick={() => setAppState('empty')}
+          onClick={handleGoHome}
           className="flex items-baseline gap-2"
           aria-label="FanFiction Finder home"
         >
@@ -272,7 +282,7 @@ export default function HomePage() {
                     {history.slice(0, 5).map((entry) => (
                       <button
                         key={entry.id}
-                        onClick={() => handleHistorySearch(entry.prompt, entry.fandom, entry.cachedResults)}
+                        onClick={() => handleHistorySearch(entry.prompt, entry.fandom, entry.cachedResults, entry.shareId)}
                         className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left"
                         style={{ color: 'var(--text-secondary)' }}
                       >

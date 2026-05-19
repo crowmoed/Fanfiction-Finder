@@ -157,5 +157,14 @@ export function useSearch() {
     }
   }, [updateStep]);
 
-  return { search, results, pipelineStatus, isSearching, isRanked, error };
+  const reset = useCallback(() => {
+    abortRef.current?.abort();
+    setResults([]);
+    setIsSearching(false);
+    setIsRanked(false);
+    setError(null);
+    setPipelineStatus(createInitialStatus());
+  }, []);
+
+  return { search, results, pipelineStatus, isSearching, isRanked, error, reset };
 }
