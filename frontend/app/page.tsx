@@ -53,10 +53,9 @@ export default function HomePage() {
   useEffect(() => {
     if (sharedRestoredRef.current) return;
     if (!isLoggedIn) return;
-    const match = window.location.pathname.match(/^\/r\/([A-Za-z0-9]+)$/);
-    if (!match) return;
+    const shareId = new URLSearchParams(window.location.search).get('r');
+    if (!shareId) return;
     sharedRestoredRef.current = true;
-    const shareId = match[1];
     (async () => {
       const entry = await getByShareId(shareId);
       if (entry && entry.cachedResults && entry.cachedResults.length > 0) {
@@ -147,12 +146,12 @@ export default function HomePage() {
       timestamp: new Date(),
       cachedResults: results,
     });
-    window.history.replaceState({}, '', `/r/${shareId}`);
+    window.history.replaceState({}, '', `/?r=${shareId}`);
   }, [addEntry, currentFandom, currentQuery, isRanked, isSearching, results]);
 
   const handleHistorySearch = useCallback(
     (prompt: string, fandom: string, cached?: FicResult[], shareId?: string) => {
-      if (shareId) window.history.replaceState({}, '', `/r/${shareId}`);
+      if (shareId) window.history.replaceState({}, '', `/?r=${shareId}`);
       handleSearch(prompt, fandom as Fandom, cached);
     },
     [handleSearch]
