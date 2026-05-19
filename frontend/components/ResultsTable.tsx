@@ -178,6 +178,7 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
           border: '1.5px solid var(--text-primary)',
           borderRadius: '4px',
           boxShadow: 'var(--shadow-md)',
+          maxHeight: 'calc(100vh - 180px)',
           overscrollBehavior: 'contain',
         }}
       >
