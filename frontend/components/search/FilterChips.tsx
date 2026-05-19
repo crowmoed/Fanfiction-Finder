@@ -4,16 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import type { Fandom, FandomInfo } from '@/lib/schema/types';
 import { cn } from '@/lib/cn';
 
-const FALLBACK_FANDOMS: FandomInfo[] = [
-  { name: 'All Fandoms', collected: true },
-  { name: 'Harry Potter', collected: true },
-  { name: 'Marvel', collected: true },
-  { name: 'Naruto', collected: true },
-  { name: 'Star Wars', collected: true },
-  { name: 'My Hero Academia', collected: false },
-  { name: 'Genshin Impact', collected: false },
-];
-
 interface FilterChipsProps {
   fandom: Fandom;
   onFandomChange: (fandom: Fandom) => void;
@@ -21,7 +11,8 @@ interface FilterChipsProps {
 }
 
 export function FilterChips({ fandom, onFandomChange, compact = false }: FilterChipsProps) {
-  const [fandoms, setFandoms] = useState<FandomInfo[]>(FALLBACK_FANDOMS);
+  const [fandoms, setFandoms] = useState<FandomInfo[]>([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -31,7 +22,8 @@ export function FilterChips({ fandom, onFandomChange, compact = false }: FilterC
       .then((data: { fandoms: FandomInfo[] }) => {
         if (Array.isArray(data.fandoms) && data.fandoms.length > 0) setFandoms(data.fandoms);
       })
-      .catch(() => setFandoms(FALLBACK_FANDOMS));
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -74,7 +66,15 @@ export function FilterChips({ fandom, onFandomChange, compact = false }: FilterC
           style={{ maxHeight: '16rem', backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--text-primary)' }}
           onWheel={(e) => e.stopPropagation()}
         >
-          {fandoms.map((item) => {
+          {loading ? (
+            <div className="px-3 py-2 font-mono text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              loading…
+            </div>
+          ) : fandoms.length === 0 ? (
+            <div className="px-3 py-2 font-mono text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              no fandoms found
+            </div>
+          ) : fandoms.map((item) => {
             const selected = item.name === fandom;
             return (
               <button

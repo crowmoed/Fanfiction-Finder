@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
 import type {
@@ -60,19 +60,6 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
   const [kudosFilter, setKudosFilter] = useState<KudosFilter>('all');
   const [tagFilter, setTagFilter] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => {
-      const { scrollTop, scrollHeight, clientHeight } = el;
-      const atTop = scrollTop === 0 && e.deltaY < 0;
-      const atBottom = scrollTop + clientHeight >= scrollHeight && e.deltaY > 0;
-      if (!atTop && !atBottom) e.preventDefault();
-    };
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
-  }, []);
 
   const availableTags = useMemo(() => {
     const freq = new Map<string, number>();
@@ -192,6 +179,7 @@ export default function ResultsTable({ results, isRanked, isMobile }: ResultsTab
           borderRadius: '4px',
           boxShadow: 'var(--shadow-md)',
           maxHeight: 'calc(100vh - 180px)',
+          overscrollBehavior: 'contain',
         }}
       >
         <table className="w-full border-collapse text-sm" style={{ minWidth: '1100px' }}>
