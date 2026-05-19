@@ -41,6 +41,7 @@ export default function HomePage() {
   const { user, isLoggedIn, getAuthHeader } = useAuth();
 
   const sharedRestoredRef = useRef(false);
+  const skipUrlPushRef = useRef(false);
 
   const handleGoHome = useCallback(() => {
     reset();
@@ -48,7 +49,9 @@ export default function HomePage() {
     setCurrentFandom('');
     setAppState('empty');
     sharedRestoredRef.current = true;
-    window.history.replaceState({}, '', '/');
+    if (window.location.search) {
+      window.history.pushState({}, '', '/');
+    }
   }, [reset]);
 
   useEffect(() => {
@@ -60,23 +63,39 @@ export default function HomePage() {
     if (query) setCurrentQuery(query);
   }, []);
 
+  const restoreFromUrl = useCallback(async () => {
+    const shareId = new URLSearchParams(window.location.search).get('r');
+    if (!shareId) {
+      reset();
+      setCurrentQuery('');
+      setCurrentFandom('');
+      setAppState('empty');
+      return;
+    }
+    const entry = await getByShareId(shareId);
+    if (entry && entry.cachedResults && entry.cachedResults.length > 0) {
+      skipUrlPushRef.current = true;
+      handleSearch(entry.prompt, entry.fandom as Fandom, entry.cachedResults);
+    } else {
+      window.history.replaceState({}, '', '/');
+      setAppState('empty');
+    }
+    // handleSearch intentionally omitted
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getByShareId, reset]);
+
   useEffect(() => {
     if (sharedRestoredRef.current) return;
     if (!isLoggedIn) return;
-    const shareId = new URLSearchParams(window.location.search).get('r');
-    if (!shareId) return;
     sharedRestoredRef.current = true;
-    (async () => {
-      const entry = await getByShareId(shareId);
-      if (entry && entry.cachedResults && entry.cachedResults.length > 0) {
-        handleSearch(entry.prompt, entry.fandom as Fandom, entry.cachedResults);
-      } else {
-        window.history.replaceState({}, '', '/');
-      }
-    })();
-    // handleSearch intentionally omitted
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn, getByShareId]);
+    restoreFromUrl();
+  }, [isLoggedIn, restoreFromUrl]);
+
+  useEffect(() => {
+    const onPop = () => { restoreFromUrl(); };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [restoreFromUrl]);
 
   useEffect(() => {
     if (isSearching) setAppState('loading');
@@ -156,12 +175,16 @@ export default function HomePage() {
       timestamp: new Date(),
       cachedResults: results,
     });
-    window.history.replaceState({}, '', `/?r=${shareId}`);
+    if (skipUrlPushRef.current) {
+      skipUrlPushRef.current = false;
+    } else {
+      window.history.pushState({}, '', `/?r=${shareId}`);
+    }
   }, [addEntry, currentFandom, currentQuery, isRanked, isSearching, results]);
 
   const handleHistorySearch = useCallback(
     (prompt: string, fandom: string, cached?: FicResult[], shareId?: string) => {
-      if (shareId) window.history.replaceState({}, '', `/?r=${shareId}`);
+      if (shareId) window.history.pushState({}, '', `/?r=${shareId}`);
       handleSearch(prompt, fandom as Fandom, cached);
     },
     [handleSearch]
