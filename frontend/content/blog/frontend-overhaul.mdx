@@ -1,0 +1,32 @@
+---
+title: "The Frontend Overhaul"
+date: "2026-05-18"
+tags: ["frontend", "design", "nextjs"]
+---
+
+# The Frontend Overhaul
+
+One commit. 4,879 insertions, 415 deletions, 47 files touched. That was the day
+the frontend stopped being a search box on a white page and started being a
+product.
+
+The old `page.tsx` was 364 lines of JSX that did everything: search input,
+results table, filter state, history dropdown, account badge. Everything lived
+in one component because the original goal was "prove the backend works" and
+nobody bothers refactoring something they expect to throw away. Of course we
+didn't throw it away.
+
+The overhaul split that single page into a real component tree - a
+`PromptSearchBar`, `FilterChips`, `ResultsBento`, `FicCard`, `ViewToggle`, plus
+an `ambient/` directory for the gravity grid background and smooth-scroll
+wrapper. The components don't know about each other. The page wires them
+together.
+
+The interesting part isn't the split. The interesting part is that splitting a
+page-shaped component into pieces forces you to name your state. When
+everything is in one closure you can get away with `const [stuff, setStuff]`.
+Once a child needs to read it you have to ask "what is this, actually?" and
+half the time the answer is "two unrelated things I was treating as one."
+
+That's where most of the bug fixes hidden in the next two weeks of commits
+came from.

@@ -1,0 +1,33 @@
+---
+title: "Tuning the Ranker Without Going Insane"
+date: "2026-05-10"
+tags: ["backend", "ai", "ranking"]
+---
+
+# Tuning the Ranker Without Going Insane
+
+The ranker has been rewritten three times. Every rewrite started with "the
+current scores feel wrong" and ended with "the new scores feel wrong in a
+different way." This is the eternal condition of building a ranker.
+
+The current version blends a semantic similarity score from the embedder, a
+metadata match score (fandom, tags, characters), and a quality prior derived
+from kudos, hits, and chapter count normalized by age. The weights are
+constants at the top of the file. They are constants because every time I made
+them configurable I spent more time tuning the config than improving the
+results.
+
+The hardest part of tuning a ranker for fanfiction is that there is no ground
+truth. There's no clickthrough log, no human-labeled "this is what the user
+wanted" dataset. You write a query, you look at the top ten, you decide
+whether they look right. Then you tweak a weight and look again. Then you
+forget what the original results were and convince yourself the new ones are
+better.
+
+What helped: a fixed set of about twenty test queries with rough expectations
+written down. Not labeled scores - just "for this query, fics tagged X should
+appear and fics tagged Y should not." When a tuning change broke one of those
+expectations, the change got reverted. When it didn't break any, it was at
+least not a regression.
+
+That's the bar. Not a regression.

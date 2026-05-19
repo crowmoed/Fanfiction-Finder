@@ -1,0 +1,31 @@
+---
+title: "Why Filter Chips Took Eight Commits"
+date: "2026-05-19"
+tags: ["frontend", "design", "ux"]
+---
+
+# Why Filter Chips Took Eight Commits
+
+The filter chips component is 116 lines of TSX. The git log shows eight
+commits touching it in two days. The chips themselves did not change. What
+changed every time was their relationship to the results table next to them.
+
+The first version was a fixed bar above the table. That broke on narrow
+screens. The second version was a horizontal scroll. That looked broken
+because nobody scrolls horizontally on purpose. The third version was a
+wrapping grid. That worked until the table re-rendered and the chips' wrap
+points jumped.
+
+The eventual fix had nothing to do with the chips. It was that the table was
+recomputing its column widths on every filter change, which shifted the
+container, which re-flowed the chips. Once the table stopped doing that, the
+chips were fine.
+
+This is the part of frontend work that doesn't show up in the diff. The chips
+component looks like it was written in one sitting because by the time it
+worked, all the experimentation had been deleted. What you're actually
+debugging when you "fix the chips" is the interaction between three
+components that all assumed they owned the layout.
+
+The takeaway is that the file with the most commits is rarely the file with
+the bug. It's the file where the symptom was most visible.

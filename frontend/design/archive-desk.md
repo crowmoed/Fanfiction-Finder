@@ -1,6 +1,6 @@
 # Archive Desk Demo Package
 
-Archive Desk is a refinement of the current Fanfic Finder visual system. It keeps the handmade, reader-first personality while making the product feel more intentional, scannable, and ready for repeated use.
+Archive Desk is a refinement of the current Semantic Archive visual system. It keeps the handmade, reader-first personality while making the product feel more intentional, scannable, and ready for repeated use.
 
 ## Route
 

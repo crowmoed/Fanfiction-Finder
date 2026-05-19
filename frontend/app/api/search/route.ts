@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
       await send({ type: 'done', totalMs: Date.now() - startTime });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Search failed';
-      console.error('[FicFinder Search]', message);
+      console.error('[SemanticArchive Search]', message);
       await send({ type: 'error', message });
     } finally {
       await writer.close();

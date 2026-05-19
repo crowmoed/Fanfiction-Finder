@@ -51,7 +51,7 @@ export default function SettingsPage() {
     <div className="min-h-screen paper-grid-bg">
       <header className="sticky top-0 z-40 h-14 flex items-center justify-between px-6 bg-bg-elevated border-b border-border-default shadow-sm">
         <Link href="/" className="font-serif text-2xl leading-none text-text-primary">
-          FanFiction Finder
+          Semantic Archive
         </Link>
         <Link
           href="/"

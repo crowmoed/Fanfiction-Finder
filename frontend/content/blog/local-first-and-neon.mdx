@@ -1,0 +1,30 @@
+---
+title: "Local-First Storage and the Neon Swap"
+date: "2026-04-15"
+tags: ["backend", "database", "architecture"]
+---
+
+# Local-First Storage and the Neon Swap
+
+There are two kinds of fanfic search developer: the one who runs Postgres in
+Docker and the one who has a parquet file on disk and a vague plan to "move it
+to a real database later." For a long time this project tried to be both.
+
+The local storage layer (`backend/db/local_storage.py`) reads from a parquet
+file built by the devtool. The Postgres layer (`backend/db/postgres.py`) talks
+to Neon. The swap tool in `fanfic-devtool/` lets you flip between them without
+restarting the API. That sounds elegant. In practice it meant every query had
+two implementations and every bug had to be reproduced twice.
+
+What made it worth keeping was the development loop. Neon is cheap but not
+free, and every query during a debugging session is a network round-trip you
+didn't need. With local-first you load the parquet into memory once, search
+returns in 30ms, and you can iterate on the ranker without your laptop fan
+spinning up.
+
+The compromise that finally worked: write all new query logic against an
+interface, not against a backend. Both `local_storage` and `postgres` expose
+the same handful of methods. The ranker doesn't care which is wired up. The
+swap tool exists for production parity testing, not as a runtime feature.
+
+The parquet file is gitignored now. I learned that lesson the expensive way.

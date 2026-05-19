@@ -1,0 +1,34 @@
+---
+title: "Scraping AO3 and FFN: A Tale of Two HTML Schemas"
+date: "2026-05-10"
+tags: ["backend", "scraping", "data"]
+---
+
+# Scraping AO3 and FFN: A Tale of Two HTML Schemas
+
+AO3's HTML is, against all odds, mostly clean. The work page has semantic
+class names. The metadata block is structured. You can write a CSS selector
+for "kudos count" and it will still work a year later. AO3 is also extremely
+serious about rate limits and will quietly start returning 429s if you breathe
+on it wrong.
+
+FFN's HTML is the kind of HTML that makes you wonder if the developer who
+wrote it is okay. Tables nested in tables. Inline styles. Class names that are
+clearly machine-generated. The chapter list is in a `<select>` element. The
+word count is in free-form text inside a `<span>` that contains six other
+unrelated facts separated by hyphens.
+
+The scrapers in `backend/scrapers/` ended up looking nothing alike. The AO3
+scraper is short and declarative. The FFN scraper is a careful sequence of
+regex-and-pray operations with a comment every few lines explaining what
+weirdness it's defending against.
+
+The thing nobody tells you about scraping fanfiction sites is that the
+metadata you actually care about - tags, ratings, completion status - is
+present on both platforms but means subtly different things. "Complete" on
+FFN is a yes/no flag. "Complete" on AO3 is whether the work is marked as a
+single finished piece, which is different from whether the author has updated
+recently, which is different from whether they ever will again.
+
+The ranker handles this by normalizing into a shared schema and tagging the
+source. Anything that depends on platform-specific semantics has to opt in.

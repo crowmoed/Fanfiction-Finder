@@ -30,7 +30,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'FanFiction Finder — A semantic search for fanfic readers',
+  title: 'Semantic Archive — A semantic search for fanfic readers',
   description: 'A small tool that helps you find fanfiction using plain English. Built by one person.',
 };
 

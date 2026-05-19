@@ -1,0 +1,33 @@
+---
+title: "Ambient UI: Gravity Grids and Rotating Cravings"
+date: "2026-05-18"
+tags: ["frontend", "design", "motion"]
+---
+
+# Ambient UI: Gravity Grids and Rotating Cravings
+
+The overhaul added a directory called `ambient/`. In it: a gravity grid
+background that reacts to the cursor, a smooth-scroll wrapper, and a marquee
+of fandom names that drifts across the hero section. None of these do
+anything. That is the point.
+
+A search product lives or dies on the first three seconds. Before the user
+types anything, before any result is fetched, they have already decided
+whether this is a serious tool or a class project. The way you signal serious
+without saying "serious" is motion that is restrained, layout that holds its
+shape, and small touches that imply somebody cared.
+
+The gravity grid is one canvas, one shader, sixty lines of code. It is also
+the difference between the homepage feeling alive and feeling like a form.
+The rotating cravings component cycles through what people search for - "slow
+burn enemies-to-lovers," "time travel fix-it," "no beta we die like men" -
+and it tells the visitor what the tool is for without a paragraph of
+explanation.
+
+The risk with ambient UI is that it turns into noise. The rule I ended up
+with: nothing should move once the user starts typing. The grid fades. The
+marquee pauses. The smooth scroll stops trying to be clever. Motion is for
+the empty state. Once the user is working, the page gets out of the way.
+
+The components are small enough to throw away if they stop earning their
+keep. None of them are load-bearing. That's deliberate.

@@ -17,8 +17,6 @@ import SearchHistory from '@/components/SearchHistory';
 import AuthButton from '@/components/AuthButton';
 import AccountBadge from '@/components/AccountBadge';
 import SettingsButton from '@/components/SettingsButton';
-import RateLimitBanner from '@/components/RateLimitBanner';
-import RateLimitBlock from '@/components/RateLimitBlock';
 import { HeroTitle } from '@/components/hero/HeroTitle';
 import { RotatingCravings } from '@/components/hero/RotatingCravings';
 import { StatsTicker } from '@/components/proof/StatsTicker';
@@ -203,10 +201,10 @@ export default function HomePage() {
         <button
           onClick={handleGoHome}
           className="flex items-baseline gap-2"
-          aria-label="FanFiction Finder home"
+          aria-label="Semantic Archive home"
         >
           <span className="font-display text-2xl italic leading-none" style={{ color: 'var(--text-primary)' }}>
-            Fanfic Finder
+            Semantic Archive
           </span>
           <span className="font-mono text-[10px]" style={{ color: 'var(--text-tertiary)' }}>v0.1</span>
           {appState !== 'empty' && (
@@ -356,55 +354,43 @@ export default function HomePage() {
             {isSearching && results.length === 0 && <ArchitectureBeam />}
 
             <div className="mx-auto px-4 py-6 sm:px-6" style={{ maxWidth: '1200px' }}>
-              {isLoggedIn && user?.tier === 'free' && (user?.searches_used ?? 0) >= 2 ? (
-                <RateLimitBlock onUpgrade={handleUpgrade} />
-              ) : (
+              {results.length > 0 && (
                 <>
-                  {isLoggedIn && user?.tier === 'free' && (user?.searches_used ?? 0) > 0 && (user?.searches_used ?? 0) < 2 && (
-                    <div className="mb-4">
-                      <RateLimitBanner searchesUsed={user?.searches_used ?? 0} searchesMax={2} onUpgrade={handleUpgrade} />
-                    </div>
+                  <div className="sticky top-16 z-20 mb-4 flex justify-end">
+                    <ViewToggle value={resultsView} onChange={setResultsView} />
+                  </div>
+
+                  {resultsView === 'bento' ? (
+                    <ResultsBento results={results} />
+                  ) : (
+                    <ResultsTable results={results} isRanked={isRanked} isMobile={isMobile} />
                   )}
 
-                  {results.length > 0 && (
-                    <>
-                      <div className="sticky top-16 z-20 mb-4 flex justify-end">
-                        <ViewToggle value={resultsView} onChange={setResultsView} />
-                      </div>
-
-                      {resultsView === 'bento' ? (
-                        <ResultsBento results={results} />
-                      ) : (
-                        <ResultsTable results={results} isRanked={isRanked} isMobile={isMobile} />
-                      )}
-
-                      {!isSearching && (
-                        <div className="mt-4">
-                          <ExportButton results={results} query={currentQuery} />
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {!isSearching && results.length === 0 && !error && (
-                    <div className="py-12 text-center">
-                      <p className="mb-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                        No results yet. The backend may still be processing.
-                      </p>
-                      <button
-                        onClick={() => {
-                          import('@/lib/mock-data').then(({ MOCK_RESULTS }) => {
-                            handleSearch(currentQuery, currentFandom, MOCK_RESULTS);
-                          });
-                        }}
-                        className="rounded-lg px-4 py-2 text-sm font-medium"
-                        style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
-                      >
-                        Load demo results
-                      </button>
+                  {!isSearching && (
+                    <div className="mt-4">
+                      <ExportButton results={results} query={currentQuery} />
                     </div>
                   )}
                 </>
+              )}
+
+              {!isSearching && results.length === 0 && !error && (
+                <div className="py-12 text-center">
+                  <p className="mb-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    No results yet. The backend may still be processing.
+                  </p>
+                  <button
+                    onClick={() => {
+                      import('@/lib/mock-data').then(({ MOCK_RESULTS }) => {
+                        handleSearch(currentQuery, currentFandom, MOCK_RESULTS);
+                      });
+                    }}
+                    className="rounded-lg px-4 py-2 text-sm font-medium"
+                    style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                  >
+                    Load demo results
+                  </button>
+                </div>
               )}
             </div>
           </div>

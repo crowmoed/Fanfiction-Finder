@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
 
-const TOKEN_KEY = 'ficfinder_token';
+const TOKEN_KEY = 'semantic_archive_token';
 
 export interface AuthUser {
   id: string;

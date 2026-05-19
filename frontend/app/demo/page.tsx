@@ -24,9 +24,9 @@ export default function DemoPage() {
           backdropFilter: 'blur(10px)',
         }}
       >
-        <Link href="/" className="flex items-baseline gap-2" aria-label="FanFiction Finder home">
+        <Link href="/" className="flex items-baseline gap-2" aria-label="Semantic Archive home">
           <span className="font-display text-2xl italic leading-none" style={{ color: 'var(--text-primary)' }}>
-            Fanfic Finder
+            Semantic Archive
           </span>
           <span className="font-mono text-[10px]" style={{ color: 'var(--text-tertiary)' }}>
             / demo

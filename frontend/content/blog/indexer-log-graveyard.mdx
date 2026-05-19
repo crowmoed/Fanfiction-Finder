@@ -1,0 +1,29 @@
+---
+title: "The Indexer Log Graveyard"
+date: "2026-04-24"
+tags: ["backend", "indexing", "ops"]
+---
+
+# The Indexer Log Graveyard
+
+I committed 47 indexer log files to git before I noticed. The biggest one was
+14,389 lines. The total deletion when I finally gitignored them was 93,446
+lines across 50 files.
+
+This is what happens when you write your indexer to log everything to a
+timestamped file in `backend/logs/`, run it dozens of times debugging a single
+issue, and never look at your `git status` carefully because the only thing
+that matters is whether the indexer finished without crashing.
+
+The cleanup commit is one of my favorites in the history. The diff is almost
+entirely red. The actual code change is two lines in `.gitignore` and a few
+real edits to `indexer.py`. Everything else is the graveyard.
+
+The lesson isn't "remember to gitignore logs." Everyone knows that. The lesson
+is that long-running scripts produce output, and output ends up somewhere, and
+if that somewhere is inside your repo you will eventually push 90k lines of
+"Scraping fic 4847291: title=..." to GitHub and your `git clone` will be
+mysteriously slow forever.
+
+Logs go in a directory that is gitignored on day one, before the first run.
+Not after.

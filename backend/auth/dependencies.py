@@ -32,14 +32,9 @@ def get_current_user(authorization: str = Header(None)) -> dict:
 
 
 def check_search_limit(user: dict = Depends(get_current_user)) -> dict:
-    """Enforce per-tier search limits.
+    """Search limits temporarily disabled during beta — everyone gets unlimited.
 
-    Free tier: 2 searches per week.
-    Paid tier: unlimited.
+    The counter still increments in api.py so tier/usage analytics remain accurate;
+    re-enable the gate by restoring the 429 raise below.
     """
-    if user["tier"] == "free" and user["searches_used"] >= 2:
-        raise HTTPException(
-            status_code=429,
-            detail="Free tier limit: 2 searches/week. Upgrade for unlimited searches.",
-        )
     return user

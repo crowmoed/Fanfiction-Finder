@@ -49,7 +49,7 @@ export async function exportResults(
 
   const slug = queryToSlug(query);
   const datePart = formatFilenameDate();
-  const filename = `ficfinder-${slug}-${datePart}.${format}`;
+  const filename = `semantic-archive-${slug}-${datePart}.${format}`;
 
   writeFile(wb, filename, { bookType: format === 'csv' ? 'csv' : 'xlsx' });
 }

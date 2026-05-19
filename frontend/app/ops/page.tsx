@@ -198,7 +198,7 @@ export default function OpsPage() {
       {/* Header */}
       <div className="border-b border-zinc-800 px-6 py-4 flex items-center justify-between">
         <div>
-          <span className="text-zinc-500 text-xs">ficfinder /</span>{' '}
+          <span className="text-zinc-500 text-xs">semantic-archive /</span>{' '}
           <span className="text-zinc-200 font-semibold">ops dashboard</span>
         </div>
         <div className="flex items-center gap-4 text-xs text-zinc-600">

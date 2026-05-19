@@ -13,13 +13,13 @@ export function usePersistedResultsView() {
   const [view, setViewState] = useState<ResultsView>('bento');
 
   useEffect(() => {
-    const saved = window.localStorage.getItem('ficfinder.resultsView');
+    const saved = window.localStorage.getItem('semanticArchive.resultsView');
     if (saved === 'bento' || saved === 'table') setViewState(saved);
   }, []);
 
   const setView = (next: ResultsView) => {
     setViewState(next);
-    window.localStorage.setItem('ficfinder.resultsView', next);
+    window.localStorage.setItem('semanticArchive.resultsView', next);
   };
 
   return [view, setView] as const;
