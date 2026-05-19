@@ -11,6 +11,12 @@ export class FicFinderDB extends Dexie {
     this.version(1).stores({
       searchHistory: '++id, prompt, fandom, timestamp',
     });
+    this.version(2).stores({
+      searchHistory: '++id, prompt, fandom, timestamp, pinned',
+    });
+    this.version(3).stores({
+      searchHistory: '++id, &shareId, prompt, fandom, timestamp',
+    });
   }
 }
 

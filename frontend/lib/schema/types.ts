@@ -39,6 +39,7 @@ export interface PipelineStatus {
 
 export interface SearchHistoryEntry {
   id?: number;
+  shareId?: string;
   prompt: string;
   fandom: string;
   parsedFilters: Record<string, unknown>;

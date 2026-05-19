@@ -6,7 +6,7 @@ import { formatRelativeTime } from '@/lib/utils/format';
 
 interface SearchHistoryProps {
   history: SearchHistoryEntry[];
-  onSearch: (prompt: string, fandom: string, cached?: FicResult[]) => void;
+  onSearch: (prompt: string, fandom: string, cached?: FicResult[], shareId?: string) => void;
   onClear: () => void;
   onClose: () => void;
 }
@@ -91,7 +91,7 @@ export default function SearchHistory({ history, onSearch, onClear, onClose }: S
                 <li key={entry.id}>
                   <button
                     onClick={() => {
-                      onSearch(entry.prompt, entry.fandom, entry.cachedResults);
+                      onSearch(entry.prompt, entry.fandom, entry.cachedResults, entry.shareId);
                       onClose();
                     }}
                     className="w-full text-left px-5 py-3.5 border-b transition-colors duration-150"

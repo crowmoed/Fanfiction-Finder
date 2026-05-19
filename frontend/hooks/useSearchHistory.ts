@@ -46,6 +46,16 @@ export function useSearchHistory() {
     }
   }, []);
 
+  const getByShareId = useCallback(async (shareId: string): Promise<SearchHistoryEntry | undefined> => {
+    try {
+      const { getDB } = await import('@/lib/storage/db');
+      const db = getDB();
+      return await db.searchHistory.where('shareId').equals(shareId).first();
+    } catch {
+      return undefined;
+    }
+  }, []);
+
   const getCachedEntry = useCallback(async (prompt: string, fandom: string): Promise<SearchHistoryEntry | undefined> => {
     try {
       const { getDB } = await import('@/lib/storage/db');
@@ -62,5 +72,5 @@ export function useSearchHistory() {
     }
   }, []);
 
-  return { history, isLoaded, addEntry, clearHistory, getCachedEntry };
+  return { history, isLoaded, addEntry, clearHistory, getCachedEntry, getByShareId };
 }

@@ -36,7 +36,7 @@ export default function HomePage() {
   const [resultsView, setResultsView] = usePersistedResultsView();
 
   const { search, results, isSearching, isRanked, error } = useSearch();
-  const { history, addEntry, clearHistory, getCachedEntry } = useSearchHistory();
+  const { history, addEntry, clearHistory, getCachedEntry, getByShareId } = useSearchHistory();
   const isMobile = useIsMobile();
   const { user, isLoggedIn, getAuthHeader } = useAuth();
 
@@ -48,6 +48,26 @@ export default function HomePage() {
     const query = params.get('q');
     if (query) setCurrentQuery(query);
   }, []);
+
+  const sharedRestoredRef = useRef(false);
+  useEffect(() => {
+    if (sharedRestoredRef.current) return;
+    if (!isLoggedIn) return;
+    const match = window.location.pathname.match(/^\/r\/([A-Za-z0-9]+)$/);
+    if (!match) return;
+    sharedRestoredRef.current = true;
+    const shareId = match[1];
+    (async () => {
+      const entry = await getByShareId(shareId);
+      if (entry && entry.cachedResults && entry.cachedResults.length > 0) {
+        handleSearch(entry.prompt, entry.fandom as Fandom, entry.cachedResults);
+      } else {
+        window.history.replaceState({}, '', '/');
+      }
+    })();
+    // handleSearch intentionally omitted
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, getByShareId]);
 
   useEffect(() => {
     if (isSearching) setAppState('loading');
@@ -67,6 +87,8 @@ export default function HomePage() {
       console.error('Upgrade error:', err);
     }
   };
+
+  const skipNextSaveRef = useRef(false);
 
   const handleSearch = useCallback(
     async (
@@ -91,6 +113,8 @@ export default function HomePage() {
         cachedResults = cached?.cachedResults;
       }
 
+      skipNextSaveRef.current = !!(cachedResults && cachedResults.length > 0);
+
       await search(prompt, nextFandom, cachedResults, getAuthHeader(), includeTags, excludeTags);
     },
     [getAuthHeader, getCachedEntry, isLoggedIn, search]
@@ -106,7 +130,13 @@ export default function HomePage() {
     const key = `${currentQuery}|${currentFandom}`;
     if (savedForQueryRef.current === key) return;
     savedForQueryRef.current = key;
+    if (skipNextSaveRef.current) {
+      skipNextSaveRef.current = false;
+      return;
+    }
+    const shareId = Math.random().toString(36).slice(2, 8);
     addEntry({
+      shareId,
       prompt: currentQuery,
       fandom: currentFandom,
       parsedFilters: {},
@@ -117,10 +147,12 @@ export default function HomePage() {
       timestamp: new Date(),
       cachedResults: results,
     });
+    window.history.replaceState({}, '', `/r/${shareId}`);
   }, [addEntry, currentFandom, currentQuery, isRanked, isSearching, results]);
 
   const handleHistorySearch = useCallback(
-    (prompt: string, fandom: string, cached?: FicResult[]) => {
+    (prompt: string, fandom: string, cached?: FicResult[], shareId?: string) => {
+      if (shareId) window.history.replaceState({}, '', `/r/${shareId}`);
       handleSearch(prompt, fandom as Fandom, cached);
     },
     [handleSearch]
@@ -370,3 +402,4 @@ export default function HomePage() {
     </div>
   );
 }
+
