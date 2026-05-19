@@ -1,4 +1,6 @@
-import Link from 'next/link';
+'use client';
+
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { FicResult } from '@/lib/schema/types';
 import { formatWordCount } from '@/lib/utils/format';
 
@@ -14,11 +16,26 @@ export function FicCard({ fic, rank }: FicCardProps) {
   const match = fic.matchScore == null ? null : Math.round(fic.matchScore);
   const kudos = fic.stats.kudos ?? fic.stats.favs;
 
+  const summaryRef = useRef<HTMLParagraphElement>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  useLayoutEffect(() => {
+    const el = summaryRef.current;
+    if (!el) return;
+    const check = () => setIsTruncated(el.scrollHeight > el.clientHeight + 1);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [fic.summary]);
+
   return (
-    <Link
-      href={`/fic/${fic.platform}/${encodeURIComponent(fic.id)}`}
+    <a
+      href={fic.url}
+      target="_blank"
+      rel="noopener noreferrer"
       className="group block h-full p-4 text-left"
-      aria-label={`Open ${fic.title}`}
+      aria-label={`Open ${fic.title} on ${fic.platform}`}
     >
       <article className="flex h-full flex-col">
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -29,7 +46,6 @@ export function FicCard({ fic, rank }: FicCardProps) {
         <h3 className="line-clamp-2 font-serif text-[22px] italic leading-tight group-hover:underline" style={{ color: 'var(--text-primary)', textUnderlineOffset: 3 }}>
           {fic.title}
         </h3>
-        <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>by {fic.author || 'Unknown Author'}</p>
 
         <div className="mt-4 flex flex-wrap gap-1.5">
           {shownTags.map((tag) => (
@@ -45,17 +61,19 @@ export function FicCard({ fic, rank }: FicCardProps) {
         </div>
 
         <div className="relative mt-4 flex-1 overflow-hidden">
-          <p className="line-clamp-3 text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>
+          <p ref={summaryRef} className="line-clamp-3 text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>
             {fic.summary || 'No summary available.'}
           </p>
-          <span className="mt-1 inline-block text-sm" style={{ color: 'var(--accent)' }}>read more →</span>
+          {isTruncated && (
+            <span className="mt-1 inline-block text-sm" style={{ color: 'var(--accent)' }}>read more →</span>
+          )}
         </div>
 
         <div className="mt-5 border-t border-dashed pt-3 font-mono text-[12px]" style={{ borderColor: 'var(--border-default)', color: 'var(--text-tertiary)' }}>
           {formatWordCount(fic.wordCount)} words · {kudos ? `${formatWordCount(kudos)} kudos · ` : ''}{fic.status === 'complete' ? 'complete' : 'in progress'}
         </div>
       </article>
-    </Link>
+    </a>
   );
 }
 
