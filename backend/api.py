@@ -138,7 +138,7 @@ def get_fandoms():
 
 @app.get("/search", response_model=list[Fic])
 async def search(
-    q: str = Query(..., description="Natural language search query"),
+    q: str = Query(..., max_length=1000, description="Natural language search query"),
     fandom: Optional[str] = Query(None, description="Fandom name from /fandoms"),
     limit: int = Query(20, ge=1, le=100, description="Number of results to return"),
     strict: bool = Query(False, description="Apply enhancer-extracted filters as hard SQL WHERE clauses (debug toggle)"),
