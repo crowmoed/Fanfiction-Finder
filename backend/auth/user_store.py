@@ -157,5 +157,27 @@ class UserStore:
         )
         return _item_to_dict(resp["Attributes"])
 
+    def mark_event_processed(self, event_id: str) -> bool:
+        """Record a Stripe event id exactly once, for webhook idempotency.
+
+        Stores a marker item keyed `stripe_event:<event_id>` via a conditional put
+        (attribute_not_exists). Returns True if THIS call recorded it (first time),
+        False if it was already present (a Stripe retry of an already-handled event).
+
+        Atomic at the single-item level: concurrent duplicate deliveries race on the
+        same conditional put, and exactly one wins.
+        """
+        now = datetime.now(timezone.utc).isoformat()
+        try:
+            self._table.put_item(
+                Item={"id": f"stripe_event:{event_id}", "processed_at": now},
+                ConditionExpression="attribute_not_exists(id)",
+            )
+            return True
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                return False
+            raise
+
 
 user_store = UserStore()

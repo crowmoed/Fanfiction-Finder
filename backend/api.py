@@ -96,9 +96,15 @@ async def stripe_webhook(request: Request):
     try:
         handle_webhook(payload, sig_header)
     except ValueError:
+        # Malformed payload — Stripe should not retry an unparseable body.
         raise HTTPException(status_code=400, detail="Invalid payload")
-    except Exception:
+    except stripe.error.SignatureVerificationError:
+        # Bad/forged signature — reject; no side effects ran.
         raise HTTPException(status_code=400, detail="Invalid signature")
+    except Exception:
+        # Signature was valid but processing failed (e.g. transient DynamoDB error).
+        # Return 500 so Stripe retries; the idempotency guard makes the retry safe.
+        raise HTTPException(status_code=500, detail="Webhook processing error")
     return {"status": "ok"}
 
 

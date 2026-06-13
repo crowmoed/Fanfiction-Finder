@@ -67,6 +67,13 @@ def handle_webhook(payload: bytes, sig_header: str) -> None:
     """
     event = stripe.Webhook.construct_event(payload, sig_header, WEBHOOK_SECRET)
 
+    # Idempotency: Stripe retries deliveries for up to 72h. Record the event id once
+    # (conditional write); if it was already processed, this is a retry — no-op.
+    # Recorded only after signature verification so unverified events can't poison
+    # the dedupe table.
+    if not user_store.mark_event_processed(event["id"]):
+        return
+
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
         user_id = session["client_reference_id"]
