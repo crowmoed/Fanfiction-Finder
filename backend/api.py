@@ -27,7 +27,17 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="FicFinder API", lifespan=lifespan)
+# Interactive API docs (/docs, /redoc, /openapi.json) are disabled by default so the
+# full schema isn't exposed in production. Set ENABLE_DOCS=1 to turn them back on
+# (e.g. in a staging environment).
+_DOCS_ENABLED = os.environ.get("ENABLE_DOCS", "") == "1"
+app = FastAPI(
+    title="FicFinder API",
+    lifespan=lifespan,
+    docs_url="/docs" if _DOCS_ENABLED else None,
+    redoc_url="/redoc" if _DOCS_ENABLED else None,
+    openapi_url="/openapi.json" if _DOCS_ENABLED else None,
+)
 
 app.add_middleware(
     CORSMiddleware,
