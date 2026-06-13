@@ -1,6 +1,7 @@
 import os
 import json
 import boto3
+from botocore.config import Config
 from typing import Optional
 from concurrent.futures import ThreadPoolExecutor
 import sys
@@ -8,7 +9,13 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data.schema import Fic
 
-bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
+# Explicit timeouts + bounded botocore retries (see query_enhancer for rationale).
+_BEDROCK_CONFIG = Config(
+    connect_timeout=10,
+    read_timeout=60,
+    retries={"max_attempts": 2, "mode": "standard"},
+)
+bedrock = boto3.client("bedrock-runtime", region_name="us-east-1", config=_BEDROCK_CONFIG)
 
 CHUNK_SIZE = 200
 

@@ -15,10 +15,18 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 
 TABLE_NAME = os.environ.get("USERS_TABLE", "ficfinder-users")
 REGION = "us-east-1"
+
+# Explicit timeouts so a DynamoDB hiccup can't hang an authed request indefinitely.
+_DDB_CONFIG = Config(
+    connect_timeout=5,
+    read_timeout=10,
+    retries={"max_attempts": 3, "mode": "standard"},
+)
 
 
 def _monday_of_current_week() -> str:
@@ -35,7 +43,7 @@ def _item_to_dict(item: dict) -> dict:
 
 class UserStore:
     def __init__(self):
-        self._resource = boto3.resource("dynamodb", region_name=REGION)
+        self._resource = boto3.resource("dynamodb", region_name=REGION, config=_DDB_CONFIG)
         self._table = self._resource.Table(TABLE_NAME)
 
     def get_user(self, user_id: str) -> dict | None:

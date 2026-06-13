@@ -19,7 +19,12 @@ from tenacity import (
 
 logger = logging.getLogger(__name__)
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# Explicit 30s request timeout (genai expresses timeout in milliseconds) so a hung
+# embedding call can't block a search indefinitely.
+client = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY"),
+    http_options=types.HttpOptions(timeout=30_000),
+)
 EMBEDDING_MODEL = "gemini-embedding-001"
 EMBEDDING_DIMS = 768  
 

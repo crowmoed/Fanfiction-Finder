@@ -17,6 +17,13 @@ engine = create_engine(
     pool_recycle=300,      # recycle connections every 5 minutes
     pool_size=5,
     max_overflow=2,
+    connect_args={
+        # Cap how long we wait to establish a connection, and kill any single
+        # statement that runs longer than 30s server-side so a runaway query
+        # can't pin a pooled connection forever.
+        "connect_timeout": 10,
+        "options": "-c statement_timeout=30000",
+    },
 )
 
 EMBEDDING_DIMS = 768  # Must match embedder.py

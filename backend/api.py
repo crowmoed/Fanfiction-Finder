@@ -1,7 +1,12 @@
 import os
+import json
+import logging
+import time
+import uuid
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query, HTTPException, Depends, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 import numpy as np
@@ -46,6 +51,84 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ── Structured logging + request correlation ──────────────────────
+# One JSON line per request with a correlation id, status, and latency. The same
+# request id is attached to error logs and returned in the X-Request-ID header so a
+# client-visible error can be traced to a server log line without leaking internals.
+
+logger = logging.getLogger("ficfinder")
+if not logger.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(message)s"))
+    logger.addHandler(_handler)
+    logger.setLevel(logging.INFO)
+
+
+def _log(event: str, **fields) -> None:
+    logger.info(json.dumps({"event": event, **fields}))
+
+
+@app.middleware("http")
+async def request_context(request: Request, call_next):
+    request_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex
+    request.state.request_id = request_id
+    start = time.perf_counter()
+    try:
+        response = await call_next(request)
+    except Exception:
+        # Unhandled error past the route — logged by the exception handler below;
+        # re-raise so Starlette routes it there.
+        raise
+    elapsed_ms = round((time.perf_counter() - start) * 1000, 1)
+    _log(
+        "request",
+        request_id=request_id,
+        method=request.method,
+        path=request.url.path,
+        status=response.status_code,
+        latency_ms=elapsed_ms,
+    )
+    response.headers["X-Request-ID"] = request_id
+    return response
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    request_id = getattr(request.state, "request_id", None)
+    # Log 401/403 (auth failures) and other HTTP errors with the request id.
+    _log(
+        "http_error",
+        request_id=request_id,
+        path=request.url.path,
+        status=exc.status_code,
+        detail=str(exc.detail),
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail, "request_id": request_id},
+        headers={"X-Request-ID": request_id} if request_id else None,
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    request_id = getattr(request.state, "request_id", None)
+    # Record the real error server-side; return a generic message so no traceback or
+    # internal detail reaches the client.
+    _log(
+        "unhandled_error",
+        request_id=request_id,
+        path=request.url.path,
+        error_type=type(exc).__name__,
+        error=str(exc),
+    )
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error", "request_id": request_id},
+        headers={"X-Request-ID": request_id} if request_id else None,
+    )
 
 
 # ── Request models ────────────────────────────────────────────────

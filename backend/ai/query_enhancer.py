@@ -15,12 +15,21 @@ import json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import boto3
+from botocore.config import Config
 from pydantic import BaseModel
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 # ── Client setup ──────────────────────────────────────────────────────────────
 
-bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
+# Explicit timeouts so a hung Bedrock call can't block a worker indefinitely.
+# retries.max_attempts=2 caps botocore's own retry layer so it doesn't multiply with
+# the tenacity retries below (which would amplify per-request cost).
+_BEDROCK_CONFIG = Config(
+    connect_timeout=10,
+    read_timeout=60,
+    retries={"max_attempts": 2, "mode": "standard"},
+)
+bedrock = boto3.client("bedrock-runtime", region_name="us-east-1", config=_BEDROCK_CONFIG)
 HAIKU_MODEL = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
 
 

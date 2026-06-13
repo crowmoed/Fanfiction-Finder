@@ -22,6 +22,9 @@ from auth.user_store import user_store
 VERIFY_CACHE_SECONDS = 300
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
+# Bound Stripe SDK network retries so a flaky connection can't retry unboundedly.
+# (The SDK's per-request timeout default of ~80s still applies.)
+stripe.max_network_retries = 2
 
 WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 PRICE_ID = os.environ.get("STRIPE_PRICE_ID", "")
