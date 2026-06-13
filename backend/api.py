@@ -1,5 +1,6 @@
+import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Query, HTTPException, Depends, Request
+from fastapi import FastAPI, Query, HTTPException, Depends, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
@@ -227,8 +228,28 @@ def health():
     return {"status": "ok"}
 
 
+# Shared-secret gate for the internal admin/ops surface. Optional by design so the
+# ops dashboard keeps working until an operator opts in: when ADMIN_API_TOKEN is set,
+# /admin/* requires a matching X-Admin-Token header; when unset, access is unchanged.
+ADMIN_API_TOKEN = os.environ.get("ADMIN_API_TOKEN", "")
+
+
+def require_admin(x_admin_token: str = Header(None)) -> None:
+    """Authorize an admin request when ADMIN_API_TOKEN is configured.
+
+    No-op if ADMIN_API_TOKEN is unset (preserves prior open behavior). When set,
+    requires the X-Admin-Token header to match exactly, else 403.
+    """
+    if not ADMIN_API_TOKEN:
+        return
+    import hmac
+
+    if not x_admin_token or not hmac.compare_digest(x_admin_token, ADMIN_API_TOKEN):
+        raise HTTPException(status_code=403, detail="Admin authorization required")
+
+
 @app.get("/admin/stats")
-def admin_stats():
+def admin_stats(_: None = Depends(require_admin)):
     """Internal endpoint — per-fandom DB stats for the ops dashboard."""
     stats = get_admin_stats()
     stats["supported_fandoms"] = list(FANDOMS.keys())
