@@ -36,7 +36,7 @@ export default function HomePage() {
   const { search, results, isSearching, isRanked, error, reset } = useSearch();
   const { history, addEntry, clearHistory, getCachedEntry, getByShareId } = useSearchHistory();
   const isMobile = useIsMobile();
-  const { user, isLoggedIn, getAuthHeader } = useAuth();
+  const { user, isLoggedIn, getAuthHeader, logout } = useAuth();
 
   const sharedRestoredRef = useRef(false);
   const skipUrlPushRef = useRef(false);
@@ -141,9 +141,9 @@ export default function HomePage() {
 
       skipNextSaveRef.current = !!(cachedResults && cachedResults.length > 0);
 
-      await search(prompt, nextFandom, cachedResults, getAuthHeader(), includeTags, excludeTags);
+      await search(prompt, nextFandom, cachedResults, getAuthHeader(), includeTags, excludeTags, logout);
     },
-    [getAuthHeader, getCachedEntry, isLoggedIn, search]
+    [getAuthHeader, getCachedEntry, isLoggedIn, search, logout]
   );
 
   const savedForQueryRef = useRef<string | null>(null);

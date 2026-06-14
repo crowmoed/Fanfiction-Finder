@@ -40,6 +40,7 @@ export function useSearch() {
     authHeaders?: Record<string, string>,
     includeTags: string[] = [],
     excludeTags: string[] = [],
+    onUnauthorized?: () => void,
   ) => {
     // Abort any in-progress search
     abortRef.current?.abort();
@@ -78,7 +79,10 @@ export function useSearch() {
       });
 
       if (response.status === 401) {
-        setError('Please sign in to search.');
+        // Session is dead (expired/invalid JWT) — clear the stale auth state so
+        // the UI stops showing the user as logged in, then prompt a re-sign-in.
+        onUnauthorized?.();
+        setError('Your session expired. Please sign in again.');
         setIsSearching(false);
         return;
       }
