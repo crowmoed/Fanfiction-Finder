@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import SettingsContent from './SettingsContent';
 
 interface SettingsModalProps {
@@ -30,7 +31,15 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     };
   }, []);
 
-  return (
+  // The modal only ever mounts after a client-side click (SettingsButton keeps
+  // it unrendered until then), so there's no SSR pass to guard against here —
+  // but stay defensive in case it's ever rendered server-side.
+  if (typeof document === 'undefined') return null;
+
+  // Portal to document.body so the dialog escapes the header's sticky/blur
+  // stacking context (and the layout's `relative z-10` wrapper) and overlays
+  // the whole viewport.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6"
       onClick={onClose}
@@ -82,6 +91,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
           <SettingsContent onSignOut={onClose} />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
