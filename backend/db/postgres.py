@@ -11,12 +11,22 @@ import config
 from data.schema import Fic
 
 Base = declarative_base()
+# Connection pool size. Defaults give 15 + 5 overflow = 20 max connections, which
+# comfortably handles concurrent /search traffic now that requests no longer serialize
+# (each search only holds a connection for its brief DB step). Tunable via env so you
+# can raise it for a traffic spike without a code change — but keep
+# (DB_POOL_SIZE + DB_MAX_OVERFLOW) * <number_of_App_Runner_instances> under the Neon
+# pooler's connection ceiling.
+DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "15"))
+DB_MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", "5"))
+
 engine = create_engine(
     os.getenv("DATABASE_URL"),
     pool_pre_ping=True,    # test connection before using it
     pool_recycle=300,      # recycle connections every 5 minutes
-    pool_size=5,
-    max_overflow=2,
+    pool_size=DB_POOL_SIZE,
+    max_overflow=DB_MAX_OVERFLOW,
+    pool_timeout=10,       # wait up to 10s for a free connection, then error (don't hang)
     connect_args={
         # Cap how long we wait to establish a connection, and kill any single
         # statement that runs longer than 30s server-side so a runaway query
