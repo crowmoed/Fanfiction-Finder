@@ -1,9 +1,19 @@
 import os
+import sys
 import json
 import logging
 import time
 import uuid
 from contextlib import asynccontextmanager
+
+# Force UTF-8 on stdout/stderr so the diagnostic print()s (which contain box-drawing
+# and arrow characters) don't crash a request with UnicodeEncodeError on a non-UTF-8
+# console (e.g. Windows cp1252 in local dev). No-op where stdout is already UTF-8.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 from fastapi import FastAPI, Query, HTTPException, Depends, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
