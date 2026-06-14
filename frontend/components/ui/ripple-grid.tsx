@@ -110,8 +110,8 @@ export default function RippleGrid({
     const draw = () => {
       const mouse = mouseRef.current;
       mouse.influence += ((mouse.influence > 0 ? 1 : 0) - mouse.influence) * 0.08;
-      mouse.x += (mouse.targetX - mouse.x) * 0.07;
-      mouse.y += (mouse.targetY - mouse.y) * 0.07;
+      mouse.x = mouse.targetX;
+      mouse.y = mouse.targetY;
 
       ctx.clearRect(0, 0, width, height);
       ctx.globalAlpha = opacity;

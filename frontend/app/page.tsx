@@ -15,7 +15,6 @@ import { ViewToggle, usePersistedResultsView } from '@/components/results/ViewTo
 import ExportButton from '@/components/ExportButton';
 import SearchHistory from '@/components/SearchHistory';
 import AuthButton from '@/components/AuthButton';
-import AccountBadge from '@/components/AccountBadge';
 import SettingsButton from '@/components/SettingsButton';
 import { HeroTitle } from '@/components/hero/HeroTitle';
 import { RotatingCravings } from '@/components/hero/RotatingCravings';
@@ -36,7 +35,7 @@ export default function HomePage() {
   const { search, results, isSearching, isRanked, error, reset } = useSearch();
   const { history, addEntry, clearHistory, getCachedEntry, getByShareId } = useSearchHistory();
   const isMobile = useIsMobile();
-  const { user, isLoggedIn, getAuthHeader, logout } = useAuth();
+  const { isLoggedIn, getAuthHeader, logout } = useAuth();
 
   const sharedRestoredRef = useRef(false);
   const skipUrlPushRef = useRef(false);
@@ -99,20 +98,6 @@ export default function HomePage() {
     if (isSearching) setAppState('loading');
     else if (results.length > 0) setAppState('results');
   }, [isSearching, results.length]);
-
-  const handleUpgrade = async () => {
-    try {
-      const res = await fetch('/api/auth/checkout', {
-        method: 'POST',
-        headers: getAuthHeader(),
-      });
-      if (!res.ok) throw new Error('Checkout failed');
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch (err) {
-      console.error('Upgrade error:', err);
-    }
-  };
 
   const skipNextSaveRef = useRef(false);
 
@@ -230,14 +215,6 @@ export default function HomePage() {
           <Link href="/blog" className="hidden font-mono text-xs sm:inline" style={{ color: 'var(--text-secondary)' }}>
             /blog
           </Link>
-          {isLoggedIn && (
-            <AccountBadge
-              tier={user?.tier === 'paid' ? 'paid' : 'free'}
-              searchesUsed={user?.searches_used ?? 0}
-              searchesMax={2}
-              onUpgrade={handleUpgrade}
-            />
-          )}
           <AuthButton />
           {isLoggedIn && <SettingsButton />}
           <button
