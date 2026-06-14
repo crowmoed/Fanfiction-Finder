@@ -344,3 +344,82 @@ def test_ops2_auth_failure_returns_request_id(client):
     assert r.status_code in (400, 401, 422)
     if r.headers.get("content-type", "").startswith("application/json"):
         assert "request_id" in r.json()
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# CONCURRENCY — heavy routes must not block the event loop
+#   (/search does blocking Bedrock/Gemini/DB calls; if it were `async def` a single
+#    in-flight search would freeze the worker and serialize all other requests.)
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+def _endpoint_for(app, path):
+    for r in app.routes:
+        if getattr(r, "path", None) == path:
+            return r.endpoint
+    raise AssertionError(f"route {path} not found")
+
+
+def test_concurrency_search_route_is_sync_def():
+    """A sync route is run in FastAPI's threadpool; an async route with blocking
+    calls would freeze the event loop. /search must stay sync."""
+    import asyncio
+    import api
+
+    importlib.reload(api)
+    fn = _endpoint_for(api.app, "/search")
+    assert not asyncio.iscoroutinefunction(fn), (
+        "/search must be a plain `def` so its blocking calls run in a threadpool"
+    )
+
+
+def test_concurrency_webhook_offloads_blocking_work():
+    """/webhooks/stripe must stay async (needs `await request.body()`) but offload
+    the blocking handle_webhook via run_in_threadpool."""
+    import inspect
+    import api
+
+    importlib.reload(api)
+    src = inspect.getsource(api.stripe_webhook)
+    assert "run_in_threadpool(handle_webhook" in src, (
+        "stripe webhook must offload blocking handle_webhook to a thread"
+    )
+
+
+def test_concurrency_slow_sync_route_does_not_block_health(client):
+    """Behavioral: a slow SYNC route runs in the threadpool, so /health stays
+    responsive while it's in flight (the event loop is not frozen)."""
+    import threading
+    import time
+
+    import api
+
+    holding = threading.Event()
+    release = threading.Event()
+
+    @api.app.get("/_slow_probe_test")
+    def _slow():
+        holding.set()
+        release.wait(timeout=5)
+        return {"ok": True}
+
+    results = {}
+
+    def call_slow():
+        results["slow"] = client.get("/_slow_probe_test").status_code
+
+    t = threading.Thread(target=call_slow)
+    t.start()
+    assert holding.wait(timeout=3), "slow route never started"
+
+    # While the slow route is parked, /health must still return promptly.
+    start = time.perf_counter()
+    r = client.get("/health")
+    elapsed = time.perf_counter() - start
+
+    release.set()
+    t.join(timeout=5)
+
+    assert r.status_code == 200
+    assert elapsed < 1.0, f"/health blocked for {elapsed:.2f}s — event loop frozen"
+    assert results.get("slow") == 200

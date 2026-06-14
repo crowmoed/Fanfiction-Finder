@@ -17,6 +17,7 @@ for _stream in (sys.stdout, sys.stderr):
 from fastapi import FastAPI, Query, HTTPException, Depends, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel
 from typing import Optional
 import numpy as np
@@ -197,7 +198,11 @@ async def stripe_webhook(request: Request):
     payload = await request.body()
     sig_header = request.headers.get("Stripe-Signature", "")
     try:
-        handle_webhook(payload, sig_header)
+        # handle_webhook is blocking (Stripe SDK + DynamoDB writes, plus a table
+        # scan on subscription.deleted). This route must stay async for
+        # `await request.body()`, so offload the blocking work to a thread rather
+        # than running it on the event loop and freezing concurrent requests.
+        await run_in_threadpool(handle_webhook, payload, sig_header)
     except ValueError:
         # Malformed payload — Stripe should not retry an unparseable body.
         raise HTTPException(status_code=400, detail="Invalid payload")
@@ -246,7 +251,13 @@ def get_fandoms():
 
 
 @app.get("/search", response_model=list[Fic])
-async def search(
+def search(
+    # NOTE: intentionally a plain `def`, not `async def`. Every step below
+    # (enhance_query, embed_query, search_rrf, rank, increment_searches) is a
+    # *blocking* call. In an async route those would freeze the event loop, so a
+    # single in-flight search would block every other request on the worker
+    # (even /health). As a sync route, FastAPI runs it in a threadpool, so
+    # searches from different clients run concurrently.
     q: str = Query(..., max_length=1000, description="Natural language search query"),
     fandom: Optional[str] = Query(None, description="Fandom name from /fandoms"),
     limit: int = Query(20, ge=1, le=100, description="Number of results to return"),
