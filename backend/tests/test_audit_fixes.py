@@ -423,3 +423,68 @@ def test_concurrency_slow_sync_route_does_not_block_health(client):
     assert r.status_code == 200
     assert elapsed < 1.0, f"/health blocked for {elapsed:.2f}s — event loop frozen"
     assert results.get("slow") == 200
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ANALYTICS — durable per-search event recording
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+def test_analytics_record_search_event_writes_expected_shape(monkeypatch, fake_table):
+    import auth.user_store as US
+
+    importlib.reload(US)
+    US.user_store._table = fake_table
+
+    US.user_store.record_search_event(
+        "user-1",
+        fandom="Harry Potter",
+        tier="paid",
+        strict=True,
+        candidates=207,
+        returned=100,
+        latency_ms=1234.5,
+    )
+
+    items = list(fake_table.items.values())
+    assert len(items) == 1, "exactly one event item written"
+    ev = items[0]
+    assert ev["id"].startswith("search_event:")
+    assert ev["user_id"] == "user-1"
+    assert ev["fandom"] == "Harry Potter"
+    assert ev["tier"] == "paid"
+    assert ev["strict"] is True
+    assert ev["candidates"] == 207
+    assert ev["returned"] == 100
+    assert ev["day"] == ev["event_ts"][:10]  # YYYY-MM-DD grouping key
+    assert "latency_ms" in ev
+
+
+def test_analytics_record_search_event_defaults_fandom(fake_table):
+    import auth.user_store as US
+
+    importlib.reload(US)
+    US.user_store._table = fake_table
+    US.user_store.record_search_event(
+        "u2", fandom=None, tier=None, strict=False, candidates=0, returned=0
+    )
+    ev = next(iter(fake_table.items.values()))
+    assert ev["fandom"] == "All Fandoms"  # None -> human-readable default
+    assert ev["tier"] == "free"
+
+
+def test_analytics_record_search_event_is_best_effort(monkeypatch):
+    """A failing analytics write must never raise into the request path."""
+    import auth.user_store as US
+
+    importlib.reload(US)
+
+    class BoomTable:
+        def put_item(self, **kw):
+            raise RuntimeError("dynamo down")
+
+    US.user_store._table = BoomTable()
+    # Must NOT raise.
+    US.user_store.record_search_event(
+        "u3", fandom="X", tier="free", strict=False, candidates=1, returned=1
+    )

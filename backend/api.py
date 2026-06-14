@@ -4,6 +4,7 @@ import json
 import logging
 import time
 import uuid
+from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
 # Force UTF-8 on stdout/stderr so the diagnostic print()s (which contain box-drawing
@@ -158,6 +159,20 @@ def login(body: LoginRequest):
     email = payload.get("email", "")
     user = user_store.upsert_user(sub, email)
     token = create_jwt(sub, email)
+
+    # Analytics: distinguish a brand-new signup from a returning login by how
+    # recently the record was created (upsert_user is create-if-absent). Lets
+    # CloudWatch report signups-over-time and DAU without storing anything new.
+    is_new_signup = False
+    try:
+        created = user.get("created_at")
+        if created:
+            age = (datetime.now(timezone.utc) - datetime.fromisoformat(created)).total_seconds()
+            is_new_signup = age < 10
+    except (ValueError, TypeError):
+        pass
+    _log("login", user_id=sub, tier=user.get("tier"), new_signup=is_new_signup)
+
     return {"token": token, "user": user}
 
 
@@ -264,6 +279,7 @@ def search(
     strict: bool = Query(False, description="Apply enhancer-extracted filters as hard SQL WHERE clauses (debug toggle)"),
     user: dict = Depends(check_search_limit),
 ):
+    _t0 = time.perf_counter()
     if not fandom:
         raise HTTPException(status_code=400, detail="Fandom is required.")
     is_all_fandoms = fandom == ALL_FANDOMS
@@ -339,6 +355,33 @@ def search(
 
     # Increment search count only after a successful search
     user_store.increment_searches(user["id"])
+
+    # ── Analytics ──────────────────────────────────────────────────
+    # Two sinks, both best-effort: (1) a structured log line → CloudWatch (free,
+    # queryable via Logs Insights, retroactive); (2) a durable DynamoDB event so
+    # the history survives the weekly searches_used reset and powers time-series
+    # metrics (searches/day, unique users, per-fandom volume, free-vs-paid).
+    latency_ms = round((time.perf_counter() - _t0) * 1000, 1)
+    _log(
+        "search",
+        user_id=user["id"],
+        tier=user.get("tier"),
+        fandom=fandom,
+        all_fandoms=is_all_fandoms,
+        strict=strict,
+        candidates=len(candidates),
+        returned=len(results),
+        latency_ms=latency_ms,
+    )
+    user_store.record_search_event(
+        user["id"],
+        fandom=search_fandom,
+        tier=user.get("tier"),
+        strict=strict,
+        candidates=len(candidates),
+        returned=len(results),
+        latency_ms=latency_ms,
+    )
 
     return results
 

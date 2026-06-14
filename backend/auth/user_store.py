@@ -11,6 +11,7 @@ permissions on the users table:
 """
 
 import os
+import uuid
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
@@ -186,6 +187,48 @@ class UserStore:
             if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
                 return False
             raise
+
+    def record_search_event(
+        self,
+        user_id: str,
+        *,
+        fandom: str | None,
+        tier: str | None,
+        strict: bool,
+        candidates: int,
+        returned: int,
+        latency_ms: float | None = None,
+    ) -> None:
+        """Append a durable, time-stamped record of one search for analytics.
+
+        Stored as a separate item keyed `search_event:<iso-ts>:<uuid>` so search
+        history survives the weekly reset of `searches_used` (which is only a
+        rate-limit counter). Enables time-series metrics — searches/day, unique
+        users, per-fandom volume, free-vs-paid usage — via a single table scan or
+        export, without storing the raw query text (privacy + not needed for counts).
+
+        Best-effort: never raises. Analytics must not break a search.
+        """
+        ts = datetime.now(timezone.utc).isoformat()
+        try:
+            item = {
+                "id": f"search_event:{ts}:{uuid.uuid4().hex}",
+                "event_ts": ts,
+                "day": ts[:10],          # YYYY-MM-DD, handy for grouping
+                "user_id": user_id,
+                "fandom": fandom or "All Fandoms",
+                "tier": tier or "free",
+                "strict": strict,
+                "candidates": candidates,
+                "returned": returned,
+            }
+            if latency_ms is not None:
+                # DynamoDB has no float type — store as Decimal.
+                item["latency_ms"] = Decimal(str(round(latency_ms, 1)))
+            self._table.put_item(Item=item)
+        except Exception:
+            # Swallow everything — a failed analytics write must not affect the user.
+            pass
 
 
 user_store = UserStore()
