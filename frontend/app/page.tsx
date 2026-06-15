@@ -21,7 +21,7 @@ import { RotatingCravings } from '@/components/hero/RotatingCravings';
 import { StatsTicker } from '@/components/proof/StatsTicker';
 import { FandomMarquee } from '@/components/proof/FandomMarquee';
 import { ArchitectureBeam } from '@/components/loading/ArchitectureBeam';
-import { HangingCupSign, TeahouseCanopy } from '@/components/ambient/TeahouseDecor';
+import { TeahouseCanopy, HangingCupSign } from '@/components/ambient/TeahouseDecor';
 
 type AppState = 'empty' | 'loading' | 'results';
 

@@ -293,25 +293,6 @@ button, a, select, input {
   100% { background-position: -100% 0; }
 }
 
-/* Paper-lantern flicker — gentle warm pulse, like a candle behind paper. */
-@keyframes lanternFlicker {
-  0%, 100% { opacity: 0.85; transform: translate(-50%, -25%) scale(1); }
-  45%      { opacity: 1;    transform: translate(-50%, -25%) scale(1.05); }
-  70%      { opacity: 0.78; transform: translate(-50%, -25%) scale(0.97); }
-}
-
-/* Lantern sway — hung from a cord, rocks slightly side to side. */
-@keyframes lanternSway {
-  0%, 100% { transform: rotate(-2.5deg); }
-  50%      { transform: rotate(2.5deg); }
-}
-
-/* Tassel sway — the threads trail behind the lantern's motion. */
-@keyframes tasselSway {
-  0%, 100% { transform: rotate(3deg); }
-  50%      { transform: rotate(-3deg); }
-}
-
 /* ---- Tea-house chalkboard sandwich sign ------------------------- */
 .chalkboard {
   background-color: #20271C;
