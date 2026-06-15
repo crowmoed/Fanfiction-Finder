@@ -21,6 +21,7 @@ import { RotatingCravings } from '@/components/hero/RotatingCravings';
 import { StatsTicker } from '@/components/proof/StatsTicker';
 import { FandomMarquee } from '@/components/proof/FandomMarquee';
 import { ArchitectureBeam } from '@/components/loading/ArchitectureBeam';
+import { HangingCupSign, TeahouseCanopy } from '@/components/ambient/TeahouseDecor';
 
 type AppState = 'empty' | 'loading' | 'results';
 
@@ -175,12 +176,15 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen paper-grid-bg">
+      {appState === 'empty' && <TeahouseCanopy />}
       <header
         className="sticky top-0 z-40 flex h-14 items-center justify-between px-4 sm:px-6"
         style={{
-          backgroundColor: 'rgba(244, 240, 223, 0.92)',
+          backgroundColor: 'rgba(235, 230, 207, 0.92)',
           borderBottom: '1.5px solid var(--border-ink)',
           backdropFilter: 'blur(10px)',
+          backgroundImage:
+            'repeating-linear-gradient(90deg, rgba(90, 67, 38, 0.10) 0 2px, transparent 2px 22px)',
         }}
       >
         <button
@@ -191,6 +195,7 @@ export default function HomePage() {
           <span className="font-display text-2xl italic leading-none" style={{ color: 'var(--text-primary)' }}>
             Semantic Archive
           </span>
+          <HangingCupSign />
           <span className="font-mono text-[10px]" style={{ color: 'var(--text-tertiary)' }}>v0.1</span>
           {appState !== 'empty' && (
             <span className="ml-2 hidden font-mono text-xs sm:inline" style={{ color: 'var(--text-tertiary)' }}>
@@ -244,7 +249,7 @@ export default function HomePage() {
                   border: '1.5px solid var(--text-primary)',
                 }}
               >
-                made by one person / still rough
+brewed by one person / still steeping
               </div>
               <HeroTitle />
               <div className="mt-4">
@@ -252,7 +257,7 @@ export default function HomePage() {
               </div>
             </section>
 
-            <section className="w-full max-w-content">
+            <section className="relative w-full max-w-content">
               <PromptSearchBar
                 onSearch={handleSearch}
                 isSearching={isSearching}
@@ -261,7 +266,7 @@ export default function HomePage() {
               />
 
               {authPrompt && (
-                <div className="mt-4 rounded-lg px-4 py-3 text-center text-sm" style={{ backgroundColor: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A' }}>
+                <div className="mt-4 rounded-lg px-4 py-3 text-center text-sm" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent-hover)', border: '1px solid var(--accent)' }}>
                   Please sign in with Google to search.
                 </div>
               )}
@@ -272,20 +277,19 @@ export default function HomePage() {
               <FandomMarquee />
 
               {history.length > 0 && (
-                <div className="mt-8">
-                  <p className="mb-3 font-mono text-xs uppercase tracking-wider" style={{ color: 'var(--text-tertiary)' }}>
-                    - recent searches
-                  </p>
+                <div className="chalkboard mx-auto mt-10 max-w-md px-6 py-5" style={{ transform: 'rotate(-0.6deg)' }}>
+                  <p className="chalk-heading mb-1 text-center text-2xl italic">Today&apos;s usuals</p>
+                  <hr className="chalk-rule mb-3" />
                   <div className="flex flex-col gap-1">
                     {history.slice(0, 5).map((entry) => (
                       <button
                         key={entry.id}
                         onClick={() => handleHistorySearch(entry.prompt, entry.fandom, entry.cachedResults, entry.shareId)}
-                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left"
-                        style={{ color: 'var(--text-secondary)' }}
+                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-white/5"
                       >
-                        <span className="truncate text-sm">{entry.prompt}</span>
-                        <span className="ml-auto shrink-0 font-mono text-xs" style={{ color: 'var(--text-tertiary)' }}>{entry.fandom}</span>
+                        <span className="shrink-0" style={{ color: '#DCE8C0' }}>·</span>
+                        <span className="truncate text-sm" style={{ color: '#EDE7CF' }}>{entry.prompt}</span>
+                        <span className="ml-auto shrink-0 font-mono text-xs" style={{ color: 'rgba(237,231,207,0.6)' }}>{entry.fandom}</span>
                       </button>
                     ))}
                   </div>
@@ -354,7 +358,7 @@ export default function HomePage() {
               {!isSearching && results.length === 0 && !error && (
                 <div className="py-12 text-center">
                   <p className="mb-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    No results yet. The backend may still be processing.
+                    Nothing brewed yet — the kettle may still be warming up.
                   </p>
                   <button
                     onClick={() => {

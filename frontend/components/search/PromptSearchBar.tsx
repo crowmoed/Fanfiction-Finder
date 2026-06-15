@@ -86,7 +86,7 @@ export default function PromptSearchBar({
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Search fanfiction..."
+          placeholder="What are you in the mood for…"
           className="min-w-0 flex-1 bg-transparent px-2 py-1 text-sm outline-none"
           style={{ color: 'var(--text-primary)' }}
           disabled={isSearching}
@@ -108,8 +108,11 @@ export default function PromptSearchBar({
       className="shadow-md"
     >
       <div
-        className="flex min-h-[160px] flex-col rounded-2xl px-5 py-4"
-        style={{ backgroundColor: 'var(--bg-elevated)' }}
+        className="relative flex min-h-[160px] flex-col rounded-2xl px-5 pb-4 pt-5"
+        style={{
+          backgroundColor: 'var(--bg-elevated)',
+          boxShadow: 'inset 0 0 0 1.5px var(--border-subtle)',
+        }}
         role="search"
         aria-label="Search for fanfiction"
       >
@@ -130,7 +133,7 @@ export default function PromptSearchBar({
         >
           <FilterChips fandom={fandom} onFandomChange={setFandom} />
           <InteractiveHoverButton onClick={handleSubmit} disabled={isSearching || !prompt.trim()}>
-            {isSearching ? 'Searching' : 'Search'}
+            {isSearching ? 'Steeping…' : 'Steep a pot'}
           </InteractiveHoverButton>
         </div>
       </div>

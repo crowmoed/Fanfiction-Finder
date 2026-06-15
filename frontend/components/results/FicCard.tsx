@@ -94,13 +94,13 @@ function MatchChip({ rank, match }: { rank: number; match: number | null }) {
       <span
         className="relative inline-flex items-center overflow-hidden rounded-full px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wide"
         style={{
-          color: '#FFF7ED',
-          backgroundColor: '#EA580C',
+          color: '#F3F7E8',
+          backgroundColor: '#5C8A3A',
           boxShadow: [
-            // outer glassy rim — deep amber refraction + bright caustic halo
-            '0 0 0 1px rgba(124, 45, 18, 0.9)',
-            '0 0 0 2px rgba(254, 215, 170, 0.4)',
-            '0 1px 3px rgba(124, 45, 18, 0.55)',
+            // outer glassy rim — deep jade refraction + bright caustic halo
+            '0 0 0 1px rgba(38, 64, 24, 0.9)',
+            '0 0 0 2px rgba(204, 224, 160, 0.4)',
+            '0 1px 3px rgba(38, 64, 24, 0.55)',
             // inner glass: top highlight + bottom shadow
             'inset 0 1px 0.5px rgba(255,255,255,0.75)',
             'inset 0 -1px 0.5px rgba(0,0,0,0.35)',
@@ -118,13 +118,13 @@ function MatchChip({ rank, match }: { rank: number; match: number | null }) {
               'linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.08) 60%, transparent 100%)',
           }}
         />
-        {/* refraction glow — bright amber crescent at the bottom */}
+        {/* refraction glow — bright jade crescent at the bottom */}
         <span
           aria-hidden
           className="pointer-events-none absolute inset-x-1 bottom-0 h-px"
           style={{
             background:
-              'linear-gradient(90deg, transparent, rgba(254, 215, 170, 0.9), transparent)',
+              'linear-gradient(90deg, transparent, rgba(204, 224, 160, 0.9), transparent)',
             filter: 'blur(0.5px)',
           }}
         />
@@ -147,7 +147,7 @@ function MatchChip({ rank, match }: { rank: number; match: number | null }) {
 
   const tier =
     match >= 70
-      ? { color: '#9A3412', bg: '#FFEDD5', border: '#FDBA74' }
+      ? { color: 'var(--accent-hover)', bg: 'var(--accent-light)', border: 'var(--accent)' }
       : { color: 'var(--text-secondary)', bg: 'var(--bg-secondary)', border: 'var(--border-default)' };
 
   return (

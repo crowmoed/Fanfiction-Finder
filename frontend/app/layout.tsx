@@ -31,7 +31,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: 'Semantic Archive — A semantic search for fanfic readers',
-  description: 'A small tool that helps you find fanfiction using plain English. Built by one person.',
+  description: 'A cozy little tea house for finding fanfiction in plain English. Pull up a chair. Brewed by one person.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
