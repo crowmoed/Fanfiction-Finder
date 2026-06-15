@@ -28,9 +28,6 @@ export function GravityGridBackground() {
         opacity={0.85}
         mouseInteraction
         mouseInteractionRadius={0.95}
-        // Node layout: 'scatter' (organic, active) | 'even' (tidy spread) |
-        // 'patch' (dense "vine patches" — the busy thicket look). Swap to taste.
-        distribution="scatter"
       />
     </div>
   );

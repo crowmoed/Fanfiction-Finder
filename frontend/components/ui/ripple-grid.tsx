@@ -16,14 +16,7 @@ interface RippleGridProps {
   rippleIntensity?: number;
   glowIntensity?: number;
   enableRainbow?: boolean;
-  /** How nodes are distributed:
-   *  - 'even'    : tidy blue-noise spread, no clumps (default)
-   *  - 'scatter' : looser blue-noise, more organic
-   *  - 'patch'   : pure random — dense "vine patches" with gaps (the busy look) */
-  distribution?: NodeDistribution;
 }
-
-export type NodeDistribution = 'even' | 'scatter' | 'patch';
 
 interface Node {
   x: number;
@@ -159,7 +152,6 @@ export default function RippleGrid({
   fadeDistance = 2.5,
   vignetteStrength = 1.2,
   glowIntensity = 6,
-  distribution = 'even',
 }: RippleGridProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -204,9 +196,7 @@ export default function RippleGrid({
     // are kept at least `minDist` apart, so they're spread evenly instead of
     // clumping into pools the way pure random placement does. A background grid
     // makes the neighbour check O(1).
-    const poissonPoints = (minDistIn: number) => {
-      // Guard against degenerate sizes that would make the grid blow up.
-      const minDist = Math.max(8, minDistIn || 8);
+    const poissonPoints = (minDist: number, target: number) => {
       const cell = minDist / Math.SQRT2;
       const cols = Math.max(1, Math.ceil(width / cell));
       const rows = Math.max(1, Math.ceil(height / cell));
@@ -234,9 +224,8 @@ export default function RippleGrid({
         grid[gi(x, y)] = p;
       };
 
-      // Seed from a few points so the fill spreads across the whole canvas fast.
       add(Math.random() * width, Math.random() * height);
-      while (active.length) {
+      while (active.length && pts.length < target) {
         const ai = Math.floor(Math.random() * active.length);
         const a = active[ai];
         let placed = false;
@@ -261,48 +250,17 @@ export default function RippleGrid({
       const area = width * height;
       const target = Math.max(24, Math.round((gridSize * area) / (1920 * 1080)));
 
-      let pts: { x: number; y: number }[];
+      // Spread points evenly. minDist a bit over half of connectDist guarantees
+      // each point has neighbours within connectDist (blue-noise points sit
+      // between minDist and ~2·minDist apart) — so no clumps and no solo nodes.
+      const minDist = connectDist * 0.55;
+      let pts = poissonPoints(minDist, target);
 
-      if (distribution === 'patch') {
-        // PATCH mode: pure random — points clump into dense "vine patches" with
-        // sparse gaps. The original busy thicket look.
-        pts = Array.from({ length: target }, () => ({
-          x: Math.random() * width,
-          y: Math.random() * height,
-        }));
-      } else {
-        // EVEN / SCATTER: blue-noise fill of the WHOLE canvas. minDist from the
-        // target count gives the right density, but cap it well under
-        // connectDist so every node's nearest neighbour is always in range
-        // (blue-noise nearest neighbours sit at ~minDist) — guarantees the field
-        // connects and never filters down to nothing.
-        const looseness = distribution === 'scatter' ? 1.0 : 1.18;
-        const byCount = Math.sqrt(area / target) * looseness;
-        const minDist = Math.min(byCount, connectDist * 0.7);
-        pts = poissonPoints(minDist);
-
-        // Connectivity nudge: any node with no neighbour in range gets pulled
-        // toward its nearest neighbour until it connects. Never removes nodes,
-        // so the field can't be emptied.
-        const cd2 = connectDist * connectDist;
-        for (const p of pts) {
-          let near: { x: number; y: number } | null = null;
-          let best = Infinity;
-          let hasNeighbour = false;
-          for (const q of pts) {
-            if (q === p) continue;
-            const d2 = (q.x - p.x) ** 2 + (q.y - p.y) ** 2;
-            if (d2 < cd2) { hasNeighbour = true; break; }
-            if (d2 < best) { best = d2; near = q; }
-          }
-          if (!hasNeighbour && near) {
-            const d = Math.sqrt(best);
-            const pull = (d - connectDist * 0.9) / d;
-            p.x += (near.x - p.x) * pull;
-            p.y += (near.y - p.y) * pull;
-          }
-        }
-      }
+      // Connectivity guarantee: drop any point with no neighbour in range. With
+      // the spacing above this is rare, but it removes the odd lonely flower.
+      pts = pts.filter((p) =>
+        pts.some((q) => q !== p && (q.x - p.x) ** 2 + (q.y - p.y) ** 2 < connectDist * connectDist)
+      );
 
       const count = pts.length;
 
@@ -653,7 +611,6 @@ export default function RippleGrid({
       window.removeEventListener('pointerup', onPointerUp);
     };
   }, [
-    distribution,
     fadeDistance,
     glowIntensity,
     gridColor,
