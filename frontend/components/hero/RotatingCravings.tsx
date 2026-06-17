@@ -5,25 +5,20 @@ const CRAVINGS = [
   'slow burn',
   '100k+ words',
   'enemies to lovers',
-  'hurt comfort',
+  'hurt/comfort',
   'canon divergence',
-  'no MCD',
+  'no major character death',
   'time travel',
   'fix-it',
-  'angst with happy ending',
+  'angst with a happy ending',
 ];
 
 export function RotatingCravings() {
   return (
-    <p className="mx-auto max-w-md text-base" style={{ color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-      Describe the fic you&apos;re craving -{' '}
-      <WordRotate
-        className="font-serif italic"
-        style={{ color: 'var(--text-primary)' }}
-        duration={2400}
-        words={CRAVINGS}
-      />
-      {' '}- and I&apos;ll dig through AO3, FFN, and Wattpad to find it.
+    <p className="mx-auto max-w-md text-base leading-relaxed text-ink-2">
+      Describe the fic you want, like{' '}
+      <WordRotate className="font-serif italic text-ink" duration={2400} words={CRAVINGS} />
+      , and get a ranked list from AO3, FFN, and Wattpad.
     </p>
   );
 }

@@ -8,31 +8,18 @@ interface ToastProps {
   duration?: number;
 }
 
-export default function Toast({ message, onDismiss, duration = 3000 }: ToastProps) {
+export default function Toast({ message, onDismiss, duration = 3500 }: ToastProps) {
   useEffect(() => {
-    const timer = setTimeout(onDismiss, duration);
-    return () => clearTimeout(timer);
-  }, [onDismiss, duration]);
+    const id = window.setTimeout(onDismiss, duration);
+    return () => window.clearTimeout(id);
+  }, [duration, onDismiss]);
 
   return (
     <div
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2.5 rounded-lg shadow-md text-sm font-medium animate-fade-slide-up"
-      style={{
-        backgroundColor: 'var(--text-primary)',
-        color: 'var(--bg-elevated)',
-      }}
       role="status"
       aria-live="polite"
+      className="animate-fade-up fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 rounded-md border border-border-strong bg-surface px-4 py-2.5 text-sm text-ink shadow-soft"
     >
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
-        <path
-          d="M13 5L6.5 11.5L3 8"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
       {message}
     </div>
   );

@@ -41,13 +41,12 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   // the whole viewport.
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6"
+      className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6"
       onClick={onClose}
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 backdrop-blur-sm transition-opacity duration-250"
-        style={{ backgroundColor: 'rgba(28, 25, 23, 0.3)' }}
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm"
         aria-hidden="true"
       />
 
@@ -56,31 +55,20 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         ref={panelRef}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className="relative z-10 my-auto w-full max-w-[560px] rounded-xl shadow-lg outline-none"
-        style={{
-          backgroundColor: 'var(--bg-elevated)',
-          border: '1px solid var(--border-default)',
-          animation: 'scaleIn 200ms ease-out',
-        }}
+        className="animate-scale-in relative z-10 my-auto w-full max-w-[560px] rounded-md border border-border bg-surface shadow-soft outline-none"
         role="dialog"
         aria-label="Settings"
         aria-modal="true"
       >
         {/* Header */}
-        <div
-          className="flex items-center justify-between px-6 py-4 border-b"
-          style={{ borderColor: 'var(--border-default)' }}
-        >
-          <h1 className="font-serif italic text-2xl text-text-primary">Settings</h1>
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <h2 className="font-serif text-2xl font-semibold text-ink">Settings</h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md transition-colors duration-150"
-            style={{ color: 'var(--text-tertiary)' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-hover)'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = ''; }}
+            className="rounded-md p-1.5 text-ink-3 transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-ink"
             aria-label="Close settings"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
               <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
@@ -92,6 +80,6 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

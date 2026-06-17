@@ -13,7 +13,7 @@ export default function SettingsButton() {
         onClick={() => setOpen(true)}
         aria-label="Settings"
         title="Settings"
-        className="p-2 rounded-lg text-text-secondary hover:bg-bg-hover transition-colors"
+        className="rounded-md p-2 text-ink-2 transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-ink"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path

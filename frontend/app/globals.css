@@ -3,168 +3,145 @@
 @tailwind utilities;
 
 /*  ------------------------------------------------------------------
- *  Semantic Archive — Iroh's tea house
- *  A warm visit to a tea shop full of amazing books: amber lamplight,
- *  steeped-tea browns, aged paper, worn leather and wood. Calm, cozy,
- *  "come in, sit down, and read" — never a SaaS dashboard.
+ *  Semantic Archive — design tokens
+ *  Warm, literary, calm: a tea house full of books, productized into a
+ *  fast scanning tool. Off the cream-default band; identity carried by
+ *  the jade accent + serif titles, not by the body background.
+ *  Light + dark are both first-class. Every text pair here is
+ *  WCAG-verified ≥4.5:1 (large ≥3:1). See design/DESIGN.md.
  *  ------------------------------------------------------------------ */
+
 :root {
-  /* Surfaces — warm tea-stained paper, the color of Iroh's robes' lining */
-  --bg-primary: #EAE6CF;
-  --bg-secondary: #DBD8B6;
-  --bg-elevated: #F2EFDC;
-  --bg-hover: #CBCB9E;
+  /* Surfaces — true warm off-white, near-zero chroma toward jade */
+  --bg: #FBFAF4;
+  --surface: #F4F2E7;
+  --surface-2: #ECEAD9;
 
-  /* Text — deep pine, warm not pure black */
-  --text-primary: #1E2A18;
-  --text-secondary: #36422C;
-  --text-tertiary: #6B7355;
+  /* Text */
+  --ink: #1C2718;
+  --ink-2: #3A4631;
+  --ink-3: #5A6450;
 
-  /* Borders — sage bark & mossy wood */
-  --border-default: #8C9469;
-  --border-subtle: #BCC096;
-  --border-ink: #1E2A18;
+  /* Borders */
+  --border: #C7CBA8;
+  --border-strong: #1C2718;
 
-  /* Accent — jade / steeped green tea (dominant), like his robe */
-  --accent: #5C8A3A;
-  --accent-light: #DCE8C0;
-  --accent-hover: #466B2A;
+  /* Accent — steeped jade (the brand) */
+  --accent: #4C7A2E;
+  --accent-ink: #FBFAF4;   /* text on accent */
+  --accent-text: #3C6322;  /* accent as text on bg */
+  --accent-soft: #DDEAC6;
+  --accent-hover: #3C6322;
 
-  /* Secondary accent — deep jasmine pine (for hover/depth) */
-  --accent-alt: #3E6B43;
-  --accent-alt-light: #CDE0CB;
+  /* Platform badges (verified on their tints) */
+  --ao3: #7A1F14;       --ao3-bg: #EFD6CC;
+  --ffn: #234048;       --ffn-bg: #D2DFDB;
+  --wattpad: #7E4D1B;   --wattpad-bg: #EBD9BE;
 
-  /* Platform badges — keep the canonical platform colors */
-  --ao3-red: #7A1F14;
-  --ao3-red-bg: #EFD6CC;
-  --ffn-blue: #2C4A52;
-  --ffn-blue-bg: #D2DFDB;
-  --wattpad-orange: #B5732E;
-  --wattpad-orange-bg: #EBD9BE;
+  /* Rating badges */
+  --rating-g: #1F6B3A;  --rating-g-bg: #D5EDD9;
+  --rating-t: #7A5B12;  --rating-t-bg: #FBF1C7;
+  --rating-m: #9A3A12;  --rating-m-bg: #FBE3CF;
+  --rating-e: #9B1C1C;  --rating-e-bg: #FAD9D9;
 
-  /* Score heat — green steeping intensity */
-  --score-high: #466B2A;
-  --score-mid: #5C8A3A;
-  --score-low: #8A8F6A;
+  /* Match-score heat (jade steeping intensity) */
+  --score-high: #3C6322;
+  --score-mid: #4C7A2E;
+  --score-low: #6E7A52;
 
   /* Status */
-  --status-complete: #466B2A;
-  --status-wip: #8A8F6A;
+  --status-complete: #3C6322;
+  --status-wip: #6E7A52;
 
-  /* Shadows — deep pine offset shadow */
-  --shadow-sm: 2px 2px 0 rgba(24, 34, 18, 0.85);
-  --shadow-md: 3px 3px 0 rgba(24, 34, 18, 0.85);
-  --shadow-lg: 5px 5px 0 rgba(24, 34, 18, 0.85);
-  --shadow-soft: 0 2px 10px rgba(24, 34, 18, 0.12);
+  /* Feedback (on-theme, not raw browser red) */
+  --danger: #9B1C1C;    --danger-bg: #FAD9D9;  --danger-border: #E7B4B4;
 
-  /* Aurora — adjacent tea-green tones, pine → jade → moss */
-  --aurora-1: #466B2A;
-  --aurora-2: #5C8A3A;
-  --aurora-3: #7FA84E;
-  --aurora-4: #3E6B43;
+  /* Shape */
+  --r-sm: 6px;
+  --r-md: 10px;
 
-  /* Gravity grid - green tea on aged paper */
-  --grid-line: rgba(40, 60, 28, 0.45);
-  --grid-vignette: rgba(40, 60, 28, 0.08);
+  /* Elevation — one soft shadow + the single offset "sticker" signature */
+  --shadow-soft: 0 2px 14px rgba(28, 39, 24, 0.12);
+  --shadow-offset: 2px 2px 0 rgba(28, 39, 24, 0.85);
 
-  /* Shine border — pine into jade */
-  --shine-1: #1E2A18;
-  --shine-2: #7fb04b;
-  --shine-3: #1E2A18;
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  color-scheme: light;
 }
 
-/* Subtle paper grain — gives every surface a hint of texture without
- * looking like a stock background image.  SVG turbulence is cheap. */
+[data-theme='dark'] {
+  --bg: #15170F;
+  --surface: #1E2116;
+  --surface-2: #272B1D;
+
+  --ink: #EDEBDC;
+  --ink-2: #C2C2A8;
+  --ink-3: #969A7C;
+
+  --border: #3A402C;
+  --border-strong: #5A6450;
+
+  --accent: #8FC25E;
+  --accent-ink: #15170F;
+  --accent-text: #A4D272;
+  --accent-soft: #2A3A1C;
+  --accent-hover: #A4D272;
+
+  --ao3: #E8A99B;       --ao3-bg: #2A1C18;
+  --ffn: #9EC4CC;       --ffn-bg: #16242A;
+  --wattpad: #DCAE76;   --wattpad-bg: #2A2014;
+
+  --rating-g: #9AD2A6;  --rating-g-bg: #16281B;
+  --rating-t: #DDC982;  --rating-t-bg: #2A2410;
+  --rating-m: #EDB389;  --rating-m-bg: #2C1E12;
+  --rating-e: #F0A8A8;  --rating-e-bg: #2E1818;
+
+  --score-high: #A4D272;
+  --score-mid: #8FC25E;
+  --score-low: #969A7C;
+
+  --status-complete: #A4D272;
+  --status-wip: #969A7C;
+
+  --danger: #F0A8A8;    --danger-bg: #2E1818;  --danger-border: #5A2A2A;
+
+  --shadow-soft: 0 2px 16px rgba(0, 0, 0, 0.45);
+  --shadow-offset: 2px 2px 0 rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
+}
+
 html {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--bg);
+  color: var(--ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-primary);
 }
 
 body {
-  background-color: transparent;
-  min-height: 100vh;
+  background-color: var(--bg);
+  min-height: 100dvh;
 }
 
-.paper-grid-bg {
-  /* The vine texture lives on <html> now; let it show through here. */
-  background: transparent;
+/* Focus rings — visible, on-theme, not removed */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
-/* Scrollbar hide utility */
+table { border-spacing: 0; }
+
+/* Scrollbar utilities */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Translucent scrollbar — used on results table and fandom dropdown */
-.scrollbar-translucent { scrollbar-width: thin; scrollbar-color: rgba(20, 19, 15, 0.25) transparent; }
-.scrollbar-translucent::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-translucent { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--ink) 25%, transparent) transparent; }
+.scrollbar-translucent::-webkit-scrollbar { width: 8px; height: 8px; }
 .scrollbar-translucent::-webkit-scrollbar-track { background: transparent; }
-.scrollbar-translucent::-webkit-scrollbar-thumb { background-color: rgba(20, 19, 15, 0.25); border-radius: 9999px; }
-.scrollbar-translucent::-webkit-scrollbar-thumb:hover { background-color: rgba(20, 19, 15, 0.45); }
-
-/* Skeleton — pulsing block instead of gradient shimmer (more honest) */
-.shimmer-bar {
-  background-color: var(--bg-secondary);
-  animation: blink 1.4s ease-in-out infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 0.55; }
-  50%      { opacity: 0.95; }
-}
-
-@keyframes fadeSlideUp {
-  0%   { opacity: 0; transform: translateY(8px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes scaleIn {
-  0%   { transform: scale(0.92); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes slideInRight {
-  0%   { transform: translateX(100%); }
-  100% { transform: translateX(0); }
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50%      { transform: scale(1.25); opacity: 0.55; }
-}
-
-/* Page state transitions */
-.search-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - 56px);
-  padding: 0 24px;
-  transition: all 400ms ease-out;
-}
-
-.search-compact {
-  padding: 16px 24px;
-  border-bottom: 1.5px solid var(--border-ink);
-  background-color: var(--bg-elevated);
-  position: sticky;
-  top: 56px;
-  z-index: 30;
-}
-
-/* Focus rings — chunky offset outline, not a soft glow */
-*:focus-visible {
-  outline: 2px solid var(--text-primary);
-  outline-offset: 2px;
-}
-
-/* Table */
-table {
-  border-spacing: 0;
-}
+.scrollbar-translucent::-webkit-scrollbar-thumb { background-color: color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 9999px; }
+.scrollbar-translucent::-webkit-scrollbar-thumb:hover { background-color: color-mix(in srgb, var(--ink) 40%, transparent); }
 
 /* Line clamp utilities */
 .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
@@ -172,157 +149,59 @@ table {
 .line-clamp-3 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 .line-clamp-5 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; }
 
-/* Faster snap transitions — avoids the "smooth SaaS" glide */
-button, a, select, input {
-  transition-property: color, background-color, border-color, box-shadow, transform;
-  transition-duration: 90ms;
-  transition-timing-function: steps(2, end);
+/* Skeleton — calm pulse, not a sweeping gradient */
+.skeleton {
+  background-color: var(--surface-2);
+  border-radius: var(--r-sm);
+  animation: skeleton-pulse 1.4s var(--ease-out) infinite;
+}
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.9; }
 }
 
+/* The one signature: a card stamped with an ink outline + offset shadow.
+ * Used sparingly (hero, primary CTA), not on every surface. */
+.stamp {
+  background-color: var(--surface);
+  border: 1.5px solid var(--border-strong);
+  box-shadow: var(--shadow-offset);
+}
+
+/* Tactile press for stamped interactive elements */
+.press {
+  transition: transform 130ms var(--ease-out), box-shadow 130ms var(--ease-out);
+}
+.press:hover { transform: translate(1px, 1px); box-shadow: 1px 1px 0 rgba(28, 39, 24, 0.85); }
+.press:active { transform: translate(2px, 2px); box-shadow: 0 0 0 rgba(28, 39, 24, 0); }
+
+/* Calm entrance helpers (used with reduced-motion fallback below) */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
 @keyframes spin { to { transform: rotate(360deg); } }
-.animate-spin { animation: spin 0.8s steps(8, end) infinite; }
 
-.firework {
-  position: absolute;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-}
-.firework-particle {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 3px;
-  height: 3px;
-  border-radius: 9999px;
-  background: currentColor;
-  box-shadow: 0 0 4px currentColor;
-  transform: translate(-50%, -50%);
-  animation: fireworkParticle 0.9s ease-out forwards;
-}
-@keyframes fireworkParticle {
-  0%   { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0)    scale(1);   opacity: 1; }
-  100% { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(18px) scale(0.2); opacity: 0; }
-}
-
-/* ---- Indie utility classes -------------------------------------- */
-
-/* The offset "sticker" shadow — one of the signature moves. */
-.indie-card {
-  background-color: var(--bg-elevated);
-  border: 1.5px solid var(--border-ink);
-  box-shadow: var(--shadow-md);
-}
-.indie-card-sm {
-  background-color: var(--bg-elevated);
-  border: 1.5px solid var(--border-ink);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Hand-drawn-feeling dashed divider */
-.indie-divider {
-  border: 0;
-  border-top: 1.5px dashed var(--border-default);
-  margin: 16px 0;
-}
-
-/* Rotated sticker — slight off-kilter for decorative labels */
-.indie-sticker {
-  display: inline-block;
-  transform: rotate(-2deg);
-}
-.indie-sticker-r { transform: rotate(1.5deg); }
-
-/* Marquee underline — a wobbly sketch-line under headings */
-.indie-underline {
-  background-image: linear-gradient(var(--accent), var(--accent));
-  background-size: 100% 3px;
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  padding-bottom: 2px;
-}
-
-/* Press-down button effect — when hovered, the card sits down into
- * its shadow.  Feels tactile, like a physical key. */
-.indie-press {
-  transition: transform 80ms ease-out, box-shadow 80ms ease-out;
-}
-.indie-press:hover {
-  transform: translate(1px, 1px);
-  box-shadow: 2px 2px 0 rgba(26, 24, 20, 0.9);
-}
-.indie-press:active {
-  transform: translate(3px, 3px);
-  box-shadow: 0 0 0 rgba(26, 24, 20, 0);
-}
-
-@keyframes aurora {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
-}
-
-@keyframes shine {
-  0% { background-position: 0% 0%; }
-  50% { background-position: 100% 100%; }
-  100% { background-position: 0% 0%; }
-}
-
+/* Marquee — the one motivated infinite motion (fandom strip), reduced-motion
+ * paused by the global block below. */
 @keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
-@keyframes beamDash {
-  0% { stroke-dashoffset: 80; }
-  100% { stroke-dashoffset: 0; }
-}
-
-@keyframes boxReveal {
-  0% { transform: scaleX(1); transform-origin: left; }
-  100% { transform: scaleX(0); transform-origin: right; }
-}
-
-@keyframes word-rotate {
-  0%   { opacity: 0; transform: translateY(8px); filter: blur(2px); }
-  60%  { opacity: 1; transform: translateY(0); filter: blur(0); }
-  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
-}
-
-@keyframes emeraldShine {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -100% 0; }
-}
-
-/* ---- Tea-house chalkboard sandwich sign ------------------------- */
-.chalkboard {
-  background-color: #20271C;
-  background-image:
-    radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 6px 6px;
-  border: 6px solid #5A4326;
-  border-radius: 8px;
-  box-shadow: var(--shadow-md), inset 0 0 24px rgba(0, 0, 0, 0.5);
-  color: #EDE7CF;
-}
-.chalkboard .chalk-heading {
-  font-family: var(--font-instrument-serif), serif;
-  color: #DCE8C0;
-  text-shadow: 0 0 6px rgba(220, 232, 192, 0.25);
-}
-.chalkboard .chalk-rule {
-  border: 0;
-  border-top: 1.5px dashed rgba(237, 231, 207, 0.35);
-}
+.animate-fade-up { animation: fade-up 240ms var(--ease-out) both; }
+.animate-scale-in { animation: scale-in 200ms var(--ease-out) both; }
+.animate-spin { animation: spin 0.8s linear infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
-  }
-
-  .motion-safe-only {
-    animation: none !important;
-    transition: none !important;
   }
 }

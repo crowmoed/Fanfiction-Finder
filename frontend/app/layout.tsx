@@ -1,15 +1,14 @@
 import type { Metadata } from 'next';
-import { Instrument_Serif, Inter, JetBrains_Mono } from 'next/font/google';
+import { Inter, JetBrains_Mono, Source_Serif_4 } from 'next/font/google';
 import './globals.css';
 import Providers from './providers';
-import { GravityGridBackground } from '@/components/ambient/GravityGridBackground';
-import { SmoothScroll } from '@/components/ambient/SmoothScroll';
+import { themeInitScript } from '@/hooks/useTheme';
 
-const instrumentSerif = Instrument_Serif({
-  weight: '400',
+const sourceSerif = Source_Serif_4({
+  weight: ['400', '500', '600'],
   style: ['normal', 'italic'],
   subsets: ['latin'],
-  variable: '--font-instrument-serif',
+  variable: '--font-source-serif',
   display: 'swap',
 });
 
@@ -30,22 +29,24 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Semantic Archive — A semantic search for fanfic readers',
-  description: 'A cozy little tea house for finding fanfiction in plain English. Pull up a chair. Brewed by one person.',
+  title: 'Semantic Archive — Find fanfiction in plain English',
+  description:
+    'Describe the fic you want, get a ranked list from AO3, FFN, and Wattpad. A small, fast, semantic search for fanfiction readers.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${instrumentSerif.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
+      className={`${sourceSerif.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="font-sans" style={{ backgroundColor: 'var(--bg-primary)' }}>
-        <Providers>
-          <SmoothScroll />
-          <GravityGridBackground />
-          <div className="relative z-10">{children}</div>
-        </Providers>
+      <head>
+        {/* Resolve theme before first paint to avoid a flash of the wrong mode. */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className="bg-bg font-sans text-ink antialiased">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -15,7 +15,6 @@ export default function SearchHistory({ history, onSearch, onClear, onClose }: S
   const [confirmClear, setConfirmClear] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Trap focus + close on Escape
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
@@ -24,69 +23,50 @@ export default function SearchHistory({ history, onSearch, onClear, onClose }: S
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  // Focus panel on open
   useEffect(() => {
     panelRef.current?.focus();
   }, []);
 
   return (
     <>
-      {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 backdrop-blur-sm transition-opacity duration-250"
-        style={{ backgroundColor: 'rgba(28, 25, 23, 0.3)' }}
+        className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Panel */}
       <div
         ref={panelRef}
         tabIndex={-1}
-        className="fixed inset-y-0 right-0 z-50 w-80 flex flex-col shadow-lg outline-none"
-        style={{
-          backgroundColor: 'var(--bg-elevated)',
-          borderLeft: '1px solid var(--border-default)',
-          animation: 'slideInRight 250ms ease-out',
-        }}
+        className="fixed inset-y-0 right-0 z-[70] flex w-80 flex-col border-l border-border bg-surface shadow-soft outline-none"
         role="dialog"
-        aria-label="Search History"
+        aria-label="Search history"
         aria-modal="true"
       >
-        {/* Header */}
-        <div
-          className="flex items-center justify-between px-5 py-4 border-b shrink-0"
-          style={{ borderColor: 'var(--border-default)' }}
-        >
-          <h2 className="font-semibold text-base" style={{ color: 'var(--text-primary)' }}>
-            Search History
-          </h2>
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
+          <h2 className="font-serif text-lg font-semibold text-ink">Search history</h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md transition-colors duration-150"
-            style={{ color: 'var(--text-tertiary)' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-hover)'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = ''; }}
+            className="rounded-md p-1.5 text-ink-3 transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-ink"
             aria-label="Close history panel"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
               <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
         </div>
 
-        {/* Entries */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="scrollbar-translucent flex-1 overflow-y-auto">
           {history.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full gap-2 px-6 text-center">
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style={{ color: 'var(--text-tertiary)' }}>
+            <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="text-ink-3" aria-hidden>
                 <circle cx="14" cy="14" r="10" stroke="currentColor" strokeWidth="2" />
                 <path d="M22 22l6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
-              <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>No searches yet</p>
+              <p className="text-sm text-ink-3">No searches yet</p>
             </div>
           ) : (
-            <ul>
+            <ul className="divide-y divide-border">
               {history.map((entry) => (
                 <li key={entry.id}>
                   <button
@@ -94,39 +74,16 @@ export default function SearchHistory({ history, onSearch, onClear, onClose }: S
                       onSearch(entry.prompt, entry.fandom, entry.cachedResults, entry.shareId);
                       onClose();
                     }}
-                    className="w-full text-left px-5 py-3.5 border-b transition-colors duration-150"
-                    style={{ borderColor: 'var(--border-subtle)' }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-hover)'; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = ''; }}
+                    className="w-full px-5 py-3.5 text-left transition-colors duration-150 ease-out hover:bg-surface-2"
                   >
-                    <div className="flex items-start gap-2">
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 14 14"
-                        fill="none"
-                        className="mt-0.5 shrink-0"
-                        style={{ color: 'var(--text-tertiary)' }}
-                      >
-                        <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2" />
-                        <path d="M9.5 9.5l2.5 2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                      </svg>
-                      <div className="min-w-0 flex-1">
-                        <p
-                          className="text-sm font-medium truncate"
-                          style={{ color: 'var(--text-primary)' }}
-                          title={entry.prompt}
-                        >
-                          {entry.prompt.length > 60 ? entry.prompt.slice(0, 60) + '…' : entry.prompt}
-                        </p>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
-                          {entry.fandom} · AO3: {entry.ao3Count} · FFN: {entry.ffnCount}{entry.wattpadCount > 0 ? ` · Wattpad: ${entry.wattpadCount}` : ''}
-                        </p>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
-                          {formatRelativeTime(entry.timestamp)}
-                        </p>
-                      </div>
-                    </div>
+                    <p className="truncate text-sm font-medium text-ink" title={entry.prompt}>
+                      {entry.prompt}
+                    </p>
+                    <p className="mt-0.5 text-xs text-ink-3">
+                      {entry.fandom} · AO3 {entry.ao3Count} · FFN {entry.ffnCount}
+                      {entry.wattpadCount > 0 ? ` · WP ${entry.wattpadCount}` : ''}
+                    </p>
+                    <p className="mt-0.5 text-xs text-ink-3">{formatRelativeTime(entry.timestamp)}</p>
                   </button>
                 </li>
               ))}
@@ -134,38 +91,30 @@ export default function SearchHistory({ history, onSearch, onClear, onClose }: S
           )}
         </div>
 
-        {/* Footer */}
         {history.length > 0 && (
-          <div
-            className="px-5 py-4 border-t shrink-0"
-            style={{ borderColor: 'var(--border-default)' }}
-          >
+          <div className="shrink-0 border-t border-border px-5 py-4">
             {confirmClear ? (
-              <div className="flex items-center gap-2">
-                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Are you sure?</span>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-ink-2">Clear all history?</span>
                 <button
-                  onClick={() => { onClear(); setConfirmClear(false); }}
-                  className="text-sm font-medium text-red-500 transition-opacity hover:opacity-70"
+                  onClick={() => {
+                    onClear();
+                    setConfirmClear(false);
+                  }}
+                  className="text-sm font-medium text-danger transition-opacity hover:opacity-70"
                 >
                   Clear
                 </button>
-                <button
-                  onClick={() => setConfirmClear(false)}
-                  className="text-sm transition-opacity"
-                  style={{ color: 'var(--text-tertiary)' }}
-                >
+                <button onClick={() => setConfirmClear(false)} className="text-sm text-ink-3 hover:text-ink">
                   Cancel
                 </button>
               </div>
             ) : (
               <button
                 onClick={() => setConfirmClear(true)}
-                className="text-sm transition-colors duration-150"
-                style={{ color: 'var(--text-tertiary)' }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--text-tertiary)'; }}
+                className="text-sm text-ink-3 transition-colors duration-150 ease-out hover:text-ink"
               >
-                Clear All History
+                Clear all history
               </button>
             )}
           </div>

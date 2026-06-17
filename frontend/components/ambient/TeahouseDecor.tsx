@@ -12,10 +12,10 @@ function Leaf({ x, y, rot, alt }: { x: number; y: number; rot: number; alt: bool
     <g transform={`translate(${x} ${y}) rotate(${rot})`}>
       <path
         d="M0 0 C -7 -10, -7 -22, 0 -30 C 7 -22, 7 -10, 0 0 Z"
-        fill={alt ? 'var(--accent)' : 'var(--accent-alt)'}
-        opacity="0.9"
+        fill={alt ? 'var(--accent)' : 'var(--accent-text)'}
+        opacity="0.85"
       />
-      <path d="M0 -2 L0 -26" stroke="var(--accent-hover)" strokeWidth="1" opacity="0.5" />
+      <path d="M0 -2 L0 -26" stroke="var(--accent-text)" strokeWidth="1" opacity="0.5" />
     </g>
   );
 }
@@ -34,17 +34,17 @@ function Vine({ className, flip = false }: { className?: string; flip?: boolean 
     >
       <path
         d="M40 0 C 45 60, 30 100, 48 150 C 64 195, 40 240, 60 310"
-        stroke="var(--accent-alt)"
+        stroke="var(--accent-text)"
         strokeWidth="3"
         strokeLinecap="round"
-        opacity="0.85"
+        opacity="0.7"
       />
       <path
         d="M70 0 C 80 50, 95 90, 82 140 C 70 185, 92 220, 78 290"
         stroke="var(--accent)"
         strokeWidth="2.5"
         strokeLinecap="round"
-        opacity="0.7"
+        opacity="0.6"
       />
       {([
         [48, 40, -22],
@@ -79,27 +79,19 @@ export function HangingCupSign() {
   return (
     <span aria-hidden className="relative ml-1 hidden sm:inline-flex">
       {/* hook bracket */}
+      <span className="mr-1 inline-block h-3 w-px bg-border-strong align-middle" />
       <span
-        className="mr-1 inline-block h-3 w-px align-middle"
-        style={{ backgroundColor: 'var(--border-ink)' }}
-      />
-      <span
-        className="inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5"
-        style={{
-          backgroundColor: 'var(--accent-alt-light)',
-          border: '1.5px solid var(--border-ink)',
-          boxShadow: 'var(--shadow-sm)',
-          transform: 'rotate(-3deg)',
-        }}
+        className="inline-flex items-center gap-1 rounded-sm border border-border-strong bg-accent-soft px-1.5 py-0.5 shadow-offset"
+        style={{ transform: 'rotate(-3deg)' }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
           <path
             d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9Z"
-            stroke="var(--accent-hover)"
+            stroke="var(--accent-text)"
             strokeWidth="2"
             strokeLinejoin="round"
           />
-          <path d="M17 10h2a2.5 2.5 0 0 1 0 5h-2" stroke="var(--accent-hover)" strokeWidth="2" />
+          <path d="M17 10h2a2.5 2.5 0 0 1 0 5h-2" stroke="var(--accent-text)" strokeWidth="2" />
           <path
             d="M8 3c-.6 1 .6 2 0 3M12 3c-.6 1 .6 2 0 3"
             stroke="var(--accent)"

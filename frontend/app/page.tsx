@@ -5,17 +5,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Fandom, FicResult } from '@/lib/schema/types';
 import { useSearch } from '@/hooks/useSearch';
 import { useSearchHistory } from '@/hooks/useSearchHistory';
-import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useAuth } from '@/hooks/useAuth';
 
 import PromptSearchBar from '@/components/search/PromptSearchBar';
-import ResultsTable from '@/components/results/ResultsTable';
-import { ResultsBento } from '@/components/results/ResultsBento';
-import { ViewToggle, usePersistedResultsView } from '@/components/results/ViewToggle';
+import { ResultsView } from '@/components/results/ResultsView';
 import ExportButton from '@/components/ExportButton';
 import SearchHistory from '@/components/SearchHistory';
 import AuthButton from '@/components/AuthButton';
 import SettingsButton from '@/components/SettingsButton';
+import ThemeToggle from '@/components/ThemeToggle';
 import { HeroTitle } from '@/components/hero/HeroTitle';
 import { RotatingCravings } from '@/components/hero/RotatingCravings';
 import { StatsTicker } from '@/components/proof/StatsTicker';
@@ -31,11 +29,9 @@ export default function HomePage() {
   const [currentFandom, setCurrentFandom] = useState<Fandom>('');
   const [showHistory, setShowHistory] = useState(false);
   const [authPrompt, setAuthPrompt] = useState(false);
-  const [resultsView, setResultsView] = usePersistedResultsView();
 
   const { search, results, isSearching, isRanked, error, reset } = useSearch();
   const { history, addEntry, clearHistory, getCachedEntry, getByShareId } = useSearchHistory();
-  const isMobile = useIsMobile();
   const { isLoggedIn, getAuthHeader, logout } = useAuth();
 
   const sharedRestoredRef = useRef(false);
@@ -175,32 +171,14 @@ export default function HomePage() {
   );
 
   return (
-    <div className="min-h-screen paper-grid-bg">
+    <div className="flex min-h-[100dvh] flex-col">
       {appState === 'empty' && <TeahouseCanopy />}
-      <header
-        className="sticky top-0 z-40 flex h-14 items-center justify-between px-4 sm:px-6"
-        style={{
-          backgroundColor: 'rgba(235, 230, 207, 0.92)',
-          borderBottom: '1.5px solid var(--border-ink)',
-          backdropFilter: 'blur(10px)',
-          backgroundImage:
-            'repeating-linear-gradient(90deg, rgba(90, 67, 38, 0.10) 0 2px, transparent 2px 22px)',
-        }}
-      >
-        <button
-          onClick={handleGoHome}
-          className="flex items-baseline gap-2"
-          aria-label="Semantic Archive home"
-        >
-          <span className="font-display text-2xl italic leading-none" style={{ color: 'var(--text-primary)' }}>
-            Semantic Archive
-          </span>
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border-strong bg-surface/90 px-4 backdrop-blur-md sm:px-6">
+        <button onClick={handleGoHome} className="flex items-baseline gap-2" aria-label="Semantic Archive home">
+          <span className="font-serif text-xl font-semibold leading-none text-ink">Semantic Archive</span>
           <HangingCupSign />
-          <span className="font-mono text-[10px]" style={{ color: 'var(--text-tertiary)' }}>v0.1</span>
-          {appState !== 'empty' && (
-            <span className="ml-2 hidden font-mono text-xs sm:inline" style={{ color: 'var(--text-tertiary)' }}>
-              / {currentFandom}
-            </span>
+          {appState !== 'empty' && currentFandom && (
+            <span className="ml-1 hidden font-mono text-xs text-ink-3 sm:inline">/ {currentFandom}</span>
           )}
         </button>
 
@@ -216,20 +194,20 @@ export default function HomePage() {
           </div>
         )}
 
-        <div className="flex items-center gap-3">
-          <Link href="/blog" className="hidden font-mono text-xs sm:inline" style={{ color: 'var(--text-secondary)' }}>
+        <div className="flex items-center gap-1.5 sm:gap-3">
+          <Link href="/blog" className="hidden font-mono text-xs text-ink-2 transition-colors hover:text-ink sm:inline">
             /blog
           </Link>
+          <ThemeToggle />
           <AuthButton />
           {isLoggedIn && <SettingsButton />}
           <button
             onClick={() => setShowHistory(true)}
-            className="rounded-lg p-2"
-            style={{ color: 'var(--text-secondary)' }}
+            className="rounded-md p-2 text-ink-2 transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-ink"
             aria-label="Search history"
             title="Search history"
           >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
               <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" />
               <path d="M10 6v4l2.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -237,27 +215,20 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main>
+      <main className="flex-1">
         {appState === 'empty' && (
-          <div className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center px-6 py-14">
-            <section className="mb-8 text-center">
-              <div
-                className="indie-sticker mb-4 inline-block px-2 py-0.5 font-mono text-[11px]"
-                style={{
-                  backgroundColor: 'var(--accent-alt-light)',
-                  color: 'var(--text-primary)',
-                  border: '1.5px solid var(--text-primary)',
-                }}
-              >
-brewed by one person / still steeping
-              </div>
+          <div className="flex min-h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 py-14">
+            <section className="mb-8 animate-fade-up text-center">
+              <span className="mb-4 inline-block rounded-full border border-border bg-accent-soft px-3 py-1 font-mono text-[11px] text-accent-text">
+                brewed by one person · still steeping
+              </span>
               <HeroTitle />
               <div className="mt-4">
                 <RotatingCravings />
               </div>
             </section>
 
-            <section className="relative w-full max-w-content">
+            <section className="relative w-full max-w-content animate-fade-up" style={{ animationDelay: '60ms' }}>
               <PromptSearchBar
                 onSearch={handleSearch}
                 isSearching={isSearching}
@@ -266,8 +237,8 @@ brewed by one person / still steeping
               />
 
               {authPrompt && (
-                <div className="mt-4 rounded-lg px-4 py-3 text-center text-sm" style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent-hover)', border: '1px solid var(--accent)' }}>
-                  Please sign in with Google to search.
+                <div className="mt-4 rounded-md border border-accent bg-accent-soft px-4 py-3 text-center text-sm text-accent-text">
+                  Sign in with Google (top right) to run a search. It is free during the beta.
                 </div>
               )}
 
@@ -277,19 +248,17 @@ brewed by one person / still steeping
               <FandomMarquee />
 
               {history.length > 0 && (
-                <div className="chalkboard mx-auto mt-10 max-w-md px-6 py-5" style={{ transform: 'rotate(-0.6deg)' }}>
-                  <p className="chalk-heading mb-1 text-center text-2xl italic">Today&apos;s usuals</p>
-                  <hr className="chalk-rule mb-3" />
-                  <div className="flex flex-col gap-1">
+                <div className="mx-auto mt-10 max-w-md rounded-md border border-border bg-surface p-5 shadow-soft">
+                  <p className="mb-3 font-serif text-lg text-ink">Your recent searches</p>
+                  <div className="flex flex-col">
                     {history.slice(0, 5).map((entry) => (
                       <button
                         key={entry.id}
                         onClick={() => handleHistorySearch(entry.prompt, entry.fandom, entry.cachedResults, entry.shareId)}
-                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-white/5"
+                        className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left transition-colors duration-150 ease-out hover:bg-surface-2"
                       >
-                        <span className="shrink-0" style={{ color: '#DCE8C0' }}>·</span>
-                        <span className="truncate text-sm" style={{ color: '#EDE7CF' }}>{entry.prompt}</span>
-                        <span className="ml-auto shrink-0 font-mono text-xs" style={{ color: 'rgba(237,231,207,0.6)' }}>{entry.fandom}</span>
+                        <span className="truncate text-sm text-ink-2">{entry.prompt}</span>
+                        <span className="ml-auto shrink-0 font-mono text-xs text-ink-3">{entry.fandom}</span>
                       </button>
                     ))}
                   </div>
@@ -301,7 +270,7 @@ brewed by one person / still steeping
 
         {(appState === 'loading' || appState === 'results') && (
           <div>
-            <div className="sticky top-14 z-30 border-b px-4 py-3 sm:hidden" style={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-default)' }}>
+            <div className="sticky top-14 z-30 border-b border-border bg-surface px-4 py-3 sm:hidden">
               <PromptSearchBar
                 onSearch={handleSearch}
                 isSearching={isSearching}
@@ -312,13 +281,13 @@ brewed by one person / still steeping
             </div>
 
             {error && (
-              <div className="mx-auto mt-4 rounded-lg px-6 py-3 text-sm" style={{ maxWidth: '1200px', backgroundColor: '#FEF2F2', color: '#B91C1C', border: '1px solid #FECACA' }}>
-                <strong>Search error:</strong> {error}
+              <div className="mx-auto mt-4 max-w-results rounded-md border border-danger-border bg-danger-bg px-6 py-3 text-sm text-danger">
+                <strong className="font-semibold">Search error:</strong> {error}
                 {error.includes('Backend') && (
                   <span className="ml-1">
-                    - showing mock data instead.{' '}
+                    Showing mock data instead.{' '}
                     <button
-                      className="underline"
+                      className="underline underline-offset-2"
                       onClick={() => {
                         import('@/lib/mock-data').then(({ MOCK_RESULTS }) => {
                           handleSearch(currentQuery, currentFandom, MOCK_RESULTS);
@@ -334,18 +303,10 @@ brewed by one person / still steeping
 
             {isSearching && results.length === 0 && <ArchitectureBeam />}
 
-            <div className="mx-auto px-4 py-6 sm:px-6" style={{ maxWidth: '1200px' }}>
+            <div className="mx-auto max-w-results px-4 py-6 sm:px-6">
               {results.length > 0 && (
                 <>
-                  <div className="sticky top-16 z-20 mb-4 flex justify-end">
-                    <ViewToggle value={resultsView} onChange={setResultsView} />
-                  </div>
-
-                  {resultsView === 'bento' ? (
-                    <ResultsBento results={results} />
-                  ) : (
-                    <ResultsTable results={results} isRanked={isRanked} isMobile={isMobile} />
-                  )}
+                  <ResultsView results={results} isRanked={isRanked} />
 
                   {!isSearching && (
                     <div className="mt-4">
@@ -357,8 +318,8 @@ brewed by one person / still steeping
 
               {!isSearching && results.length === 0 && !error && (
                 <div className="py-12 text-center">
-                  <p className="mb-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    Nothing brewed yet — the kettle may still be warming up.
+                  <p className="mb-3 text-sm text-ink-2">
+                    Nothing brewed yet. The kettle may still be warming up.
                   </p>
                   <button
                     onClick={() => {
@@ -366,8 +327,7 @@ brewed by one person / still steeping
                         handleSearch(currentQuery, currentFandom, MOCK_RESULTS);
                       });
                     }}
-                    className="rounded-lg px-4 py-2 text-sm font-medium"
-                    style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                    className="rounded-md bg-surface-2 px-4 py-2 text-sm font-medium text-ink transition-colors duration-150 ease-out hover:bg-border"
                   >
                     Load demo results
                   </button>
@@ -379,14 +339,14 @@ brewed by one person / still steeping
       </main>
 
       {appState === 'empty' && (
-        <footer className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 px-6 py-6 font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+        <footer className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 px-6 py-6 font-mono text-[11px] text-ink-3">
           <span>built in a college dorm</span>
-          <span style={{ color: 'var(--accent)' }}>◆</span>
-          <span>semantic search via gemini + claude</span>
-          <span style={{ color: 'var(--accent)' }}>◆</span>
+          <span aria-hidden className="text-accent-text">◆</span>
+          <span>semantic search via Gemini + Claude</span>
+          <span aria-hidden className="text-accent-text">◆</span>
           <span>free during beta</span>
-          <span style={{ color: 'var(--accent)' }}>◆</span>
-          <span>not affiliated with ao3/ffn/wattpad</span>
+          <span aria-hidden className="text-accent-text">◆</span>
+          <span>not affiliated with AO3/FFN/Wattpad</span>
         </footer>
       )}
 
