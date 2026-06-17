@@ -8,21 +8,18 @@ export default function SettingsPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen paper-grid-bg">
-      <header className="sticky top-0 z-40 h-14 flex items-center justify-between px-6 bg-bg-elevated border-b border-border-default shadow-sm">
-        <Link href="/" className="font-serif text-2xl leading-none text-text-primary">
+    <div className="min-h-[100dvh]">
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border-strong bg-surface px-6">
+        <Link href="/" className="font-serif text-xl font-semibold leading-none text-ink">
           Semantic Archive
         </Link>
-        <Link
-          href="/"
-          className="text-sm text-text-secondary hover:text-text-primary transition-colors"
-        >
+        <Link href="/" className="text-sm text-ink-2 transition-colors hover:text-ink">
           ← Back to search
         </Link>
       </header>
 
-      <main className="mx-auto max-w-[640px] w-full px-6 py-10">
-        <h1 className="font-serif italic text-3xl text-text-primary mb-8">Settings</h1>
+      <main className="mx-auto w-full max-w-content px-6 py-10">
+        <h1 className="mb-8 font-serif text-3xl font-semibold tracking-[-0.02em] text-ink">Settings</h1>
         <SettingsContent onSignOut={() => router.push('/')} />
       </main>
     </div>

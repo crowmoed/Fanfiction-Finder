@@ -59,14 +59,14 @@ export default function SettingsContent({ onSignOut }: SettingsContentProps) {
   };
 
   if (loading) {
-    return <div className="h-24 rounded-lg shimmer-bar" />;
+    return <div className="skeleton h-24 rounded-md" />;
   }
 
   if (!isLoggedIn) {
     return (
-      <div className="px-4 py-6 rounded-lg bg-bg-secondary border border-border-default text-center">
-        <p className="text-sm text-text-secondary mb-1">You&apos;re not signed in.</p>
-        <Link href="/" className="text-sm text-accent hover:text-accent-hover">
+      <div className="rounded-md border border-border bg-surface-2 px-4 py-6 text-center">
+        <p className="mb-1 text-sm text-ink-2">You&apos;re not signed in.</p>
+        <Link href="/" className="text-sm text-accent-text hover:underline">
           Go back to sign in →
         </Link>
       </div>
@@ -76,29 +76,24 @@ export default function SettingsContent({ onSignOut }: SettingsContentProps) {
   return (
     <div className="flex flex-col gap-8">
       <section>
-        <h2 className="text-xs font-mono uppercase tracking-wide text-text-tertiary mb-3">
-          Account
-        </h2>
-        <div className="px-4 py-4 rounded-lg bg-bg-elevated border border-border-default flex flex-col gap-2">
+        <h3 className="mb-3 font-mono text-xs uppercase tracking-wider text-ink-3">Account</h3>
+        <div className="flex flex-col gap-2 rounded-md border border-border bg-bg px-4 py-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-text-secondary">Email</span>
-            <span className="text-sm font-mono text-text-primary">{user?.email}</span>
+            <span className="text-sm text-ink-2">Email</span>
+            <span className="font-mono text-sm text-ink">{user?.email}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-text-secondary">Name</span>
-            <span className="text-sm text-text-primary">{user?.name}</span>
+            <span className="text-sm text-ink-2">Name</span>
+            <span className="text-sm text-ink">{user?.name}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-text-secondary">Tier</span>
+            <span className="text-sm text-ink-2">Tier</span>
             {user?.tier === 'paid' ? (
-              <span
-                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono bg-accent-light text-accent border"
-                style={{ borderColor: 'rgba(13,148,136,0.15)' }}
-              >
+              <span className="inline-flex items-center gap-1.5 rounded-sm bg-accent-soft px-2 py-0.5 font-mono text-xs text-accent-text">
                 ✓ unlimited
               </span>
             ) : (
-              <span className="text-xs font-mono text-text-secondary">
+              <span className="font-mono text-xs text-ink-2 tabular-nums">
                 Free — {user?.searches_used ?? 0}/2 this week
               </span>
             )}
@@ -107,49 +102,45 @@ export default function SettingsContent({ onSignOut }: SettingsContentProps) {
       </section>
 
       <section>
-        <h2 className="text-xs font-mono uppercase tracking-wide text-text-tertiary mb-3">
-          Subscription
-        </h2>
+        <h3 className="mb-3 font-mono text-xs uppercase tracking-wider text-ink-3">Subscription</h3>
         {user?.tier === 'paid' ? (
-          <div className="px-4 py-4 rounded-lg bg-bg-elevated border border-border-default">
-            <p className="text-sm text-text-primary mb-1">Unlimited is active.</p>
-            <p className="text-xs text-text-secondary mb-4 leading-relaxed">
-              Thanks for supporting the project. Manage your payment method or cancel anytime
-              through the Stripe customer portal.
+          <div className="rounded-md border border-border bg-bg px-4 py-4">
+            <p className="mb-1 text-sm text-ink">Unlimited is active.</p>
+            <p className="mb-4 text-xs leading-relaxed text-ink-2">
+              Thanks for supporting the project. Manage your payment method or cancel anytime through
+              the Stripe customer portal.
             </p>
             <button
               onClick={handleManageBilling}
-              className="px-4 py-2 rounded-lg text-sm bg-bg-secondary text-text-primary hover:bg-bg-hover border border-border-default"
+              className="rounded-md border border-border-strong bg-surface px-4 py-2 text-sm text-ink transition-colors duration-150 ease-out hover:bg-surface-2"
             >
               Manage subscription
             </button>
-            <p className="text-xs text-text-tertiary mt-2">Redirects to Stripe billing portal</p>
+            <p className="mt-2 text-xs text-ink-3">Redirects to the Stripe billing portal</p>
           </div>
         ) : (
-          <div className="px-4 py-4 rounded-lg bg-bg-elevated border border-border-default">
-            <p className="text-sm text-text-primary mb-1">Upgrade to Unlimited</p>
-            <p className="text-xs text-text-secondary mb-4 leading-relaxed">
-              Free accounts get 2 searches per week. Each search costs real money in AI and
-              hosting fees — unlimited is $2/month to help cover the costs. Cancel anytime.
+          <div className="rounded-md border border-border bg-bg px-4 py-4">
+            <p className="mb-1 text-sm text-ink">Upgrade to Unlimited</p>
+            <p className="mb-4 text-xs leading-relaxed text-ink-2">
+              Free accounts get 2 searches per week. Each search costs real money in AI and hosting
+              fees. Unlimited is $2/month to help cover the costs. Cancel anytime.
             </p>
             <button
               onClick={handleUpgrade}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-accent text-white hover:bg-accent-hover"
+              className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-ink transition-colors duration-150 ease-out hover:bg-accent-hover active:scale-[0.98] motion-reduce:active:scale-100"
             >
               Upgrade — $2/mo
             </button>
-            <p className="text-xs text-text-tertiary mt-2">Redirects to Stripe checkout</p>
+            <p className="mt-2 text-xs text-ink-3">Redirects to Stripe checkout</p>
           </div>
         )}
       </section>
 
       <section>
-        <h2 className="text-xs font-mono uppercase tracking-wide text-text-tertiary mb-3">
-          Session
-        </h2>
+        <h3 className="mb-3 font-mono text-xs uppercase tracking-wider text-ink-3">Session</h3>
         <button
           onClick={handleSignOut}
-          className="px-4 py-2 rounded-lg text-sm bg-bg-secondary text-text-primary hover:bg-bg-hover border border-border-default"
+          className="rounded-md border border-border-strong bg-surface px-4 py-2 text-sm text-ink transition-colors duration-150 ease-out hover:bg-surface-2"
         >
           Sign out
         </button>

@@ -1,175 +1,84 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState } from 'react';
 import type { FicResult } from '@/lib/schema/types';
+import PlatformBadge from '@/components/PlatformBadge';
+import RatingBadge from '@/components/RatingBadge';
 import { formatWordCount } from '@/lib/utils/format';
 
 interface FicCardProps {
   fic: FicResult;
   rank: number;
+  featured?: boolean;
 }
 
-export function FicCard({ fic, rank }: FicCardProps) {
+/** Calm match indicator: a small tinted pill, no animation, contrast-verified. */
+function MatchPill({ match }: { match: number | null }) {
+  if (match == null) return null;
+  const high = match >= 80;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[11px] font-semibold tabular-nums ${
+        high ? 'bg-accent text-accent-ink' : 'bg-accent-soft text-accent-text'
+      }`}
+    >
+      {match}% match
+    </span>
+  );
+}
+
+export function FicCard({ fic, rank, featured = false }: FicCardProps) {
   const tags = fic.tags ?? [];
-  const shownTags = tags.slice(0, 4);
+  const shownTags = tags.slice(0, featured ? 6 : 4);
   const overflow = Math.max(0, tags.length - shownTags.length);
   const match = fic.matchScore == null ? null : Math.round(fic.matchScore);
   const kudos = fic.stats.kudos ?? fic.stats.favs;
-
-  const summaryRef = useRef<HTMLParagraphElement>(null);
-  const [isTruncated, setIsTruncated] = useState(false);
-
-  useLayoutEffect(() => {
-    const el = summaryRef.current;
-    if (!el) return;
-    const check = () => setIsTruncated(el.scrollHeight > el.clientHeight + 1);
-    check();
-    const ro = new ResizeObserver(check);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [fic.summary]);
 
   return (
     <a
       href={fic.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block h-full p-4 text-left"
+      className="group flex h-full flex-col rounded-md border border-border bg-surface p-4 text-left transition-[border-color,box-shadow] duration-150 ease-out hover:border-border-strong hover:shadow-soft focus-visible:border-border-strong"
       aria-label={`Open ${fic.title} on ${fic.platform}`}
     >
-      <article className="flex h-full flex-col">
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <PlatformChip platform={fic.platform} />
-          <MatchChip rank={rank} match={match} />
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs text-ink-3 tabular-nums">#{rank}</span>
+          <PlatformBadge platform={fic.platform} />
+          <RatingBadge rating={fic.rating} />
         </div>
+        <MatchPill match={match} />
+      </div>
 
-        <h3 className="line-clamp-2 font-serif text-[22px] italic leading-tight group-hover:underline" style={{ color: 'var(--text-primary)', textUnderlineOffset: 3 }}>
-          {fic.title}
-        </h3>
+      <h3
+        className={`font-serif leading-tight text-ink underline-offset-2 group-hover:underline ${
+          featured ? 'text-2xl' : 'line-clamp-2 text-xl'
+        }`}
+      >
+        {fic.title}
+      </h3>
+      <p className="mt-1 text-xs text-ink-3">by {fic.author || 'Unknown'}</p>
 
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          {shownTags.map((tag) => (
-            <span key={tag} className="rounded-full border px-2 py-1 text-[11px]" style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)' }}>
-              {tag}
-            </span>
-          ))}
-          {overflow > 0 && (
-            <span className="rounded-full border px-2 py-1 text-[11px]" style={{ borderColor: 'var(--border-default)', color: 'var(--text-tertiary)' }}>
-              +{overflow}
-            </span>
-          )}
-        </div>
+      <p className={`mt-3 flex-1 text-sm leading-relaxed text-ink-2 ${featured ? 'line-clamp-5' : 'line-clamp-3'}`}>
+        {fic.summary || 'No summary available.'}
+      </p>
 
-        <div className="relative mt-4 flex-1 overflow-hidden">
-          <p ref={summaryRef} className="line-clamp-3 text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>
-            {fic.summary || 'No summary available.'}
-          </p>
-          {isTruncated && (
-            <span className="mt-1 inline-block text-sm" style={{ color: 'var(--accent)' }}>read more →</span>
-          )}
-        </div>
+      <div className="mt-4 flex flex-wrap gap-1.5">
+        {shownTags.map((tag) => (
+          <span key={tag} className="rounded-sm bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-ink-2">
+            {tag}
+          </span>
+        ))}
+        {overflow > 0 && (
+          <span className="rounded-sm bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-ink-3">+{overflow}</span>
+        )}
+      </div>
 
-        <div className="mt-5 border-t border-dashed pt-3 font-mono text-[12px]" style={{ borderColor: 'var(--border-default)', color: 'var(--text-tertiary)' }}>
-          {formatWordCount(fic.wordCount)} words · {kudos ? `${formatWordCount(kudos)} kudos · ` : ''}{fic.status === 'complete' ? 'complete' : 'in progress'}
-        </div>
-      </article>
+      <div className="mt-4 border-t border-border pt-3 font-mono text-[11px] text-ink-3">
+        <span className="tabular-nums">{formatWordCount(fic.wordCount)} words</span>
+        {kudos ? <span className="tabular-nums"> · {formatWordCount(kudos)} kudos</span> : null}
+        <span> · {fic.status === 'complete' ? 'complete' : 'in progress'}</span>
+      </div>
     </a>
-  );
-}
-
-function MatchChip({ rank, match }: { rank: number; match: number | null }) {
-  if (match == null) {
-    return (
-      <span
-        className="rounded-full border px-2 py-1 font-mono text-[11px]"
-        style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)' }}
-      >
-        #{rank}
-      </span>
-    );
-  }
-
-  if (match >= 85) {
-    return (
-      <span
-        className="relative inline-flex items-center overflow-hidden rounded-full px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wide"
-        style={{
-          color: '#FFF7ED',
-          backgroundColor: '#EA580C',
-          boxShadow: [
-            // outer glassy rim — deep amber refraction + bright caustic halo
-            '0 0 0 1px rgba(124, 45, 18, 0.9)',
-            '0 0 0 2px rgba(254, 215, 170, 0.4)',
-            '0 1px 3px rgba(124, 45, 18, 0.55)',
-            // inner glass: top highlight + bottom shadow
-            'inset 0 1px 0.5px rgba(255,255,255,0.75)',
-            'inset 0 -1px 0.5px rgba(0,0,0,0.35)',
-            'inset 0 0 0 1px rgba(255,255,255,0.12)',
-          ].join(', '),
-          textShadow: '0 1px 1px rgba(0,0,0,0.45)',
-        }}
-      >
-        {/* faceted highlight — runs along the top edge like polished glass */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-full"
-          style={{
-            background:
-              'linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.08) 60%, transparent 100%)',
-          }}
-        />
-        {/* refraction glow — bright amber crescent at the bottom */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-x-1 bottom-0 h-px"
-          style={{
-            background:
-              'linear-gradient(90deg, transparent, rgba(254, 215, 170, 0.9), transparent)',
-            filter: 'blur(0.5px)',
-          }}
-        />
-        {/* travelling shine */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              'linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.6) 50%, transparent 62%)',
-            backgroundSize: '220% 100%',
-            animation: 'emeraldShine 4.5s ease-in-out infinite',
-            mixBlendMode: 'overlay',
-          }}
-        />
-        <span className="relative">◆ MATCH {match}%</span>
-      </span>
-    );
-  }
-
-  const tier =
-    match >= 70
-      ? { color: '#9A3412', bg: '#FFEDD5', border: '#FDBA74' }
-      : { color: 'var(--text-secondary)', bg: 'var(--bg-secondary)', border: 'var(--border-default)' };
-
-  return (
-    <span
-      className="rounded-full border px-2 py-1 font-mono text-[11px] font-semibold"
-      style={{ color: tier.color, backgroundColor: tier.bg, borderColor: tier.border }}
-    >
-      MATCH {match}%
-    </span>
-  );
-}
-
-function PlatformChip({ platform }: { platform: FicResult['platform'] }) {
-  const styles = {
-    ao3: { label: 'AO3', color: 'var(--ao3-red)', bg: 'var(--ao3-red-bg)' },
-    ffn: { label: 'FFN', color: 'var(--ffn-blue)', bg: 'var(--ffn-blue-bg)' },
-    wattpad: { label: 'Wattpad', color: 'var(--wattpad-orange)', bg: 'var(--wattpad-orange-bg)' },
-  }[platform];
-
-  return (
-    <span className="rounded px-2 py-1 font-mono text-[11px] uppercase" style={{ color: styles.color, backgroundColor: styles.bg, border: '1px solid currentColor' }}>
-      {styles.label}
-    </span>
   );
 }

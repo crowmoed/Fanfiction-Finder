@@ -1,27 +1,23 @@
-'use client';
-
 type Rating = 'G' | 'T' | 'M' | 'E';
 
 interface RatingBadgeProps {
   rating: Rating;
 }
 
-const RATING_STYLES: Record<Rating, { bg: string; text: string; label: string }> = {
-  G: { bg: '#dcfce7', text: '#15803d', label: 'General Audiences' },
-  T: { bg: '#fef9c3', text: '#a16207', label: 'Teen And Up Audiences' },
-  M: { bg: '#ffedd5', text: '#c2410c', label: 'Mature' },
-  E: { bg: '#fee2e2', text: '#b91c1c', label: 'Explicit' },
+const RATING: Record<Rating, { cls: string; label: string }> = {
+  G: { cls: 'text-rating-g bg-rating-g-bg', label: 'General Audiences' },
+  T: { cls: 'text-rating-t bg-rating-t-bg', label: 'Teen And Up Audiences' },
+  M: { cls: 'text-rating-m bg-rating-m-bg', label: 'Mature' },
+  E: { cls: 'text-rating-e bg-rating-e-bg', label: 'Explicit' },
 };
 
 export default function RatingBadge({ rating }: RatingBadgeProps) {
-  const style = RATING_STYLES[rating] ?? RATING_STYLES['T'];
-
+  const r = RATING[rating] ?? RATING.T;
   return (
     <span
-      className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-mono font-semibold"
-      style={{ backgroundColor: style.bg, color: style.text }}
-      title={style.label}
-      aria-label={style.label}
+      className={`inline-flex h-6 w-6 items-center justify-center rounded-full font-mono text-xs font-semibold ${r.cls}`}
+      title={r.label}
+      aria-label={`Rating: ${r.label}`}
     >
       {rating}
     </span>

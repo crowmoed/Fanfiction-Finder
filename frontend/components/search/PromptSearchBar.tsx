@@ -2,14 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Fandom, FicResult } from '@/lib/schema/types';
-import { ShineBorder } from '@/components/ui/shine-border';
-import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
+import { Button } from '@/components/ui/Button';
 import { FilterChips } from '@/components/search/FilterChips';
 
 const EXAMPLES = [
   'enemies to lovers slow burn over 100k words',
   'fix-it fic where nobody dies, complete only',
-  'dark academia AU with unreliable narrator',
+  'dark academia AU with an unreliable narrator',
   'found family trope, rated T or below',
 ];
 
@@ -78,62 +77,57 @@ export default function PromptSearchBar({
 
   if (compact) {
     return (
-      <div
-        className="flex items-center gap-2 rounded-full border px-2 py-1"
-        style={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--text-primary)', boxShadow: 'var(--shadow-sm)' }}
-      >
+      <div className="flex items-center gap-2 rounded-full border border-border-strong bg-surface px-2 py-1 shadow-soft">
         <input
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Search fanfiction..."
-          className="min-w-0 flex-1 bg-transparent px-2 py-1 text-sm outline-none"
-          style={{ color: 'var(--text-primary)' }}
+          placeholder="What are you in the mood for…"
+          aria-label="Search for fanfiction"
+          className="min-w-0 flex-1 bg-transparent px-2 py-1 text-sm text-ink outline-none placeholder:text-ink-3"
           disabled={isSearching}
         />
         <FilterChips fandom={fandom} onFandomChange={setFandom} compact />
-        <InteractiveHoverButton iconOnly onClick={handleSubmit} disabled={isSearching || !prompt.trim()}>
-          Search
-        </InteractiveHoverButton>
+        <Button
+          size="sm"
+          onClick={handleSubmit}
+          disabled={isSearching || !prompt.trim()}
+          aria-label="Search"
+          className="h-8 w-8 rounded-full p-0"
+        >
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden>
+            <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.6" />
+            <path d="M11 11l3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+        </Button>
       </div>
     );
   }
 
   return (
-    <ShineBorder
-      borderRadius={18}
-      borderWidth={1.5}
-      duration={14}
-      color={['var(--shine-1)', 'var(--shine-2)', 'var(--shine-3)']}
-      className="shadow-md"
-    >
-      <div
-        className="flex min-h-[160px] flex-col rounded-2xl px-5 py-4"
-        style={{ backgroundColor: 'var(--bg-elevated)' }}
-        role="search"
-        aria-label="Search for fanfiction"
-      >
+    <div className="stamp rounded-md p-1" role="search" aria-label="Search for fanfiction">
+      <div className="flex min-h-[152px] flex-col rounded-[8px] bg-surface px-4 pb-3 pt-4">
         <textarea
           ref={textareaRef}
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="min-h-[72px] w-full flex-1 resize-none bg-transparent px-1 py-1 text-[18px] leading-relaxed outline-none placeholder:italic"
-          style={{ color: 'var(--text-primary)' }}
+          aria-label="Describe the fic you want"
+          className="min-h-[72px] w-full flex-1 resize-none bg-transparent px-1 py-1 text-[18px] leading-relaxed text-ink outline-none placeholder:italic placeholder:text-ink-3"
           rows={2}
           disabled={isSearching}
         />
-        <div
-          className="mt-3 flex flex-col gap-3 border-t pt-3 sm:flex-row sm:items-center sm:justify-between"
-          style={{ borderColor: 'var(--border-subtle)' }}
-        >
+        <div className="mt-3 flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-center sm:justify-between">
           <FilterChips fandom={fandom} onFandomChange={setFandom} />
-          <InteractiveHoverButton onClick={handleSubmit} disabled={isSearching || !prompt.trim()}>
-            {isSearching ? 'Searching' : 'Search'}
-          </InteractiveHoverButton>
+          <div className="flex items-center gap-3">
+            <span className="hidden font-mono text-[11px] text-ink-3 sm:inline">⌘↵ to search</span>
+            <Button onClick={handleSubmit} disabled={isSearching || !prompt.trim()}>
+              {isSearching ? 'Steeping…' : 'Steep a pot'}
+            </Button>
+          </div>
         </div>
       </div>
-    </ShineBorder>
+    </div>
   );
 }

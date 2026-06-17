@@ -7,7 +7,7 @@ export default function AuthButton() {
   const { loading, login, isLoggedIn } = useAuth();
 
   if (loading) {
-    return <div className="h-9 w-24 rounded-lg shimmer-bar" />;
+    return <div className="skeleton h-9 w-24 rounded-full" />;
   }
 
   if (isLoggedIn) return null;

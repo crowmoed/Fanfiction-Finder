@@ -36,79 +36,76 @@ export function FilterChips({ fandom, onFandomChange, compact = false }: FilterC
   }, [fandom, fandoms, onFandomChange]);
 
   useEffect(() => {
+    if (!open) return;
     const onPointerDown = (event: PointerEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
     };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
     window.addEventListener('pointerdown', onPointerDown);
-    return () => window.removeEventListener('pointerdown', onPointerDown);
-  }, []);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
 
   return (
-    <div ref={rootRef} className="relative flex min-w-0 flex-wrap items-center gap-2">
+    <div ref={rootRef} className="relative flex min-w-0 items-center">
       <button
         type="button"
-        className={chipClass(compact)}
         onClick={() => setOpen((value) => !value)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
         title="Choose fandom"
-        style={{
-          borderColor: open ? 'var(--accent)' : 'var(--border-default)',
-          color: 'var(--text-primary)',
-        }}
+        className={cn(
+          'inline-flex items-center gap-1.5 rounded-full border bg-surface-2 font-mono text-xs text-ink transition-colors duration-150 ease-out',
+          open ? 'border-accent' : 'border-border hover:border-border-strong',
+          compact ? 'h-8 px-2.5' : 'px-3 py-1.5',
+        )}
       >
-        <span aria-hidden style={{ color: 'var(--accent)' }}>✦</span>
+        <span aria-hidden className="text-accent-text">✦</span>
         <span className={compact ? 'sr-only' : 'max-w-[160px] truncate'}>{fandom || 'All Fandoms'}</span>
-        <span aria-hidden style={{ color: 'var(--text-tertiary)' }}>⌄</span>
+        <span aria-hidden className="text-ink-3">⌄</span>
       </button>
 
       {open && (
         <div
-          className="scrollbar-translucent absolute left-0 top-full z-50 mt-2 w-64 overflow-y-auto rounded-lg border p-1.5 shadow-md"
-          style={{ maxHeight: '16rem', backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--text-primary)' }}
-          onWheel={(e) => e.stopPropagation()}
+          role="listbox"
+          className="scrollbar-translucent absolute left-0 top-full z-[50] mt-2 max-h-64 w-64 overflow-y-auto rounded-md border border-border bg-surface p-1.5 shadow-soft"
         >
           {loading ? (
-            <div className="px-3 py-2 font-mono text-xs" style={{ color: 'var(--text-tertiary)' }}>
-              loading…
-            </div>
+            <div className="px-3 py-2 font-mono text-xs text-ink-3">loading…</div>
           ) : fandoms.length === 0 ? (
-            <div className="px-3 py-2 font-mono text-xs" style={{ color: 'var(--text-tertiary)' }}>
-              no fandoms found
-            </div>
-          ) : fandoms.map((item) => {
-            const selected = item.name === fandom;
-            return (
-              <button
-                type="button"
-                key={item.name}
-                disabled={!item.collected}
-                onClick={() => {
-                  onFandomChange(item.name);
-                  setOpen(false);
-                }}
-                className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm disabled:cursor-not-allowed disabled:opacity-50"
-                style={{
-                  color: 'var(--text-primary)',
-                  backgroundColor: selected ? 'var(--accent-light)' : 'transparent',
-                }}
-              >
-                <span>{item.name}</span>
-                {selected && (
-                  <span aria-hidden style={{ color: 'var(--accent)' }}>
-                    ✓
-                  </span>
-                )}
-              </button>
-            );
-          })}
+            <div className="px-3 py-2 font-mono text-xs text-ink-3">no fandoms found</div>
+          ) : (
+            fandoms.map((item) => {
+              const selected = item.name === fandom;
+              return (
+                <button
+                  type="button"
+                  key={item.name}
+                  role="option"
+                  aria-selected={selected}
+                  disabled={!item.collected}
+                  onClick={() => {
+                    onFandomChange(item.name);
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    'flex w-full items-center justify-between rounded-sm px-3 py-2 text-left text-sm text-ink transition-colors duration-100 disabled:cursor-not-allowed disabled:opacity-40',
+                    selected ? 'bg-accent-soft text-accent-text' : 'hover:bg-surface-2',
+                  )}
+                >
+                  <span>{item.name}</span>
+                  {selected && <span aria-hidden className="text-accent-text">✓</span>}
+                </button>
+              );
+            })
+          )}
         </div>
       )}
     </div>
-  );
-}
-
-function chipClass(compact: boolean) {
-  return cn(
-    'inline-flex items-center gap-1.5 rounded-full border bg-[var(--bg-secondary)] font-mono text-xs',
-    compact ? 'h-8 px-2' : 'px-3 py-1.5'
   );
 }
