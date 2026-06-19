@@ -19,7 +19,7 @@ import { RotatingCravings } from '@/components/hero/RotatingCravings';
 import { StatsTicker } from '@/components/proof/StatsTicker';
 import { FandomMarquee } from '@/components/proof/FandomMarquee';
 import { ArchitectureBeam } from '@/components/loading/ArchitectureBeam';
-import { TeahouseCanopy, HangingCupSign } from '@/components/ambient/TeahouseDecor';
+import { HangingCupSign } from '@/components/ambient/TeahouseDecor';
 
 type AppState = 'empty' | 'loading' | 'results';
 
@@ -172,7 +172,6 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-[100dvh] flex-col">
-      {appState === 'empty' && <TeahouseCanopy />}
       <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border-strong bg-surface/90 px-4 backdrop-blur-md sm:px-6">
         <button onClick={handleGoHome} className="flex items-baseline gap-2" aria-label="Semantic Archive home">
           <span className="font-serif text-xl font-semibold leading-none text-ink">Semantic Archive</span>

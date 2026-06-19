@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vine Design Gallery — 50 variations</title>
+<style>
+  :root {
+    --bg-primary: #EAE6CF;
+    --bg-secondary: #DBD8B6;
+    --bg-elevated: #F2EFDC;
+    --border-ink: #1E2A18;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg-primary);
+    color: var(--border-ink);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 28px 32px 60px;
+  }
+  header { margin-bottom: 22px; }
+  h1 { font-weight: 700; margin: 0 0 4px; font-size: 26px; }
+  .sub { opacity: .72; margin: 0; font-size: 14px; max-width: 760px; }
+  .controls { margin: 16px 0 0; display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    border: 1.5px solid var(--border-ink);
+    background: var(--bg-elevated);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+  }
+  .chip.active { background: var(--border-ink); color: var(--bg-elevated); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
+    margin-top: 22px;
+  }
+  .card {
+    position: relative;
+    border: 1.5px solid var(--border-ink);
+    border-radius: 10px;
+    height: 360px;
+    overflow: hidden;
+    box-shadow: 0 3px 0 rgba(30,42,24,.12);
+  }
+  .card svg.vine { position: absolute; top: -2px; left: 0; }
+  .label {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    backdrop-filter: blur(2px);
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .label .left { display: flex; align-items: baseline; gap: 7px; min-width:0; }
+  .label .num {
+    border-radius: 5px;
+    padding: 1px 7px;
+    font-size: 12px;
+    flex: none;
+  }
+  .label .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .label .desc { font-weight: 400; opacity: .7; font-size: 10.5px; white-space: nowrap; flex:none; }
+  .hint { margin-top: 26px; font-size: 13px; opacity: .7; }
+  .tag { font-size:10px; opacity:.6; font-weight:600; text-transform:uppercase; letter-spacing:.5px; position:absolute; top:8px; left:10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Vine Designs — 50 variations</h1>
+  <p class="sub">Different shapes, densities, and palettes for the hanging corner foliage. Several palettes beyond the tea-house green so you can see how each shape reads in different moods. Filter by palette below. Tell me the numbers you like — we can mix any shape with any palette.</p>
+  <div class="controls" id="filters"></div>
+</header>
+<div class="grid" id="grid"></div>
+<p class="hint">Each preview is the left-corner vine; the real component mirrors it for the right side. The card background = the palette's page color, so you see real contrast.</p>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, parent){const n=document.createElementNS(NS,tag);for(const k in attrs)n.setAttribute(k,attrs[k]);if(parent)parent.appendChild(n);return n;}
+function svgEl(w,h){return el('svg',{width:w,height:h,viewBox:`0 0 ${w} ${h}`,fill:'none',class:'vine'});}
+
+/* ---------------- PALETTES ----------------
+   Each: dark (main stem/dark leaf), main (leaf), light (accent leaf),
+   pop (flowers/berries), vein, page (card bg), ink (label text) */
+const PALETTES = {
+  teahouse: { name:'Tea-house',   dark:'#3E6B43', main:'#5C8A3A', light:'#8FB66B', pop:'#C98B2E', vein:'#466B2A', page:'#EAE6CF', ink:'#1E2A18' },
+  forest:   { name:'Deep Forest', dark:'#1F3D2B', main:'#2E6B4F', light:'#5FA37D', pop:'#E4B95B', vein:'#16301F', page:'#0E1A12', ink:'#DCE8D0' },
+  sakura:   { name:'Sakura',      dark:'#7A3B52', main:'#C56B86', light:'#F0A8BE', pop:'#F6D365', vein:'#8A4A60', page:'#FBEEF2', ink:'#4A2230' },
+  autumn:   { name:'Autumn',      dark:'#7A3B17', main:'#C9702B', light:'#E0A24A', pop:'#9E2B25', vein:'#5E2A0F', page:'#F6ECD9', ink:'#3A2410' },
+  ocean:    { name:'Ocean Teal',  dark:'#13494E', main:'#1F7A82', light:'#5FB6BD', pop:'#E08A3C', vein:'#0C3539', page:'#E4F0EE', ink:'#0E2B2D' },
+  lavender: { name:'Lavender',    dark:'#4A3A6B', main:'#7C66B0', light:'#B4A0DC', pop:'#E8C04A', vein:'#3A2C57', page:'#F1ECF7', ink:'#2E2244' },
+  mono:     { name:'Ink Mono',    dark:'#1E2A18', main:'#3A4A33', light:'#6E7A64', pop:'#1E2A18', vein:'#1E2A18', page:'#F5F3E8', ink:'#1E2A18' },
+  golden:   { name:'Golden Hour', dark:'#6B4A1E', main:'#B6862E', light:'#E0BC5C', pop:'#C24A2E', vein:'#5A3C16', page:'#1A1408', ink:'#EAD9A8' },
+};
+
+/* ---------------- LEAF / DETAIL LIBRARY ---------------- */
+function leafTeardrop(p,x,y,rot,P,fill,op=.9,sc=1){const g=el('g',{transform:`translate(${x} ${y}) rotate(${rot}) scale(${sc})`},p);el('path',{d:'M0 0 C -7 -10, -7 -22, 0 -30 C 7 -22, 7 -10, 0 0 Z',fill,opacity:op},g);el('path',{d:'M0 -2 L0 -26',stroke:P.vein,'stroke-width':1,opacity:.5},g);}
+function leafRound(p,x,y,rot,P,fill,op=.9,sc=1){const g=el('g',{transform:`translate(${x} ${y}) rotate(${rot}) scale(${sc})`},p);el('ellipse',{cx:0,cy:-12,rx:9,ry:13,fill,opacity:op},g);el('path',{d:'M0 0 L0 -24',stroke:P.vein,'stroke-width':1,opacity:.5},g);}
+function leafPointy(p,x,y,rot,P,fill,op=.9,sc=1){const g=el('g',{transform:`translate(${x} ${y}) rotate(${rot}) scale(${sc})`},p);el('path',{d:'M0 0 C -5 -14, -3 -30, 0 -38 C 3 -30, 5 -14, 0 0 Z',fill,opacity:op},g);el('path',{d:'M0 -4 L0 -32',stroke:P.vein,'stroke-width':.8,opacity:.5},g);}
+function leafHeart(p,x,y,rot,P,fill,op=.9,sc=1){const g=el('g',{transform:`translate(${x} ${y}) rotate(${rot}) scale(${sc})`},p);el('path',{d:'M0 -2 C -12 -16, -12 -30, 0 -24 C 12 -30, 12 -16, 0 -2 Z',fill,opacity:op},g);el('path',{d:'M0 -6 L0 -22',stroke:P.vein,'stroke-width':1,opacity:.5},g);}
+function leafMaple(p,x,y,rot,P,fill,op=.9,sc=1){const g=el('g',{transform:`translate(${x} ${y}) rotate(${rot}) scale(${sc})`},p);el('path',{d:'M0 0 L-3 -8 L-11 -10 L-5 -16 L-9 -24 L0 -19 L9 -24 L5 -16 L11 -10 L3 -8 Z',fill,opacity:op},g);}
+function leafFern(p,x,y,rot,P,fill,op=.9,sc=1){const g=el('g',{transform:`translate(${x} ${y}) rotate(${rot}) scale(${sc})`},p);el('path',{d:'M0 0 L0 -32',stroke:fill,'stroke-width':1.5,opacity:op},g);for(let i=4;i<32;i+=6){el('path',{d:`M0 ${-i} L-7 ${-i-4}`,stroke:fill,'stroke-width':1.4,opacity:op,'stroke-linecap':'round'},g);el('path',{d:`M0 ${-i} L7 ${-i-4}`,stroke:fill,'stroke-width':1.4,opacity:op,'stroke-linecap':'round'},g);}}
+function leafMonstera(p,x,y,rot,P,fill,op=.9,sc=1){const g=el('g',{transform:`translate(${x} ${y}) rotate(${rot}) scale(${sc})`},p);el('path',{d:'M0 0 C -16 -6 -18 -22 -10 -32 C -4 -38 4 -38 10 -32 C 18 -22 16 -6 0 0 Z',fill,opacity:op},g);[-7,-1,5].forEach((sx,i)=>el('path',{d:`M${sx} ${-8-i*2} L${sx+ (sx<0?-4:4)} ${-18-i*2}`,stroke:P.page,'stroke-width':2,opacity:.9,'stroke-linecap':'round'},g));}
+function leafPearl(p,x,y,P,fill,r=5){el('circle',{cx:x,cy:y,r,fill,opacity:.95},p);el('circle',{cx:x-r*.35,cy:y-r*.35,r:r*.3,fill:P.page,opacity:.35},p);}
+function dotBerry(p,x,y,fill,r=3.5){el('circle',{cx:x,cy:y,r,fill,opacity:.95},p);}
+function flower5(p,x,y,P,center,petal){const g=el('g',{transform:`translate(${x} ${y})`},p);for(let i=0;i<5;i++)el('ellipse',{cx:0,cy:-6,rx:3,ry:6,fill:petal,opacity:.95,transform:`rotate(${i*72})`},g);el('circle',{cx:0,cy:0,r:2.8,fill:center},g);}
+function flowerBell(p,x,y,P,fill){const g=el('g',{transform:`translate(${x} ${y})`},p);el('path',{d:'M-5 0 C -5 8 5 8 5 0 C 5 -5 -5 -5 -5 0 Z',fill,opacity:.92},g);el('path',{d:'M0 -4 L0 -10',stroke:P.vein,'stroke-width':1,opacity:.6},g);}
+function wisteriaCluster(p,x,y,P){for(let i=0;i<6;i++){const oy=y+i*7, ox=x+(i%2?2:-2);flowerBell(p,ox,oy,P, i<3?P.light:P.main);}}
+function stem(p,d,stroke,w=3,op=.85){el('path',{d,stroke,'stroke-width':w,'stroke-linecap':'round',opacity:op},p);}
+
+/* ---------------- 50 SHAPES ----------------
+   Each shape(s, P) draws using the palette P. */
+const SHAPES = [
+ ['Classic Trail','baseline',(s,P)=>{stem(s,'M40 0 C 45 60, 30 100, 48 150 C 64 195, 40 240, 60 310',P.dark,3);stem(s,'M70 0 C 80 50, 95 90, 82 140 C 70 185, 92 220, 78 290',P.main,2.5,.7);[[48,40,-22],[36,80,18],[52,125,-28],[42,170,22],[58,215,-20],[50,265,16],[82,55,24],[90,105,-18],[78,160,26],[86,210,-22]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,i%2?P.main:P.dark));}],
+ ['Lazy Drape','one soft curve',(s,P)=>{stem(s,'M30 0 C 60 80, 20 150, 70 230 C 100 280, 60 310, 90 320',P.dark,3.5);[[42,50,-30],[40,95,25],[55,150,-25],[68,200,28],[82,250,-22],[88,295,18]].forEach(([x,y,r],i)=>leafRound(s,x,y,r,P,i%2?P.main:P.dark));}],
+ ['Fern Curtain','feathery fronds',(s,P)=>{stem(s,'M50 0 L52 320',P.dark,2,.6);[[52,40,-12],[52,90,10],[52,140,-10],[52,195,12],[52,250,-10],[52,300,10]].forEach(([x,y,r])=>leafFern(s,x,y,r,P,P.main,.85,1.1));[[80,60,-20],[20,110,20],[80,170,-18],[24,230,22]].forEach(([x,y,r])=>leafFern(s,x,y,r,P,P.dark,.8,.8));}],
+ ['Braided Pair','two stems weave',(s,P)=>{stem(s,'M45 0 C 70 60, 40 120, 65 180 C 90 240, 55 290, 75 320',P.dark,3);stem(s,'M65 0 C 40 60, 70 120, 45 180 C 20 240, 60 290, 45 320',P.main,3,.75);[[55,55,-25],[50,115,22],[55,175,-24],[58,235,20],[55,290,-18]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,i%2?P.main:P.dark));}],
+ ['Berry Vine','leaves + berries',(s,P)=>{stem(s,'M40 0 C 55 70, 35 140, 60 210 C 80 270, 55 300, 80 320',P.dark,3);[[48,45,-26],[44,100,24],[58,160,-22],[70,220,26],[78,280,-18]].forEach(([x,y,r],i)=>leafPointy(s,x,y,r,P,i%2?P.main:P.dark));[[60,70],[52,130],[68,190],[80,250],[86,300]].forEach(([x,y])=>{dotBerry(s,x,y,P.pop,3);dotBerry(s,x+6,y+5,P.main,2.5);dotBerry(s,x-5,y+6,P.dark,2.5);});}],
+ ['Blossom Trail','small flowers',(s,P)=>{stem(s,'M45 0 C 35 70, 60 130, 45 200 C 30 260, 60 300, 50 320',P.dark,3);[[52,50,-24],[40,110,22],[55,170,-26],[44,230,24],[55,285,-20]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,i%2?P.main:P.dark,.85,.85));[[62,80],[40,150],[64,215],[44,275]].forEach(([x,y])=>flower5(s,x,y,P,P.pop,P.light));}],
+ ['Curling Tendrils','thin spirals',(s,P)=>{stem(s,'M40 0 C 50 60, 30 110, 50 170 C 68 225, 40 270, 60 320',P.dark,2);stem(s,'M40 60 C 25 75, 28 95, 42 92',P.main,1.6,.8);stem(s,'M50 170 C 68 185, 66 205, 50 202',P.main,1.6,.8);stem(s,'M55 250 C 38 262, 40 282, 56 280',P.main,1.6,.8);[[46,40,-28],[40,90,26],[52,140,-24],[48,200,24],[58,255,-22],[56,300,18]].forEach(([x,y,r],i)=>leafPointy(s,x,y,r,P,i%2?P.main:P.dark,.85,.8));}],
+ ['Heartleaf Pothos','cascading hearts',(s,P)=>{stem(s,'M35 0 C 55 70, 25 140, 55 210 C 80 265, 50 300, 70 320',P.dark,2.5);[[45,40,-30],[38,80,30],[50,120,-28],[44,165,28],[58,205,-26],[52,250,26],[68,290,-22]].forEach(([x,y,r],i)=>leafHeart(s,x,y,r,P,i%2?P.main:P.dark,.9,.9));}],
+ ['Bold Bough','thick woody stem',(s,P)=>{stem(s,'M40 0 C 50 80, 35 160, 60 240 C 80 290, 60 310, 80 320',P.vein,5);[[50,50,-24],[42,110,22],[56,175,-22],[70,240,24],[80,295,-18]].forEach(([x,y,r],i)=>leafRound(s,x,y,r,P,i%2?P.main:P.dark,.95,1.1));}],
+ ['Minimal Sprig','few airy leaves',(s,P)=>{stem(s,'M45 0 C 40 90, 60 180, 45 280 C 40 300, 50 312, 48 320',P.dark,2);[[40,70,-28],[58,150,26],[42,230,-24],[52,300,20]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,i%2?P.main:P.dark,.85));}],
+ ['Maple Cascade','maple leaves',(s,P)=>{stem(s,'M42 0 C 55 70, 35 140, 60 210 C 80 270, 55 300, 78 320',P.dark,2.5);[[50,45,-15],[42,100,15],[58,160,-15],[70,220,15],[80,280,-12]].forEach(([x,y,r],i)=>leafMaple(s,x,y,r,P,i%2?P.main:P.dark,.92,1));}],
+ ['Waterfall','3 stems fan out',(s,P)=>{stem(s,'M50 0 C 30 80, 25 180, 30 320',P.dark,2.5);stem(s,'M50 0 C 50 90, 52 200, 55 320',P.main,2.5,.8);stem(s,'M50 0 C 72 80, 80 180, 85 320',P.dark,2.5,.85);[[30,60,-20],[55,90,15],[80,70,20],[28,160,-18],[55,180,12],[82,160,18],[30,260,-16],[56,280,14],[84,260,16]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,i%2?P.main:P.dark,.85,.8));}],
+ ['Climbing Ivy','angular ivy',(s,P)=>{stem(s,'M40 0 L48 50 L36 100 L52 150 L40 200 L58 250 L46 320',P.dark,2.5);[[44,40,-28],[42,90,30],[46,140,-26],[48,190,28],[52,240,-24],[48,290,22]].forEach(([x,y,r],i)=>leafMaple(s,x,y,r,P,i%2?P.main:P.dark,.9,.85));}],
+ ['Willow Droop','long narrow leaves',(s,P)=>{stem(s,'M45 0 C 48 100, 44 200, 50 320',P.dark,2);for(let y=40;y<310;y+=26){const side=(y/26)%2?1:-1;leafPointy(s,47,y,side*40,P,side>0?P.main:P.dark,.8,.7);}}],
+ ['Eucalyptus','paired round leaves',(s,P)=>{stem(s,'M48 0 C 50 100, 46 200, 52 320',P.dark,2.5);for(let y=45;y<300;y+=34){leafRound(s,48,y,-70,P,P.main,.9,.7);leafRound(s,48,y,70,P,P.dark,.9,.7);}}],
+ ['Wild Tangle','lush + chaotic',(s,P)=>{stem(s,'M35 0 C 60 60, 20 110, 55 170 C 85 220, 40 260, 70 320',P.dark,3);stem(s,'M70 0 C 45 50, 80 100, 50 150 C 25 200, 75 250, 45 320',P.main,2.5,.7);[[40,35,-30],[68,55,25],[30,90,20],[78,110,-22],[50,140,28],[35,180,-26],[80,200,22],[55,235,-20],[42,275,24],[72,300,-18]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,i%2?P.main:P.dark,.88,.95));[[55,80],[45,210]].forEach(([x,y])=>flower5(s,x,y,P,P.pop,P.light));}],
+ ['Bamboo Stalk','segmented + sprigs',(s,P)=>{stem(s,'M50 0 L50 320',P.dark,4);[60,120,180,240,300].forEach(y=>el('path',{d:`M44 ${y} L56 ${y}`,stroke:P.vein,'stroke-width':2,opacity:.6},s));[[50,62,-40],[50,62,-65],[50,122,40],[50,122,65],[50,182,-40],[50,182,-65],[50,242,40],[50,242,65]].forEach(([x,y,r],i)=>leafPointy(s,x,y,r,P,i%2?P.main:P.dark,.85,.7));}],
+ ['Leaf Clusters','bunched pom-poms',(s,P)=>{stem(s,'M42 0 C 55 70, 35 140, 60 210 C 80 270, 55 300, 78 320',P.dark,2.5);[[52,55],[44,130],[64,200],[80,275]].forEach(([cx,cy],k)=>{for(let i=0;i<6;i++)leafRound(s,cx,cy,i*60,P,k%2?P.main:P.dark,.85,.55);});}],
+ ['One-Sided Spray','leaves face inward',(s,P)=>{stem(s,'M55 0 C 50 90, 58 180, 50 280 C 48 300, 54 312, 52 320',P.dark,3);[[48,50,55],[52,100,60],[46,150,50],[50,200,58],[44,250,52],[50,300,56]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,i%2?P.main:P.dark,.9));}],
+ ['Spring Sprig','buds + tiny leaves',(s,P)=>{stem(s,'M45 0 C 38 80, 60 150, 45 230 C 35 280, 55 305, 48 320',P.dark,2);for(let y=40;y<310;y+=30){const side=(y/30)%2?1:-1;el('path',{d:`M46 ${y} L${46+side*16} ${y-8}`,stroke:P.main,'stroke-width':1.3,opacity:.7,'stroke-linecap':'round'},s);leafTeardrop(s,46+side*16,y-8,side*30,P,side>0?P.main:P.dark,.85,.55);dotBerry(s,46,y,P.pop,2.2);}}],
+ // --- new in the 20→50 expansion ---
+ ['String of Pearls','succulent beads',(s,P)=>{['M44 0 C 48 80, 40 160, 50 320','M64 0 C 58 90, 70 180, 60 320','M30 0 C 36 70, 26 150, 34 300'].forEach((d,si)=>{stem(s,d,P.dark,1.4,.55);for(let t=0.06;t<1;t+=0.07){const pt=ptOnPath(s,d,t);leafPearl(s,pt.x,pt.y,P,si%2?P.main:P.light,4.2);}});}],
+ ['Monstera Hang','split leaves',(s,P)=>{stem(s,'M40 0 C 55 70, 35 150, 60 230 C 80 280, 55 305, 75 320',P.dark,2.5);[[52,55,-18,1.1],[40,120,16,1.3],[64,190,-14,1.2],[78,260,18,1],[58,300,-12,.85]].forEach(([x,y,r,sc],i)=>leafMonstera(s,x,y,r,P,i%2?P.main:P.dark,.95,sc));}],
+ ['Wisteria Drip','bell clusters',(s,P)=>{stem(s,'M45 0 C 40 50, 55 90, 48 140',P.dark,2.5);[[40,140],[60,120],[52,160],[70,150]].forEach(([x,y])=>wisteriaCluster(s,x,y,P));[[44,40,-26],[58,70,22],[40,100,-24]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,i%2?P.main:P.dark,.85,.7));}],
+ ['Art Nouveau Whip','flowing whiplash',(s,P)=>{stem(s,'M30 0 C 90 70, 10 140, 80 210 C 20 270, 70 300, 40 320',P.dark,2.5);stem(s,'M30 0 C 80 60, 20 130, 70 200',P.main,1.4,.6);[[60,55,30],[35,120,-30],[62,190,30],[40,260,-26]].forEach(([x,y,r],i)=>leafPointy(s,x,y,r,P,i%2?P.main:P.dark,.9,.95));[[78,210]].forEach(([x,y])=>flower5(s,x,y,P,P.pop,P.light));}],
+ ['Geometric Sprig','flat polygon leaves',(s,P)=>{stem(s,'M48 0 L48 320',P.main,2,.7);for(let y=40;y<310;y+=34){const side=(y/34)%2?1:-1;const g=el('g',{transform:`translate(${48} ${y}) rotate(${side*40})`},s);el('path',{d:'M0 0 L-8 -12 L0 -26 L8 -12 Z',fill:side>0?P.main:P.dark,opacity:.92},g);}}],
+ ['Calligraphic Swirl','single ink line',(s,P)=>{stem(s,'M40 0 C 70 40, 20 80, 50 120 C 80 160, 25 200, 55 240 C 80 275, 40 300, 60 320',P.dark,2.2);[[52,60,30],[38,100,-30],[64,150,28],[40,210,-28],[56,260,26]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,i%2?P.main:P.dark,.9,.8));}],
+ ['Dotted Garland','rope of dots',(s,P)=>{const d='M35 0 C 60 60, 30 120, 60 180 C 85 240, 45 290, 70 320';stem(s,d,P.dark,1.6,.5);for(let t=0.04;t<1;t+=0.045){const pt=ptOnPath(s,d,t);dotBerry(s,pt.x,pt.y,t%0.18<0.09?P.main:P.light,2.6);}[[48,80,-24],[64,200,22]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,i%2?P.main:P.dark,.8,.6));}],
+ ['Twin Drop Symmetric','mirror leaves',(s,P)=>{stem(s,'M50 0 L50 320',P.dark,2.5);for(let y=44;y<300;y+=30){leafTeardrop(s,50,y,-55,P,P.main,.9,.8);leafTeardrop(s,50,y,55,P,P.dark,.9,.8);}}],
+ ['Hanging Lanterns','round pods',(s,P)=>{stem(s,'M46 0 C 50 90, 44 190, 52 300',P.dark,2);for(let y=50;y<300;y+=42){const side=(y/42)%2?1:-1;stem(s,`M${49} ${y} L${49+side*12} ${y+14}`,P.main,1.4,.7);el('ellipse',{cx:49+side*12,cy:y+22,rx:7,ry:9,fill:side>0?P.main:P.dark,opacity:.92},s);el('path',{d:`M${42+side*12} ${y+20} h14`,stroke:P.vein,'stroke-width':1,opacity:.5},s);}}],
+ ['Thorned Bramble','sharp + dark',(s,P)=>{stem(s,'M40 0 C 55 60, 35 120, 55 180 C 75 240, 45 290, 65 320',P.vein,2.2);for(let y=30;y<300;y+=22){const side=(y/22)%2?1:-1;const pt=ptOnPath(s,'M40 0 C 55 60, 35 120, 55 180 C 75 240, 45 290, 65 320',y/320);el('path',{d:`M${pt.x} ${pt.y} l${side*7} ${-4}`,stroke:P.dark,'stroke-width':1.6,'stroke-linecap':'round'},s);}[[50,70,-30],[60,180,28],[55,260,-26]].forEach(([x,y,r],i)=>leafPointy(s,x,y,r,P,i%2?P.main:P.dark,.9,.85));}],
+ ['Watercolor Blobs','soft translucent',(s,P)=>{stem(s,'M42 0 C 55 70, 35 140, 58 210 C 78 270, 52 300, 74 320',P.main,2,.5);[[50,50,1.3],[40,110,1.6],[62,170,1.4],[76,235,1.5],[60,295,1.1]].forEach(([x,y,sc],i)=>{el('circle',{cx:x,cy:y,r:14*sc,fill:i%2?P.main:P.dark,opacity:.35},s);el('circle',{cx:x+4,cy:y-3,r:8*sc,fill:P.light,opacity:.4},s);});}],
+ ['Single Big Leaf','one statement leaf',(s,P)=>{stem(s,'M48 0 C 50 60, 46 110, 50 150',P.dark,3);leafMonstera(s,48,150,0,P,P.main,.96,2.4);[[40,50,-26],[58,90,24]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,i%2?P.main:P.dark,.85,.8));}],
+ ['Zigzag Modern','geometric zigzag',(s,P)=>{stem(s,'M35 0 L60 60 L35 120 L60 180 L35 240 L55 320',P.dark,2.5);[[48,30,40],[48,90,-40],[48,150,40],[48,210,-40],[45,280,30]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,i%2?P.main:P.dark,.9,.85));}],
+ ['Cherry Blossom','flowers > leaves',(s,P)=>{stem(s,'M40 0 C 55 60, 35 120, 55 180 C 72 235, 45 285, 65 320',P.dark,2.5);[[55,55],[40,110],[62,165],[45,225],[66,285]].forEach(([x,y])=>flower5(s,x,y,P,P.pop,P.light));[[48,80,-26],[56,200,24]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,i%2?P.main:P.dark,.8,.65));}],
+ ['Sea Coral','branching fingers',(s,P)=>{const branch=(x,y,ang,len,depth)=>{if(depth<=0)return;const ex=x+Math.sin(ang)*len, ey=y+Math.cos(ang)*len;stem(s,`M${x} ${y} L${ex} ${ey}`,depth>2?P.dark:P.main,depth,.85);branch(ex,ey,ang-0.5,len*0.7,depth-1);branch(ex,ey,ang+0.5,len*0.7,depth-1);};branch(45,0,0.15,55,4);}],
+ ['Lotus Stems','upright pads',(s,P)=>{[35,52,68].forEach((x,i)=>{stem(s,`M${x} 320 C ${x+(i-1)*8} 220, ${x-(i-1)*6} 120, ${x} 30`,P.dark,2);el('circle',{cx:x,cy:24,r:11,fill:i%2?P.main:P.dark,opacity:.92},s);el('path',{d:`M${x-9} 24 a9 9 0 0 1 18 0`,stroke:P.vein,'stroke-width':1,opacity:.4,fill:'none'},s);});}],
+ ['Trailing Necklace','beads + leaves',(s,P)=>{const d='M40 0 C 58 70, 34 140, 58 210 C 80 270, 52 305, 74 320';stem(s,d,P.dark,1.6,.6);for(let t=0.05;t<1;t+=0.1){const pt=ptOnPath(s,d,t);leafPearl(s,pt.x,pt.y,P,P.light,3.6);}[[50,55,-26],[44,125,24],[64,195,-22],[70,270,20]].forEach(([x,y,r],i)=>leafHeart(s,x,y,r,P,i%2?P.main:P.dark,.85,.7));}],
+ ['Spiky Agave','rosette base + drop',(s,P)=>{const cx=48,cy=46;for(let i=0;i<9;i++){const a=(i/9)*Math.PI*2;el('path',{d:`M${cx} ${cy} L${cx+Math.cos(a)*26} ${cy+Math.sin(a)*26}`,stroke:i%2?P.main:P.dark,'stroke-width':3,'stroke-linecap':'round',opacity:.9},s);}stem(s,'M48 60 C 52 140, 44 220, 52 320',P.dark,2);[[44,140,-24],[56,230,22]].forEach(([x,y,r],i)=>leafPointy(s,x,y,r,P,i%2?P.main:P.dark,.85,.8));}],
+ ['Spiral Helix','DNA twist',(s,P)=>{const A='M45 0 C 70 50, 25 90, 50 140 C 75 190, 30 230, 55 290';const B='M55 0 C 30 50, 75 90, 50 140 C 25 190, 70 230, 45 290';stem(s,A,P.dark,2.2);stem(s,B,P.main,2.2,.7);for(let t=0.08;t<0.95;t+=0.12){const pa=ptOnPath(s,A,t),pb=ptOnPath(s,B,t);el('path',{d:`M${pa.x} ${pa.y} L${pb.x} ${pb.y}`,stroke:P.light,'stroke-width':1.2,opacity:.55},s);leafTeardrop(s,pa.x,pa.y,-40,P,P.main,.7,.5);leafTeardrop(s,pb.x,pb.y,40,P,P.dark,.7,.5);}}],
+ ['Mossy Bundle','dense fuzzy',(s,P)=>{stem(s,'M44 0 C 56 70, 36 140, 58 210 C 78 270, 52 300, 72 320',P.dark,2.5);for(let y=30;y<315;y+=10){const pt=ptOnPath(s,'M44 0 C 56 70, 36 140, 58 210 C 78 270, 52 300, 72 320',y/320);for(let k=0;k<3;k++){const a=Math.random()*6.28;el('path',{d:`M${pt.x} ${pt.y} l${Math.cos(a)*7} ${Math.sin(a)*7}`,stroke:[P.main,P.light,P.dark][k],'stroke-width':1.3,opacity:.7,'stroke-linecap':'round'},s);}}}],
+ ['Origami Fold','sharp paper leaves',(s,P)=>{stem(s,'M46 0 C 52 80, 42 160, 54 240 C 64 290, 50 310, 60 320',P.dark,2);for(let y=45;y<300;y+=40){const side=(y/40)%2?1:-1;const g=el('g',{transform:`translate(${48} ${y}) scale(${side} 1)`},s);el('path',{d:'M0 0 L18 -6 L14 -20 Z',fill:P.main,opacity:.92},g);el('path',{d:'M0 0 L14 -20 L4 -16 Z',fill:P.dark,opacity:.9},g);}}],
+ ['Hops Cones','layered cones',(s,P)=>{stem(s,'M44 0 C 58 70, 36 140, 60 210 C 80 270, 54 300, 74 320',P.dark,2);for(let y=55;y<300;y+=48){const side=(y/48)%2?1:-1;const cx=48+side*14, g=el('g',{transform:`translate(${cx} ${y})`},s);[0,1,2,3].forEach(r=>el('path',{d:`M-9 ${r*6} L0 ${r*6+9} L9 ${r*6} Z`,fill:r%2?P.main:P.light,opacity:.92},g));}[[48,100,-24],[60,250,22]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,P.dark,.7,.6));}],
+ ['Outline Only','hollow line-art',(s,P)=>{stem(s,'M40 0 C 55 70, 35 140, 60 210 C 80 270, 55 300, 80 320',P.dark,1.8);[[48,45,-26],[44,100,24],[58,160,-22],[70,220,26],[78,280,-18]].forEach(([x,y,r])=>{const g=el('g',{transform:`translate(${x} ${y}) rotate(${r})`},s);el('path',{d:'M0 0 C -7 -10, -7 -22, 0 -30 C 7 -22, 7 -10, 0 0 Z',fill:'none',stroke:P.dark,'stroke-width':1.6},g);el('path',{d:'M0 -2 L0 -26',stroke:P.main,'stroke-width':1,opacity:.6},g);});}],
+ ['Two-Tone Gradient','light→dark down',(s,P)=>{stem(s,'M44 0 C 56 70, 36 140, 58 210 C 78 270, 52 300, 72 320',P.dark,2.5);[[50,45,-26],[42,95,24],[56,150,-22],[68,205,26],[76,260,-20],[64,305,18]].forEach(([x,y,r],i)=>{const frac=y/320;const col=i%2?P.light:P.main;leafTeardrop(s,x,y,r,P,col,.5+frac*0.5,.8+frac*0.4);});}],
+ ['Tropical Frond','big palm frond',(s,P)=>{stem(s,'M50 0 C 52 100, 46 200, 54 300',P.dark,2.5);for(let y=30;y<300;y+=16){el('path',{d:`M50 ${y} C 24 ${y-6}, 14 ${y+4}, 18 ${y+14}`,stroke:P.main,'stroke-width':2,opacity:.85,'stroke-linecap':'round',fill:'none'},s);el('path',{d:`M50 ${y} C 76 ${y-6}, 86 ${y+4}, 82 ${y+14}`,stroke:P.dark,'stroke-width':2,opacity:.8,'stroke-linecap':'round',fill:'none'},s);}}],
+ ['Glow Berries','dark vine bright fruit',(s,P)=>{stem(s,'M42 0 C 56 70, 36 140, 58 210 C 78 270, 52 300, 72 320',P.vein,2.5);[[48,55,-24],[40,115,22],[58,175,-20],[68,240,24],[76,295,-18]].forEach(([x,y,r],i)=>leafPointy(s,x,y,r,P,i%2?P.main:P.dark,.8,.8));[[58,80],[48,140],[66,205],[78,265]].forEach(([x,y])=>{el('circle',{cx:x,cy:y,r:6,fill:P.pop,opacity:.25},s);el('circle',{cx:x,cy:y,r:3.2,fill:P.pop},s);});}],
+ ['Asymmetric Bouquet','top-heavy burst',(s,P)=>{const cx=46,cy=70;for(let i=0;i<10;i++){const a=(-0.6+i*0.13);const ex=cx+Math.sin(a)*44, ey=cy+Math.cos(a)*44;stem(s,`M${cx} ${cy} L${ex} ${ey}`,P.dark,1.6,.6);leafTeardrop(s,ex,ey,a*57,P,i%2?P.main:P.dark,.9,.7);}stem(s,'M46 70 C 50 160, 42 240, 52 320',P.dark,2);}],
+ ['Knotted Rope','interlaced loops',(s,P)=>{[60,150,240].forEach((cy,i)=>{el('path',{d:`M38 ${cy-20} C 18 ${cy}, 78 ${cy}, 58 ${cy-20} M58 ${cy+20} C 78 ${cy}, 18 ${cy}, 38 ${cy+20}`,stroke:i%2?P.main:P.dark,'stroke-width':3,fill:'none','stroke-linecap':'round',opacity:.9},s);});stem(s,'M48 0 L48 320',P.dark,2,.4);[[58,40,30],[36,200,-30]].forEach(([x,y,r],i)=>leafTeardrop(s,x,y,r,P,P.main,.85,.7));}],
+ ['Snowy Pine','needled boughs',(s,P)=>{stem(s,'M48 0 L50 320',P.vein,2.5);for(let y=40;y<310;y+=30){[-1,1].forEach(side=>{const g=el('g',{transform:`translate(49 ${y}) scale(${side} 1)`},s);el('path',{d:'M0 0 L26 8',stroke:P.dark,'stroke-width':1.6,'stroke-linecap':'round'},g);for(let n=4;n<26;n+=4){el('path',{d:`M${n} ${n*0.3} l4 -3`,stroke:P.main,'stroke-width':1.1,opacity:.8,'stroke-linecap':'round'},g);}});}}],
+ ['Confetti Leaves','scattered multicolor',(s,P)=>{stem(s,'M44 0 C 58 70, 34 140, 60 210 C 82 270, 54 300, 74 320',P.dark,2);const cols=[P.main,P.dark,P.light,P.pop];for(let y=35;y<310;y+=22){const side=(y/22)%2?1:-1;const pt=ptOnPath(s,'M44 0 C 58 70, 34 140, 60 210 C 82 270, 54 300, 74 320',y/320);leafTeardrop(s,pt.x+side*8,pt.y,side*40,P,cols[(y/22|0)%4],.9,.7);}}],
+];
+
+/* measure point on an SVG path at fraction t */
+let measureSvg = document.createElementNS(NS,'svg');
+document.body.appendChild(measureSvg); measureSvg.style.position='absolute'; measureSvg.style.opacity=0; measureSvg.style.pointerEvents='none';
+function ptOnPath(_, d, t){
+  const path = document.createElementNS(NS,'path'); path.setAttribute('d',d); measureSvg.appendChild(path);
+  const L = path.getTotalLength(); const pt = path.getPointAtLength(L*t); measureSvg.removeChild(path);
+  return { x: pt.x, y: pt.y };
+}
+
+/* ---------------- BUILD CARDS ----------------
+   Assign palettes in a rotating way so you see each shape against variety,
+   and so every palette shows up multiple times. */
+const palKeys = Object.keys(PALETTES);
+const grid = document.getElementById('grid');
+const cards = [];
+SHAPES.forEach(([name,desc,build], i) => {
+  const P = PALETTES[palKeys[i % palKeys.length]];
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.pal = palKeys[i % palKeys.length];
+  card.style.background = P.page;
+  const tag = document.createElement('div'); tag.className='tag'; tag.textContent=P.name; tag.style.color=P.ink; card.appendChild(tag);
+  const s = svgEl(150, 340); card.appendChild(s); build(s, P);
+  const label = document.createElement('div'); label.className='label';
+  label.style.color = P.ink;
+  label.style.background = hexA(P.page, .82);
+  label.style.borderTop = '1.5px solid ' + P.ink;
+  label.innerHTML = `<span class="left"><span class="num" style="background:${P.dark};color:${P.page}">${i+1}</span><span class="name">${name}</span></span><span class="desc">${desc}</span>`;
+  card.appendChild(label);
+  grid.appendChild(card); cards.push(card);
+});
+
+function hexA(hex,a){const h=hex.replace('#','');const r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);return `rgba(${r},${g},${b},${a})`;}
+
+/* ---------------- FILTER CHIPS ---------------- */
+const filters = document.getElementById('filters');
+function mkChip(label, key){const c=document.createElement('div');c.className='chip'+(key==='all'?' active':'');c.textContent=label;c.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');cards.forEach(card=>{card.style.display=(key==='all'||card.dataset.pal===key)?'':'none';});};filters.appendChild(c);}
+mkChip('All palettes','all');
+palKeys.forEach(k=>mkChip(PALETTES[k].name, k));
+</script>
+</body>
+</html>

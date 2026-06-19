@@ -1,0 +1,942 @@
+{
+  "D:\\Fanfiction-Finder\\.claude\\settings.local.json": {
+    "mtime": 1777070358.0,
+    "ast_hash": "3cf9712a64a72aa8d0ab4a4ab0c62c76",
+    "semantic_hash": "3cf9712a64a72aa8d0ab4a4ab0c62c76"
+  },
+  "D:\\Fanfiction-Finder\\.mcp.json": {
+    "mtime": 1781664580.0,
+    "ast_hash": "1919cc29482b8e14f7ee66d5ffb87ca0",
+    "semantic_hash": "1919cc29482b8e14f7ee66d5ffb87ca0"
+  },
+  "D:\\Fanfiction-Finder\\backend\\ai\\embedder.py": {
+    "mtime": 1781370444.0,
+    "ast_hash": "a725604d41f41c9d89739982f663b83d",
+    "semantic_hash": "a725604d41f41c9d89739982f663b83d"
+  },
+  "D:\\Fanfiction-Finder\\backend\\ai\\query_enhancer.py": {
+    "mtime": 1781370392.0,
+    "ast_hash": "6c234c033b9575dff6cf80242762bc61",
+    "semantic_hash": "6c234c033b9575dff6cf80242762bc61"
+  },
+  "D:\\Fanfiction-Finder\\backend\\ai\\ranker.py": {
+    "mtime": 1781370400.0,
+    "ast_hash": "f14ecc9b0530ffc3f20ac4c1f0d0cad6",
+    "semantic_hash": "f14ecc9b0530ffc3f20ac4c1f0d0cad6"
+  },
+  "D:\\Fanfiction-Finder\\backend\\api.py": {
+    "mtime": 1781465884.0,
+    "ast_hash": "ec169903531a127d5452d20394d1438f",
+    "semantic_hash": "ec169903531a127d5452d20394d1438f"
+  },
+  "D:\\Fanfiction-Finder\\backend\\auth\\__init__.py": {
+    "mtime": 1776014346.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "D:\\Fanfiction-Finder\\backend\\auth\\auth.py": {
+    "mtime": 1781369738.0,
+    "ast_hash": "aa6c99a25327f835ce14de1962687c21",
+    "semantic_hash": "aa6c99a25327f835ce14de1962687c21"
+  },
+  "D:\\Fanfiction-Finder\\backend\\auth\\dependencies.py": {
+    "mtime": 1779169724.0,
+    "ast_hash": "b18b89b4095acc2b4863c6972c95e904",
+    "semantic_hash": "b18b89b4095acc2b4863c6972c95e904"
+  },
+  "D:\\Fanfiction-Finder\\backend\\auth\\stripe_handler.py": {
+    "mtime": 1781370428.0,
+    "ast_hash": "016e9013a6b064c88d6796198b9a230c",
+    "semantic_hash": "016e9013a6b064c88d6796198b9a230c"
+  },
+  "D:\\Fanfiction-Finder\\backend\\auth\\user_store.py": {
+    "mtime": 1781465830.0,
+    "ast_hash": "1eca31d81f5f21791c1d1cd2b17316ef",
+    "semantic_hash": "1eca31d81f5f21791c1d1cd2b17316ef"
+  },
+  "D:\\Fanfiction-Finder\\backend\\check_embeddings.py": {
+    "mtime": 1775428684.0,
+    "ast_hash": "acf6dad388b974e6ed821310960fd456",
+    "semantic_hash": "acf6dad388b974e6ed821310960fd456"
+  },
+  "D:\\Fanfiction-Finder\\backend\\cleanup.py": {
+    "mtime": 1775786214.0,
+    "ast_hash": "ae461bd31e8e0ad11722fa6353ea5287",
+    "semantic_hash": "ae461bd31e8e0ad11722fa6353ea5287"
+  },
+  "D:\\Fanfiction-Finder\\backend\\config.py": {
+    "mtime": 1775786196.0,
+    "ast_hash": "5525d88fe2d62ff258ee12a91d639de9",
+    "semantic_hash": "5525d88fe2d62ff258ee12a91d639de9"
+  },
+  "D:\\Fanfiction-Finder\\backend\\data\\fandoms.py": {
+    "mtime": 1776825624.0,
+    "ast_hash": "4352a97e3e7b8c42977a4225964771c9",
+    "semantic_hash": "4352a97e3e7b8c42977a4225964771c9"
+  },
+  "D:\\Fanfiction-Finder\\backend\\data\\progress.py": {
+    "mtime": 1776364290.0,
+    "ast_hash": "ba8f4295f07766d6f513d21811a01f37",
+    "semantic_hash": "ba8f4295f07766d6f513d21811a01f37"
+  },
+  "D:\\Fanfiction-Finder\\backend\\data\\schema.py": {
+    "mtime": 1779163370.0,
+    "ast_hash": "dc406dd2bcba11ccb174786016a69d57",
+    "semantic_hash": "dc406dd2bcba11ccb174786016a69d57"
+  },
+  "D:\\Fanfiction-Finder\\backend\\data\\scrape_progress.json": {
+    "mtime": 1776913966.0,
+    "ast_hash": "aab3275dd8fcde492b4076cecfd35051",
+    "semantic_hash": "aab3275dd8fcde492b4076cecfd35051"
+  },
+  "D:\\Fanfiction-Finder\\backend\\db\\local_storage.py": {
+    "mtime": 1778396152.0,
+    "ast_hash": "2fccf40b7b149bd2dd1bcc412a19064f",
+    "semantic_hash": "2fccf40b7b149bd2dd1bcc412a19064f"
+  },
+  "D:\\Fanfiction-Finder\\backend\\db\\postgres.py": {
+    "mtime": 1781422518.0,
+    "ast_hash": "243a8687eea693aba883e6c00ea035be",
+    "semantic_hash": "243a8687eea693aba883e6c00ea035be"
+  },
+  "D:\\Fanfiction-Finder\\backend\\indexer.py": {
+    "mtime": 1776747802.0,
+    "ast_hash": "b7524f9a9ad463a960ae1f3146860833",
+    "semantic_hash": "b7524f9a9ad463a960ae1f3146860833"
+  },
+  "D:\\Fanfiction-Finder\\backend\\main.py": {
+    "mtime": 1775428684.0,
+    "ast_hash": "1a1c87b020be93fa7151b1fd6435c40e",
+    "semantic_hash": "1a1c87b020be93fa7151b1fd6435c40e"
+  },
+  "D:\\Fanfiction-Finder\\backend\\migrate_to_neon.py": {
+    "mtime": 1775786214.0,
+    "ast_hash": "f60f154abb6a0529a654337d0c61e432",
+    "semantic_hash": "f60f154abb6a0529a654337d0c61e432"
+  },
+  "D:\\Fanfiction-Finder\\backend\\rq.py": {
+    "mtime": 1775786216.0,
+    "ast_hash": "bdd7028e1e9410dd1bdcdb658977516b",
+    "semantic_hash": "bdd7028e1e9410dd1bdcdb658977516b"
+  },
+  "D:\\Fanfiction-Finder\\backend\\scrapers\\ao3.py": {
+    "mtime": 1776639112.0,
+    "ast_hash": "f8e5d91bd8810a644170b14ba35c2849",
+    "semantic_hash": "f8e5d91bd8810a644170b14ba35c2849"
+  },
+  "D:\\Fanfiction-Finder\\backend\\scrapers\\ffn.py": {
+    "mtime": 1777070324.0,
+    "ast_hash": "6caa8ca78c92911e98c4958bc8457821",
+    "semantic_hash": "6caa8ca78c92911e98c4958bc8457821"
+  },
+  "D:\\Fanfiction-Finder\\backend\\scrapers\\wattpad.py": {
+    "mtime": 1776302400.0,
+    "ast_hash": "a206674b9219225de27683f2d2b5a96a",
+    "semantic_hash": "a206674b9219225de27683f2d2b5a96a"
+  },
+  "D:\\Fanfiction-Finder\\backend\\scripts\\create_users_table.py": {
+    "mtime": 1776019912.0,
+    "ast_hash": "d04988eac744ab8d9e005017def73086",
+    "semantic_hash": "d04988eac744ab8d9e005017def73086"
+  },
+  "D:\\Fanfiction-Finder\\backend\\tests\\conftest.py": {
+    "mtime": 1781384404.0,
+    "ast_hash": "7615519f1c63b03ce29381aa9d802b84",
+    "semantic_hash": "7615519f1c63b03ce29381aa9d802b84"
+  },
+  "D:\\Fanfiction-Finder\\backend\\tests\\test_audit_fixes.py": {
+    "mtime": 1781465936.0,
+    "ast_hash": "6247aac15cf46efe8997c04bf2c2640c",
+    "semantic_hash": "6247aac15cf46efe8997c04bf2c2640c"
+  },
+  "D:\\Fanfiction-Finder\\fanfic-devtool\\app.py": {
+    "mtime": 1778404848.0,
+    "ast_hash": "981f4be5e11fce4af64bef295813b7b2",
+    "semantic_hash": "981f4be5e11fce4af64bef295813b7b2"
+  },
+  "D:\\Fanfiction-Finder\\fanfic-devtool\\swap_tool.py": {
+    "mtime": 1778404832.0,
+    "ast_hash": "6d0332c4a7964a3485cda50618e43e27",
+    "semantic_hash": "6d0332c4a7964a3485cda50618e43e27"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\.obsidian\\app.json": {
+    "mtime": 1775428684.0,
+    "ast_hash": "38a19a920861b4aa64244d2d3dd49e2d",
+    "semantic_hash": "38a19a920861b4aa64244d2d3dd49e2d"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\.obsidian\\appearance.json": {
+    "mtime": 1775428684.0,
+    "ast_hash": "99914b932bd37a50b983c5e7c90ae93b",
+    "semantic_hash": "99914b932bd37a50b983c5e7c90ae93b"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\.obsidian\\core-plugins.json": {
+    "mtime": 1775428684.0,
+    "ast_hash": "5281aaad2c47e82830f5d93c3386a615",
+    "semantic_hash": "5281aaad2c47e82830f5d93c3386a615"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\.obsidian\\graph.json": {
+    "mtime": 1775428684.0,
+    "ast_hash": "098dc4e64624a36866d05dfc35c0d56c",
+    "semantic_hash": "098dc4e64624a36866d05dfc35c0d56c"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\.obsidian\\workspace.json": {
+    "mtime": 1775428684.0,
+    "ast_hash": "724559442d339ccb68ae97c9bde10bba",
+    "semantic_hash": "724559442d339ccb68ae97c9bde10bba"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\api\\admin\\stats\\route.ts": {
+    "mtime": 1781384320.0,
+    "ast_hash": "f435522ff4d8810bb14c35a08615f8e3",
+    "semantic_hash": "f435522ff4d8810bb14c35a08615f8e3"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\api\\auth\\billing-portal\\route.ts": {
+    "mtime": 1776198562.0,
+    "ast_hash": "a405e34771a118caffa4d19c71f2f7ec",
+    "semantic_hash": "a405e34771a118caffa4d19c71f2f7ec"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\api\\auth\\checkout\\route.ts": {
+    "mtime": 1776048256.0,
+    "ast_hash": "51f060b685052f5596f82bb9bf8d6bc9",
+    "semantic_hash": "51f060b685052f5596f82bb9bf8d6bc9"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\api\\auth\\login\\route.ts": {
+    "mtime": 1776045972.0,
+    "ast_hash": "889b98d3737072bc3a33aaa0e3d7449f",
+    "semantic_hash": "889b98d3737072bc3a33aaa0e3d7449f"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\api\\auth\\me\\route.ts": {
+    "mtime": 1776045976.0,
+    "ast_hash": "885c625c474cf92a04fd9c95a823988a",
+    "semantic_hash": "885c625c474cf92a04fd9c95a823988a"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\api\\fic\\[platform]\\[id]\\route.ts": {
+    "mtime": 1779007928.0,
+    "ast_hash": "6991d3c5661ca0056ccfa75859d4ccf0",
+    "semantic_hash": "6991d3c5661ca0056ccfa75859d4ccf0"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\api\\search\\route.ts": {
+    "mtime": 1779170520.0,
+    "ast_hash": "c56ff34ff3ecd3f2552b181722442b34",
+    "semantic_hash": "c56ff34ff3ecd3f2552b181722442b34"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\blog\\[slug]\\page.tsx": {
+    "mtime": 1779007966.0,
+    "ast_hash": "af135d0b938c43cc853a2c211fd34e31",
+    "semantic_hash": "af135d0b938c43cc853a2c211fd34e31"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\blog\\page.tsx": {
+    "mtime": 1779007966.0,
+    "ast_hash": "42e62ff3c21edfb641e86596f1849db3",
+    "semantic_hash": "42e62ff3c21edfb641e86596f1849db3"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\demo\\page.tsx": {
+    "mtime": 1779170516.0,
+    "ast_hash": "16cee55850cc51d65f15a42d4c378632",
+    "semantic_hash": "16cee55850cc51d65f15a42d4c378632"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\fic\\[platform]\\[id]\\page.tsx": {
+    "mtime": 1779007928.0,
+    "ast_hash": "4751fd3ae20b66bb74cd171cb4ea1919",
+    "semantic_hash": "4751fd3ae20b66bb74cd171cb4ea1919"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\layout.tsx": {
+    "mtime": 1781479106.0,
+    "ast_hash": "ee21f44e03393d7ab1b0e4a8857bf72c",
+    "semantic_hash": "ee21f44e03393d7ab1b0e4a8857bf72c"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\ops\\page.tsx": {
+    "mtime": 1779170518.0,
+    "ast_hash": "35da35885027fa4eec29aa04f6a0ce50",
+    "semantic_hash": "35da35885027fa4eec29aa04f6a0ce50"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\page.tsx": {
+    "mtime": 1781501314.0,
+    "ast_hash": "65a19de0243cf2ef2554da038728ebaf",
+    "semantic_hash": "65a19de0243cf2ef2554da038728ebaf"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\providers.tsx": {
+    "mtime": 1776180104.0,
+    "ast_hash": "bc3630a9b24df9f39483a463f837b9d4",
+    "semantic_hash": "bc3630a9b24df9f39483a463f837b9d4"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\app\\settings\\page.tsx": {
+    "mtime": 1781467820.0,
+    "ast_hash": "7d46f640e8a53b3583669a35430ed1fa",
+    "semantic_hash": "7d46f640e8a53b3583669a35430ed1fa"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\AccountBadge.tsx": {
+    "mtime": 1779007882.0,
+    "ast_hash": "a964a2dfb442e2509c25fdf0b7c71427",
+    "semantic_hash": "a964a2dfb442e2509c25fdf0b7c71427"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\AuthButton.tsx": {
+    "mtime": 1776174208.0,
+    "ast_hash": "df590bae6b0f63f3d9d8cccea2981acb",
+    "semantic_hash": "df590bae6b0f63f3d9d8cccea2981acb"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ExportButton.tsx": {
+    "mtime": 1775428684.0,
+    "ast_hash": "134112052b717ec164dd3b31ffa44528",
+    "semantic_hash": "134112052b717ec164dd3b31ffa44528"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\PlatformBadge.tsx": {
+    "mtime": 1776189374.0,
+    "ast_hash": "0fcf17f907a679ad7c03f629fbaa1db5",
+    "semantic_hash": "0fcf17f907a679ad7c03f629fbaa1db5"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\QuickFilters.tsx": {
+    "mtime": 1775428684.0,
+    "ast_hash": "6bf908d18cf0b16a188346a9d9eea475",
+    "semantic_hash": "6bf908d18cf0b16a188346a9d9eea475"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\RateLimitBanner.tsx": {
+    "mtime": 1776190410.0,
+    "ast_hash": "407d944720db7b2c074c89f338f7da47",
+    "semantic_hash": "407d944720db7b2c074c89f338f7da47"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\RateLimitBlock.tsx": {
+    "mtime": 1776190412.0,
+    "ast_hash": "8825918381e903a517d29571e8380f4f",
+    "semantic_hash": "8825918381e903a517d29571e8380f4f"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\RatingBadge.tsx": {
+    "mtime": 1775428684.0,
+    "ast_hash": "7ef89df47bf3e0915daef86912cf6e98",
+    "semantic_hash": "7ef89df47bf3e0915daef86912cf6e98"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ResultsCard.tsx": {
+    "mtime": 1775428684.0,
+    "ast_hash": "f09c1cdee546d3ee42292b1b32355cda",
+    "semantic_hash": "f09c1cdee546d3ee42292b1b32355cda"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ResultsTable.tsx": {
+    "mtime": 1779167178.0,
+    "ast_hash": "468516a7b855b7016db261a46613b0f8",
+    "semantic_hash": "468516a7b855b7016db261a46613b0f8"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ScoreBar.tsx": {
+    "mtime": 1779011374.0,
+    "ast_hash": "bd508a03bed77c1646c2a8d1f86a44c1",
+    "semantic_hash": "bd508a03bed77c1646c2a8d1f86a44c1"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\SearchBar.tsx": {
+    "mtime": 1778469128.0,
+    "ast_hash": "cae7b8acd5f5b8df36bece29db550a21",
+    "semantic_hash": "cae7b8acd5f5b8df36bece29db550a21"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\SearchHistory.tsx": {
+    "mtime": 1779168694.0,
+    "ast_hash": "9ad2ccba9ea8e5dd308cbc389c66fc4b",
+    "semantic_hash": "9ad2ccba9ea8e5dd308cbc389c66fc4b"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\SettingsButton.tsx": {
+    "mtime": 1781467814.0,
+    "ast_hash": "0eeac758dd96008ab4e35bd0192e191e",
+    "semantic_hash": "0eeac758dd96008ab4e35bd0192e191e"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\StatusIndicator.tsx": {
+    "mtime": 1776189448.0,
+    "ast_hash": "078986f5862287062ddfb858afcea482",
+    "semantic_hash": "078986f5862287062ddfb858afcea482"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\TableToolbar.tsx": {
+    "mtime": 1775428684.0,
+    "ast_hash": "2e62ebd50b19dbb4b43256faedfc717f",
+    "semantic_hash": "2e62ebd50b19dbb4b43256faedfc717f"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\TagList.tsx": {
+    "mtime": 1775428684.0,
+    "ast_hash": "3bcc41d89e96b92a47a7ce2c5518ebeb",
+    "semantic_hash": "3bcc41d89e96b92a47a7ce2c5518ebeb"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\Toast.tsx": {
+    "mtime": 1775428684.0,
+    "ast_hash": "c11f28be17a39bc0444f5fcd909a0afb",
+    "semantic_hash": "c11f28be17a39bc0444f5fcd909a0afb"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ambient\\GravityGridBackground.tsx": {
+    "mtime": 1781504396.0,
+    "ast_hash": "566938df4374fb41849645727c533d2b",
+    "semantic_hash": "566938df4374fb41849645727c533d2b"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ambient\\SmoothScroll.tsx": {
+    "mtime": 1779009032.0,
+    "ast_hash": "60d1d1fbc2c94ba6c2fc89360b769ba9",
+    "semantic_hash": "60d1d1fbc2c94ba6c2fc89360b769ba9"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ambient\\TeahouseDecor.tsx": {
+    "mtime": 1781504374.0,
+    "ast_hash": "cab91de87eef9e3af18f545f5489d6f2",
+    "semantic_hash": "cab91de87eef9e3af18f545f5489d6f2"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\hero\\HeroTitle.tsx": {
+    "mtime": 1781479548.0,
+    "ast_hash": "33496001526b26c604e08008a66dbf2b",
+    "semantic_hash": "33496001526b26c604e08008a66dbf2b"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\hero\\RotatingCravings.tsx": {
+    "mtime": 1779007590.0,
+    "ast_hash": "56d141fbfc3e7b151b7feb5d885361f5",
+    "semantic_hash": "56d141fbfc3e7b151b7feb5d885361f5"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\loading\\ArchitectureBeam.tsx": {
+    "mtime": 1779007682.0,
+    "ast_hash": "87dc89b7955804fda7146372640ba50e",
+    "semantic_hash": "87dc89b7955804fda7146372640ba50e"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\proof\\FandomMarquee.tsx": {
+    "mtime": 1779170732.0,
+    "ast_hash": "e9cf841b46325392dd76397981f8d781",
+    "semantic_hash": "e9cf841b46325392dd76397981f8d781"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\proof\\StatsTicker.tsx": {
+    "mtime": 1779008504.0,
+    "ast_hash": "f586172878009d37bd099cf44f8f45fe",
+    "semantic_hash": "f586172878009d37bd099cf44f8f45fe"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\results\\FicCard.tsx": {
+    "mtime": 1781479428.0,
+    "ast_hash": "f1ac6746d461631f63b0e85fae76e376",
+    "semantic_hash": "f1ac6746d461631f63b0e85fae76e376"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\results\\ResultsBento.tsx": {
+    "mtime": 1779007740.0,
+    "ast_hash": "1822adc31aacd47b7201f7f8d33492ae",
+    "semantic_hash": "1822adc31aacd47b7201f7f8d33492ae"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\results\\ResultsTable.tsx": {
+    "mtime": 1779007740.0,
+    "ast_hash": "37c56867e582d49e52a95c3b4922becb",
+    "semantic_hash": "37c56867e582d49e52a95c3b4922becb"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\results\\ViewToggle.tsx": {
+    "mtime": 1779170528.0,
+    "ast_hash": "3229544333cf3e51451d3ee7cd7bf140",
+    "semantic_hash": "3229544333cf3e51451d3ee7cd7bf140"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\search\\FilterChips.tsx": {
+    "mtime": 1779166020.0,
+    "ast_hash": "bcd240e4de9d180f4ef9a7a6e1f48ada",
+    "semantic_hash": "bcd240e4de9d180f4ef9a7a6e1f48ada"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\search\\PromptSearchBar.tsx": {
+    "mtime": 1781480138.0,
+    "ast_hash": "fbe7b7d76efa79293608ce9dcda76684",
+    "semantic_hash": "fbe7b7d76efa79293608ce9dcda76684"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\settings\\SettingsContent.tsx": {
+    "mtime": 1781467776.0,
+    "ast_hash": "660c0fb450dd8318d18a40b5f9f22ba5",
+    "semantic_hash": "660c0fb450dd8318d18a40b5f9f22ba5"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\settings\\SettingsModal.tsx": {
+    "mtime": 1781472736.0,
+    "ast_hash": "2af280d5bafd75420fd9c92ba4de2845",
+    "semantic_hash": "2af280d5bafd75420fd9c92ba4de2845"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\animated-beam.tsx": {
+    "mtime": 1779007528.0,
+    "ast_hash": "af4a82de9b8cb53aa86c7b73d1dd2012",
+    "semantic_hash": "af4a82de9b8cb53aa86c7b73d1dd2012"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\animated-shiny-text.tsx": {
+    "mtime": 1779007528.0,
+    "ast_hash": "5c62b345c1e42e03ace47c2c7a13f60a",
+    "semantic_hash": "5c62b345c1e42e03ace47c2c7a13f60a"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\animated-tooltip.tsx": {
+    "mtime": 1779007528.0,
+    "ast_hash": "5d96d60e57cb6066d43ec3ad362d58ad",
+    "semantic_hash": "5d96d60e57cb6066d43ec3ad362d58ad"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\aurora-text.tsx": {
+    "mtime": 1779009276.0,
+    "ast_hash": "e2737462f8a8c800e07060d9692c9728",
+    "semantic_hash": "e2737462f8a8c800e07060d9692c9728"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\box-reveal.tsx": {
+    "mtime": 1779007528.0,
+    "ast_hash": "a5cf2cebeb4af44976dd30b553dd4541",
+    "semantic_hash": "a5cf2cebeb4af44976dd30b553dd4541"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\glare-card.tsx": {
+    "mtime": 1779007528.0,
+    "ast_hash": "1d7fb305c5bd8209cb555fdc1ef34423",
+    "semantic_hash": "1d7fb305c5bd8209cb555fdc1ef34423"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\interactive-hover-button.tsx": {
+    "mtime": 1779007528.0,
+    "ast_hash": "62f092c913e259dbd10f8aca008a5b5f",
+    "semantic_hash": "62f092c913e259dbd10f8aca008a5b5f"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\magic-card.tsx": {
+    "mtime": 1779007528.0,
+    "ast_hash": "256c7111096b0c4eaafa5772720e6f9f",
+    "semantic_hash": "256c7111096b0c4eaafa5772720e6f9f"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\marquee.tsx": {
+    "mtime": 1779007528.0,
+    "ast_hash": "87c79fec937f194e86fbd3b4345b48a9",
+    "semantic_hash": "87c79fec937f194e86fbd3b4345b48a9"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\number-ticker.tsx": {
+    "mtime": 1779007528.0,
+    "ast_hash": "6157bd2a6d27c5b4259ad8bee6b3b45d",
+    "semantic_hash": "6157bd2a6d27c5b4259ad8bee6b3b45d"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\ripple-grid.tsx": {
+    "mtime": 1781504390.0,
+    "ast_hash": "b8bdcc45de47e1f247baa4004354839d",
+    "semantic_hash": "b8bdcc45de47e1f247baa4004354839d"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\shimmer-button.tsx": {
+    "mtime": 1779008026.0,
+    "ast_hash": "63d5635c511c4711f1638337553e18dc",
+    "semantic_hash": "63d5635c511c4711f1638337553e18dc"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\shine-border.tsx": {
+    "mtime": 1779009768.0,
+    "ast_hash": "cefce9607a2c421bae55e41e00391026",
+    "semantic_hash": "cefce9607a2c421bae55e41e00391026"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\tracing-beam.tsx": {
+    "mtime": 1779007528.0,
+    "ast_hash": "a9f949ce6502be4e10d257eae5ab76b6",
+    "semantic_hash": "a9f949ce6502be4e10d257eae5ab76b6"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\components\\ui\\word-rotate.tsx": {
+    "mtime": 1779170744.0,
+    "ast_hash": "9ef295eeb9a8932018addf270f2f3b24",
+    "semantic_hash": "9ef295eeb9a8932018addf270f2f3b24"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\eslint.config.mjs": {
+    "mtime": 1781421410.0,
+    "ast_hash": "db8ed18d9eb89d1ef5d3c5dfeb8732f5",
+    "semantic_hash": "db8ed18d9eb89d1ef5d3c5dfeb8732f5"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\hooks\\useAuth.tsx": {
+    "mtime": 1781467538.0,
+    "ast_hash": "9fb1fbd05c33caa190ae8c400515e296",
+    "semantic_hash": "9fb1fbd05c33caa190ae8c400515e296"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\hooks\\useMediaQuery.ts": {
+    "mtime": 1775428684.0,
+    "ast_hash": "e2d2834e2b82893cdd3c745f5d14a96c",
+    "semantic_hash": "e2d2834e2b82893cdd3c745f5d14a96c"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\hooks\\useSearch.ts": {
+    "mtime": 1781467656.0,
+    "ast_hash": "6cc3d6db11ae3cbeb745d62ad83e8263",
+    "semantic_hash": "6cc3d6db11ae3cbeb745d62ad83e8263"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\hooks\\useSearchHistory.ts": {
+    "mtime": 1779168546.0,
+    "ast_hash": "33d6d98c74bf2dd825c97c24fbc86628",
+    "semantic_hash": "33d6d98c74bf2dd825c97c24fbc86628"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\lib\\blog.ts": {
+    "mtime": 1779007966.0,
+    "ast_hash": "93b0b14c60feda6f38eb8de8590dfe94",
+    "semantic_hash": "93b0b14c60feda6f38eb8de8590dfe94"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\lib\\cn.ts": {
+    "mtime": 1779007458.0,
+    "ast_hash": "8595c2f874aa1ff8c7cc28df2999f354",
+    "semantic_hash": "8595c2f874aa1ff8c7cc28df2999f354"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\lib\\mock-data.ts": {
+    "mtime": 1775428684.0,
+    "ast_hash": "04abc7634f1c0efd17e2fcc920716f12",
+    "semantic_hash": "04abc7634f1c0efd17e2fcc920716f12"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\lib\\schema\\types.ts": {
+    "mtime": 1779168512.0,
+    "ast_hash": "ffa951d65ef775cd270257167cb45adc",
+    "semantic_hash": "ffa951d65ef775cd270257167cb45adc"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\lib\\storage\\db.ts": {
+    "mtime": 1779170526.0,
+    "ast_hash": "7140eebcf1b41c2ad1adb5c8fe7ab4d8",
+    "semantic_hash": "7140eebcf1b41c2ad1adb5c8fe7ab4d8"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\lib\\utils\\export.ts": {
+    "mtime": 1779170530.0,
+    "ast_hash": "eae4b11e7871827d341b9eebfcb8118c",
+    "semantic_hash": "eae4b11e7871827d341b9eebfcb8118c"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\lib\\utils\\format.ts": {
+    "mtime": 1775428684.0,
+    "ast_hash": "3df3d687210161fdd3ded1cffcd34ef3",
+    "semantic_hash": "3df3d687210161fdd3ded1cffcd34ef3"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\next-env.d.ts": {
+    "mtime": 1781476194.0,
+    "ast_hash": "29f60a376e12bf72b67d4994fcc84214",
+    "semantic_hash": "29f60a376e12bf72b67d4994fcc84214"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\next.config.js": {
+    "mtime": 1779007966.0,
+    "ast_hash": "b95f5cc0a49238a654e48c7a8ee931f4",
+    "semantic_hash": "b95f5cc0a49238a654e48c7a8ee931f4"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\package.json": {
+    "mtime": 1781421352.0,
+    "ast_hash": "c6325f7a2854ee2230ef491c037550ac",
+    "semantic_hash": "c6325f7a2854ee2230ef491c037550ac"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\postcss.config.js": {
+    "mtime": 1775428684.0,
+    "ast_hash": "9a248c780e4c76f85b0f492f63a3d417",
+    "semantic_hash": "9a248c780e4c76f85b0f492f63a3d417"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\tailwind.config.ts": {
+    "mtime": 1779010696.0,
+    "ast_hash": "a80fb6c8717f83031d7ee765867750a6",
+    "semantic_hash": "a80fb6c8717f83031d7ee765867750a6"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\tsconfig.json": {
+    "mtime": 1775428684.0,
+    "ast_hash": "91e3e49df12ec03e6b9a72d2b919d96d",
+    "semantic_hash": "91e3e49df12ec03e6b9a72d2b919d96d"
+  },
+  "D:\\Fanfiction-Finder\\.serena\\project.local.yml": {
+    "mtime": 1781666708.0,
+    "ast_hash": "80d87878a5dcaa57ac055afdac265ad1",
+    "semantic_hash": "80d87878a5dcaa57ac055afdac265ad1"
+  },
+  "D:\\Fanfiction-Finder\\.serena\\project.yml": {
+    "mtime": 1781666708.0,
+    "ast_hash": "ba06f25ef24370e9b960b2460e1ffdeb",
+    "semantic_hash": "ba06f25ef24370e9b960b2460e1ffdeb"
+  },
+  "D:\\Fanfiction-Finder\\ARCHITECTURE.md": {
+    "mtime": 1776199318.0,
+    "ast_hash": "f1b698a40afa902e66231a2e944a251c",
+    "semantic_hash": "f1b698a40afa902e66231a2e944a251c"
+  },
+  "D:\\Fanfiction-Finder\\CLAUDE.md": {
+    "mtime": 1781667154.0,
+    "ast_hash": "2f72f7256a1d5f01c272993728b7e024",
+    "semantic_hash": "2f72f7256a1d5f01c272993728b7e024"
+  },
+  "D:\\Fanfiction-Finder\\README.md": {
+    "mtime": 1776273848.0,
+    "ast_hash": "62acbe75eb15966ba39fb16044adaa13",
+    "semantic_hash": "62acbe75eb15966ba39fb16044adaa13"
+  },
+  "D:\\Fanfiction-Finder\\backend\\docker-compose.yml": {
+    "mtime": 1775428684.0,
+    "ast_hash": "db21a2d9746cf449287b1af386917abd",
+    "semantic_hash": "db21a2d9746cf449287b1af386917abd"
+  },
+  "D:\\Fanfiction-Finder\\backend\\requirements.txt": {
+    "mtime": 1776048274.0,
+    "ast_hash": "7aa1b5b03b7b06cbc3d27fcf886e740f",
+    "semantic_hash": "7aa1b5b03b7b06cbc3d27fcf886e740f"
+  },
+  "D:\\Fanfiction-Finder\\fanfic-devtool\\README.md": {
+    "mtime": 1775877006.0,
+    "ast_hash": "e5a186fc95589f73f267a36dfcc2cdbc",
+    "semantic_hash": "e5a186fc95589f73f267a36dfcc2cdbc"
+  },
+  "D:\\Fanfiction-Finder\\fanfic-devtool\\requirements.txt": {
+    "mtime": 1775759532.0,
+    "ast_hash": "aa471a348eed5958020b157916fe4ef9",
+    "semantic_hash": "aa471a348eed5958020b157916fe4ef9"
+  },
+  "D:\\Fanfiction-Finder\\fanfic-devtool\\swap.yaml": {
+    "mtime": 1775705198.0,
+    "ast_hash": "1f48261350c4347f9b3c333432d2c5df",
+    "semantic_hash": "1f48261350c4347f9b3c333432d2c5df"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\000-index.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "8aff7e79305a505f0e3db4da75df7029",
+    "semantic_hash": "8aff7e79305a505f0e3db4da75df7029"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\2026-03-20-inception.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "e0d52b615e6d09619d313f7947b462fe",
+    "semantic_hash": "e0d52b615e6d09619d313f7947b462fe"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\2026-03-21-frontend-planning.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "a65ec0e5b2a46aad24894c039690202a",
+    "semantic_hash": "a65ec0e5b2a46aad24894c039690202a"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\2026-03-22-first-deploy.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "5664537dd2014c27bf4ca6013db0c4ab",
+    "semantic_hash": "5664537dd2014c27bf4ca6013db0c4ab"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\2026-03-23-hyde-design.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "e8764e3bc385cb8968285932a580fcf6",
+    "semantic_hash": "e8764e3bc385cb8968285932a580fcf6"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\2026-03-24-embedding-overhaul.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "8cbd521d39905f235f0e8ef7d0523d61",
+    "semantic_hash": "8cbd521d39905f235f0e8ef7d0523d61"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\2026-03-29-auth-planning.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "e53fa29a386f792bd7117a39321213fd",
+    "semantic_hash": "e53fa29a386f792bd7117a39321213fd"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\2026-03-30-monitoring.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "e0ffee4c46ebde5f6f4b510a788a482b",
+    "semantic_hash": "e0ffee4c46ebde5f6f4b510a788a482b"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\2026-03-31-bedrock-decision.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "9b32156937d6e8f1d1bac70d5f8323de",
+    "semantic_hash": "9b32156937d6e8f1d1bac70d5f8323de"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\2026-03-31-db-cleanup-neon.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "c8b7387952f62f9ec5fba064ef3a5a3b",
+    "semantic_hash": "c8b7387952f62f9ec5fba064ef3a5a3b"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\2026-04-02-bedrock-live.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "58c36fef59f71f8bff54bd15b899db54",
+    "semantic_hash": "58c36fef59f71f8bff54bd15b899db54"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\2026-04-02-remote-indexer.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "efc5173cc0ce880ee1003e2bf3ed7cbd",
+    "semantic_hash": "efc5173cc0ce880ee1003e2bf3ed7cbd"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\2026-04-03-wattpad-scraper.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "ad1a321d10b567ae1e5809e365b1322b",
+    "semantic_hash": "ad1a321d10b567ae1e5809e365b1322b"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\2026-04-04-parallel-scraping.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "a82df86e00b5baeb68e98a7926e6113f",
+    "semantic_hash": "a82df86e00b5baeb68e98a7926e6113f"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\2026-04-04-today.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "3e7b2b4178a982a72834103b24e12de1",
+    "semantic_hash": "3e7b2b4178a982a72834103b24e12de1"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\Timeline\\Apr 2 - Bedrock Live and HyDE Pipeline.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "f90961c2116e1a25773e8ee747ae36d0",
+    "semantic_hash": "f90961c2116e1a25773e8ee747ae36d0"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\Timeline\\Apr 3 - Wattpad Scraper.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "9cd1dd97d48b56c70d380873f62c7fce",
+    "semantic_hash": "9cd1dd97d48b56c70d380873f62c7fce"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\Timeline\\Apr 4 - Devlog and Notes System.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "4b102de5b517e9ff4e5526cd4fe50a9e",
+    "semantic_hash": "4b102de5b517e9ff4e5526cd4fe50a9e"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\Timeline\\Apr 4 - Multi account DB.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "94dc9d17ed8e260ccbb133b90f7ebeee",
+    "semantic_hash": "94dc9d17ed8e260ccbb133b90f7ebeee"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\Timeline\\Apr 4 - Parallel Scraping and Retry.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "849912646a66e2a74d4c4131f5fe4428",
+    "semantic_hash": "849912646a66e2a74d4c4131f5fe4428"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\Timeline\\Mar 20 - Came up with the Idea.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "41a00de05f38554c9668b1d580b1c30d",
+    "semantic_hash": "41a00de05f38554c9668b1d580b1c30d"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\Timeline\\Mar 21 - Frontend Planning.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "c3dd82beb4cf6cd56c2249dbd3aab5cb",
+    "semantic_hash": "c3dd82beb4cf6cd56c2249dbd3aab5cb"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\Timeline\\Mar 22 - First Deploy.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "ce0758f011c6417d8b5a96d82d588bfa",
+    "semantic_hash": "ce0758f011c6417d8b5a96d82d588bfa"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\Timeline\\Mar 23 - HyDE Query Design.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "0c002504d557582c4472b10e6cb9a215",
+    "semantic_hash": "0c002504d557582c4472b10e6cb9a215"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\Timeline\\Mar 24 - Embedding Overhaul.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "8583bd2ed67f918ef2fa84d530f1d1c4",
+    "semantic_hash": "8583bd2ed67f918ef2fa84d530f1d1c4"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\Timeline\\Mar 29 - Auth Planning.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "ca9cb93b6534773196d05f63ce45a1f0",
+    "semantic_hash": "ca9cb93b6534773196d05f63ce45a1f0"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\Timeline\\Mar 30 - Monitoring Explored.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "f297098413f2bf95b76601d414bc788d",
+    "semantic_hash": "f297098413f2bf95b76601d414bc788d"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\Timeline\\Mar 31 AM - DB Cleanup and Neon Migration.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "68d54ee8419953d9038e47a1966fb522",
+    "semantic_hash": "68d54ee8419953d9038e47a1966fb522"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\Timeline\\Mar 31 PM - Bedrock Decision.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "f7aa3f278a376183716ab173938928f9",
+    "semantic_hash": "f7aa3f278a376183716ab173938928f9"
+  },
+  "D:\\Fanfiction-Finder\\ficfinder-vault\\open-questions.md": {
+    "mtime": 1775428684.0,
+    "ast_hash": "322c879f3e2adbf68ff04eaea12d4eca",
+    "semantic_hash": "322c879f3e2adbf68ff04eaea12d4eca"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\content\\blog\\ambient-ui.mdx": {
+    "mtime": 1779169942.0,
+    "ast_hash": "e3d118840b9f6e653c73c05b502edead",
+    "semantic_hash": "e3d118840b9f6e653c73c05b502edead"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\content\\blog\\filter-chips-redesign.mdx": {
+    "mtime": 1779169940.0,
+    "ast_hash": "aa2a5c708f6941b01e5869904be66bee",
+    "semantic_hash": "aa2a5c708f6941b01e5869904be66bee"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\content\\blog\\frontend-overhaul.mdx": {
+    "mtime": 1779169936.0,
+    "ast_hash": "53cdc8f08be73ea7bb37852e91469b62",
+    "semantic_hash": "53cdc8f08be73ea7bb37852e91469b62"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\content\\blog\\hello-world.mdx": {
+    "mtime": 1779007966.0,
+    "ast_hash": "f5aa298fcdbbb6174580a280254890d6",
+    "semantic_hash": "f5aa298fcdbbb6174580a280254890d6"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\content\\blog\\indexer-log-graveyard.mdx": {
+    "mtime": 1779169936.0,
+    "ast_hash": "719de154b6bd81e1bb9607da38781960",
+    "semantic_hash": "719de154b6bd81e1bb9607da38781960"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\content\\blog\\local-first-and-neon.mdx": {
+    "mtime": 1779169938.0,
+    "ast_hash": "9203cddd0236c057d19581ee17b6ab35",
+    "semantic_hash": "9203cddd0236c057d19581ee17b6ab35"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\content\\blog\\ranker-tuning.mdx": {
+    "mtime": 1779169938.0,
+    "ast_hash": "522237dda3d9bbdd5e8620ebfae77995",
+    "semantic_hash": "522237dda3d9bbdd5e8620ebfae77995"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\content\\blog\\scraping-ao3-and-ffn.mdx": {
+    "mtime": 1779169940.0,
+    "ast_hash": "cc0d03b14ca07df913b0f67770e04d7d",
+    "semantic_hash": "cc0d03b14ca07df913b0f67770e04d7d"
+  },
+  "D:\\Fanfiction-Finder\\frontend\\design\\archive-desk.md": {
+    "mtime": 1779170522.0,
+    "ast_hash": "63e53ab28b90cc4f429849454ca60196",
+    "semantic_hash": "63e53ab28b90cc4f429849454ca60196"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\ANALYTICS.md": {
+    "mtime": 1781465996.0,
+    "ast_hash": "089d358fad88674ae2657817483a938f",
+    "semantic_hash": "089d358fad88674ae2657817483a938f"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\BACKEND-SCALING-NOTES.md": {
+    "mtime": 1781421778.0,
+    "ast_hash": "6f725f3cd6f1891aaa3c096ce0b09c90",
+    "semantic_hash": "6f725f3cd6f1891aaa3c096ce0b09c90"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\RUN-PLAN.md": {
+    "mtime": 1781369478.0,
+    "ast_hash": "e6c9a7f2392f609b8956e0acc8da6aa3",
+    "semantic_hash": "e6c9a7f2392f609b8956e0acc8da6aa3"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\SUMMARY.md": {
+    "mtime": 1781370570.0,
+    "ast_hash": "f995428a6186f74057f321eed1464a73",
+    "semantic_hash": "f995428a6186f74057f321eed1464a73"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\findings\\AUTH-findings.md": {
+    "mtime": 1781369710.0,
+    "ast_hash": "c102526ca3d95493c7b0b2609b900718",
+    "semantic_hash": "c102526ca3d95493c7b0b2609b900718"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\findings\\INF-findings.md": {
+    "mtime": 1781370300.0,
+    "ast_hash": "dab4bada135b7e5e1eb734fa58055914",
+    "semantic_hash": "dab4bada135b7e5e1eb734fa58055914"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\findings\\LLM-findings.md": {
+    "mtime": 1781369926.0,
+    "ast_hash": "8e3fdfccf99e470b8af4162976025e85",
+    "semantic_hash": "8e3fdfccf99e470b8af4162976025e85"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\findings\\OPS-findings.md": {
+    "mtime": 1781370510.0,
+    "ast_hash": "33cc32ad4c2eb22e2a95220a46615ade",
+    "semantic_hash": "33cc32ad4c2eb22e2a95220a46615ade"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\findings\\PAY-findings.md": {
+    "mtime": 1781370012.0,
+    "ast_hash": "84426565c85381735cc2b1b766dd1579",
+    "semantic_hash": "84426565c85381735cc2b1b766dd1579"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\findings\\SQL-findings.md": {
+    "mtime": 1781370150.0,
+    "ast_hash": "81a508221544afd8fe8eca375e153263",
+    "semantic_hash": "81a508221544afd8fe8eca375e153263"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\semantic-archive-audit\\START-HERE.md": {
+    "mtime": 1781382852.0,
+    "ast_hash": "47f8f6ca5049e51c33a6ebeec2ef32fe",
+    "semantic_hash": "47f8f6ca5049e51c33a6ebeec2ef32fe"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\semantic-archive-audit\\findings\\_TEMPLATE.md": {
+    "mtime": 1781382928.0,
+    "ast_hash": "e4004935d1b9a276d950f290dcf85212",
+    "semantic_hash": "e4004935d1b9a276d950f290dcf85212"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\semantic-archive-audit\\tasks\\01-auth.md": {
+    "mtime": 1781382876.0,
+    "ast_hash": "8e7474b18c09ce02eb2f037c6b77ecb4",
+    "semantic_hash": "8e7474b18c09ce02eb2f037c6b77ecb4"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\semantic-archive-audit\\tasks\\02-llm.md": {
+    "mtime": 1781382876.0,
+    "ast_hash": "1e38c8750debf13bb9d31f38cfe63568",
+    "semantic_hash": "1e38c8750debf13bb9d31f38cfe63568"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\semantic-archive-audit\\tasks\\03-stripe.md": {
+    "mtime": 1781382896.0,
+    "ast_hash": "2364693c240a4016b78f5d76d39d973e",
+    "semantic_hash": "2364693c240a4016b78f5d76d39d973e"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\semantic-archive-audit\\tasks\\04-sql.md": {
+    "mtime": 1781382896.0,
+    "ast_hash": "3e76b2d190074954a0caf7783e5cf32f",
+    "semantic_hash": "3e76b2d190074954a0caf7783e5cf32f"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\semantic-archive-audit\\tasks\\05-infra.md": {
+    "mtime": 1781382920.0,
+    "ast_hash": "c381c220cabe6d2f745f7a788ee4f587",
+    "semantic_hash": "c381c220cabe6d2f745f7a788ee4f587"
+  },
+  "D:\\Fanfiction-Finder\\semantic-archive-audit\\semantic-archive-audit\\tasks\\06-ops.md": {
+    "mtime": 1781382920.0,
+    "ast_hash": "17f690ea59982980ec2c1fd7ec79274a",
+    "semantic_hash": "17f690ea59982980ec2c1fd7ec79274a"
+  },
+  "D:\\Fanfiction-Finder\\vine-designs.html": {
+    "mtime": 1781507172.0,
+    "ast_hash": "3a02bcdfbcc57aee73059f834f739d2a",
+    "semantic_hash": "3a02bcdfbcc57aee73059f834f739d2a"
+  }
+}
