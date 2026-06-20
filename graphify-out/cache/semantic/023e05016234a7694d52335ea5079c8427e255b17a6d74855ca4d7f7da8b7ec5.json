@@ -1,1 +1,0 @@
-{"nodes": [{"id": "scripts_create_users_table_main", "label": "create_users_table main (ficfinder-users DynamoDB)", "file_type": "code", "source_file": "backend/scripts/create_users_table.py", "source_location": "18-41", "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}

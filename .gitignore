@@ -9,3 +9,11 @@ __pycache__/
 *.pyc
 backend/logs/
 *.log
+
+# Agent tooling artifacts (keep local, don't track)
+.claude/settings.local.json
+.claude/worktrees/
+graphify-out/
+.serena/
+.mcp.json
+vine-designs.html
