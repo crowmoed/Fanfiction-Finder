@@ -2,12 +2,12 @@ import os
 import json
 import boto3
 from botocore.config import Config
-from typing import Optional
 from concurrent.futures import ThreadPoolExecutor
 import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data.schema import Fic
+from ai._json_utils import strip_fences
 
 # Explicit timeouts + bounded botocore retries (see query_enhancer for rationale).
 _BEDROCK_CONFIG = Config(
@@ -98,12 +98,7 @@ def _rank_chunk(fics_chunk: list[Fic], query: str, chunk_idx: int, base_offset: 
         }),
     )
     body = json.loads(response["body"].read())
-    raw = body["content"][0]["text"].strip()
-    if raw.startswith("```"):
-        raw = raw.split("```", 2)[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-        raw = raw.strip()
+    raw = strip_fences(body["content"][0]["text"].strip())
 
     scores = json.loads(raw)
     return {base_offset + item["index"]: item["score"] for item in scores}

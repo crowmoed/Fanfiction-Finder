@@ -19,8 +19,6 @@ readers get looser ones.
 
 import requests
 import time
-import random
-import statistics
 import sys
 import os
 from typing import Iterator
@@ -61,11 +59,6 @@ FANDOM_SIZE_TIERS = [
     (50_000,  75),    # 20K–50K:       keep top 25% (P75 cutoff)
     (None,    85),    # 50K+:          keep top 15% (P85 cutoff)
 ]
-
-# ── Early stop (disabled — we want to search everything) ─────────────────────
-
-EARLY_STOP_ENABLED = False
-MAX_EMPTY_PAGES = 5  # consecutive pages with 0 qualifying fics before stopping
 
 
 # ── HTTP session setup ────────────────────────────────────────────────────────
@@ -247,8 +240,6 @@ def calibrate(query: str, session: requests.Session, quality_offset: int = 0) ->
         min_ratio: the calibrated minimum vote/read ratio
         percentile_used: which percentile was applied
         sample_size: how many valid stories were sampled
-        median_ratio: median ratio in the sample
-        p75_ratio: 75th percentile ratio
     """
     ratios = []
     total = None
@@ -286,8 +277,6 @@ def calibrate(query: str, session: requests.Session, quality_offset: int = 0) ->
             "min_ratio": 0.01,
             "percentile_used": 0,
             "sample_size": 0,
-            "median_ratio": 0,
-            "p75_ratio": 0,
         }
 
     ratios.sort()
@@ -297,17 +286,11 @@ def calibrate(query: str, session: requests.Session, quality_offset: int = 0) ->
     idx = min(idx, len(ratios) - 1)
     min_ratio = ratios[idx]
 
-    median_ratio = statistics.median(ratios)
-    p75_idx = min(int(len(ratios) * 0.75), len(ratios) - 1)
-    p75_ratio = ratios[p75_idx]
-
     return {
         "total": total,
         "min_ratio": min_ratio,
         "percentile_used": percentile,
         "sample_size": len(ratios),
-        "median_ratio": median_ratio,
-        "p75_ratio": p75_ratio,
     }
 
 
@@ -348,8 +331,6 @@ def search_iter(query: str, max_pages: int = 0, quality_offset: int = 0) -> Iter
 
     print(f"[Wattpad] Fandom total: {cal['total']:,} stories")
     print(f"[Wattpad] Sample size: {cal['sample_size']} stories")
-    print(f"[Wattpad] Median ratio: {cal['median_ratio']:.2%}")
-    print(f"[Wattpad] P75 ratio: {cal['p75_ratio']:.2%}")
     print(f"[Wattpad] Using P{cal['percentile_used']} cutoff → min ratio: {cal['min_ratio']:.2%}")
 
     min_ratio = cal["min_ratio"]
@@ -376,7 +357,6 @@ def search_iter(query: str, max_pages: int = 0, quality_offset: int = 0) -> Iter
 
         offset = 0
         shard_qualified = 0
-        consecutive_empty = 0
 
         while True:
             url = build_search_url(query, offset=offset,
@@ -434,15 +414,6 @@ def search_iter(query: str, max_pages: int = 0, quality_offset: int = 0) -> Iter
                 print(f"[Wattpad] {shard_label} no nextUrl — shard done")
                 break
 
-            if EARLY_STOP_ENABLED:
-                if page_qualified == 0:
-                    consecutive_empty += 1
-                    if consecutive_empty >= MAX_EMPTY_PAGES:
-                        print(f"[Wattpad] {MAX_EMPTY_PAGES} empty pages — stopping shard")
-                        break
-                else:
-                    consecutive_empty = 0
-
             if max_pages > 0 and pages_fetched >= max_pages:
                 print(f"[Wattpad] Reached max_pages={max_pages} — stopping all shards")
                 budget_exhausted = True
@@ -464,21 +435,8 @@ def search_iter(query: str, max_pages: int = 0, quality_offset: int = 0) -> Iter
               f"({total_qualified / (pages_fetched * LIMIT):.1%})")
 
 
-def search(query: str, max_pages: int = 0, quality_offset: int = 0) -> list[Fic]:
-    """Eager wrapper around search_iter — accumulates all pages into a list.
-
-    Kept for back-compat with callers that want the full result set at once
-    (notably the `__main__` smoke test). The indexer uses search_iter directly
-    to avoid the memory spike of holding the full corpus.
-    """
-    results: list[Fic] = []
-    for batch in search_iter(query, max_pages=max_pages, quality_offset=quality_offset):
-        results.extend(batch)
-    return results
-
-
 if __name__ == "__main__":
-    fics = search("naruto", max_pages=20)
+    fics = [fic for batch in search_iter("naruto", max_pages=20) for fic in batch]
     for fic in fics:
         ratio = (fic.kudos / fic.hits * 100) if fic.hits else 0
         print(f"{fic.title} | {fic.kudos} votes | {fic.hits} reads | {ratio:.1f}% | tags: {fic.tags[:3]}")

@@ -1,5 +1,4 @@
 import datetime
-import logging
 import os
 import sys
 import time
@@ -13,7 +12,6 @@ from ai.embedder import embed_fics_batch
 from db.postgres import upsert_fic, get_fic_count, init_db, clear_fandom, migrate_embedding_dimensions
 from db.local_storage import upsert_fics_batch_local, clear_fandom_local, compact as compact_local
 from seleniumbase import SB
-import random
 
 MIN_WORDS = 20000
 WATTPAD_QUALITY_OFFSET = 0
@@ -46,14 +44,13 @@ class BrowserSession:
     """Selenium browser held open for the full scrape.
 
     Use as: `with BrowserSession() as session: session.sb.open(url)`.
-    `session.tick()` is a no-op; kept only so existing per-page callers keep
-    working. The session does not cycle Chrome — closing/reopening re-triggers
+    The session does not cycle Chrome — closing/reopening re-triggers
     the Cloudflare/terms interstitial, which means a human click-through every
-    time. Instead we rely on Chrome's memory flags + clear_browser_state().
+    time. Instead we rely on Chrome's memory flags.
     """
 
-    def __init__(self, interstitial_seconds: int = 15):
-        self.interstitial_seconds = interstitial_seconds
+    def __init__(self):
+        self.interstitial_seconds = 15
         self._ctx = None
         self.sb = None
         # The Cloudflare / age-gate interstitial only shows on a fresh browser;
@@ -75,15 +72,6 @@ class BrowserSession:
             self._ctx = None
             self.sb = None
 
-    def tick(self) -> bool:
-        """No-op kept so per-page callers still work.
-
-        Browser cycling was removed: closing/reopening Chrome re-triggered the
-        interstitial (terms/Cloudflare) and forced manual re-acceptance. The
-        whole scrape now shares one browser.
-        """
-        return False
-
     def interstitial_hold(self, label: str = "") -> None:
         """Pause once per fresh browser so a human can clear any interstitial.
 
@@ -97,14 +85,6 @@ class BrowserSession:
         print(f"{tag}Waiting {self.interstitial_seconds}s — "
               f"click through any interstitial now...")
         time.sleep(self.interstitial_seconds)
-
-    def clear_browser_state(self):
-        """Cheap per-page clear of network cache + cookies (no restart)."""
-        try:
-            self.sb.driver.execute_cdp_cmd("Network.clearBrowserCache", {})
-            self.sb.driver.execute_cdp_cmd("Network.clearBrowserCookies", {})
-        except Exception:
-            pass
 
 
 def _store_batch(fics, embeddings, fandom_name: str) -> int:
@@ -188,7 +168,6 @@ def scrape_and_embed_ao3(fandom_name: str, session: "BrowserSession", start_page
         progress.mark_progress(fandom_name, "ao3", min_words=min_words, page=page + 1)
 
         page += 1
-        session.tick()
 
     progress.mark_done(fandom_name, "ao3")
     compact_local(fandom_name)
@@ -282,7 +261,6 @@ def scrape_and_embed_ffn(fandom_name: str, session: "BrowserSession",
             print(f"[FFN] Page {page} ({label}): all fics filtered out — continuing")
             progress.mark_progress(fandom_name, "ffn", word_len=word_len, page=page + 1)
             page += 1
-            session.tick()
             continue
 
         print(f"[FFN] Page {page} ({label}): scraped {len(fics)} fics — embedding now...")
@@ -293,7 +271,6 @@ def scrape_and_embed_ffn(fandom_name: str, session: "BrowserSession",
         progress.mark_progress(fandom_name, "ffn", word_len=word_len, page=page + 1)
 
         page += 1
-        session.tick()
 
     progress.mark_done(fandom_name, "ffn")
     compact_local(fandom_name)

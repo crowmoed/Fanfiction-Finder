@@ -13,10 +13,6 @@ JWT_SECRET = os.environ.get("JWT_SECRET", "change-me-in-production")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRY_DAYS = 7
 
-# Placeholder secret shipped as the code default. We must never sign or verify with
-# it — if the env var is unset, anyone could forge tokens using this known value.
-_PLACEHOLDER_JWT_SECRET = "change-me-in-production"
-
 
 def _require_jwt_secret() -> str:
     """Return the configured JWT secret, failing closed if it's missing/placeholder.
@@ -24,7 +20,7 @@ def _require_jwt_secret() -> str:
     Guards against a deploy where JWT_SECRET is unset: the public placeholder would
     otherwise let anyone forge a valid JWT for any user.
     """
-    if not JWT_SECRET or JWT_SECRET == _PLACEHOLDER_JWT_SECRET:
+    if not JWT_SECRET or JWT_SECRET == "change-me-in-production":
         raise HTTPException(
             status_code=500,
             detail="Server auth misconfiguration: JWT_SECRET is not set.",

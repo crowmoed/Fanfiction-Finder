@@ -236,20 +236,6 @@ def _row_from_fic(fic, fandom: str, now: str) -> dict:
     }
 
 
-def upsert_fic_local(fic, fandom: str, embedding: list[float]) -> bool:
-    """Insert a single fic as its own (tiny) part file. Prefer the batch API."""
-    try:
-        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        row = _row_from_fic(fic, fandom, now)
-        emb = np.asarray(embedding, dtype=np.float32).reshape(1, -1)
-        with _FandomLock(fandom):
-            _write_part(fandom, [row], emb)
-        return True
-    except Exception as e:
-        print(f"  [local] Failed to save '{fic.title}': {e}")
-        return False
-
-
 def upsert_fics_batch_local(fics, fandom: str, embeddings: list[list[float]]) -> tuple[int, int]:
     """Append a batch as one part file. O(batch_size) memory — no corpus rewrite."""
     if not fics:

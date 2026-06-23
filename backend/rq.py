@@ -123,13 +123,6 @@ def fmt(n: int | None) -> str:
     return str(n)
 
 
-def bar(indexed: int, total: int | None, width: int = 20) -> str:
-    if not total or total == 0:
-        return " " * width
-    filled = min(int((indexed / total) * width), width)
-    return "█" * filled + "░" * (width - filled)
-
-
 def show_fandom(fandom: str):
     if fandom not in FANDOMS:
         print(f"Unknown fandom: '{fandom}'")
@@ -138,7 +131,7 @@ def show_fandom(fandom: str):
 
     print(f"\n  {fandom}")
     print(f"  {'─' * 58}")
-    print(f"  {'Platform':<10} {'Indexed':>8}  {'Available':>10}  {'Gap':>8}  Progress")
+    print(f"  {'Platform':<10} {'Indexed':>8}  {'Available':>10}  {'Gap':>8}")
     print(f"  {'─' * 58}")
 
     db = get_db_counts(fandom)
@@ -155,8 +148,7 @@ def show_fandom(fandom: str):
         indexed = db[key]
         total = get_total()
         gap = (total - indexed) if total is not None else None
-        progress = bar(indexed, total)
-        print(f"  {label:<10} {fmt(indexed):>8}  {fmt(total):>10}  {fmt(gap):>8}  {progress}")
+        print(f"  {label:<10} {fmt(indexed):>8}  {fmt(total):>10}  {fmt(gap):>8}")
 
     print(f"  {'─' * 58}")
     print(f"  {'Total':<10} {fmt(total_indexed):>8}")

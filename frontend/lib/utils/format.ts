@@ -35,15 +35,6 @@ export function formatRelativeTime(date: Date | string): string {
 }
 
 /**
- * Converts an elapsed millisecond count to a human-readable duration.
- * e.g. 3200 → "3.2s"
- */
-export function formatElapsed(ms: number): string {
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
-}
-
-/**
  * Converts a query string into a filename-safe slug.
  * e.g. "enemies to lovers" → "enemies-to-lovers"
  */

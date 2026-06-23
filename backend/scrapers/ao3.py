@@ -1,7 +1,5 @@
-from seleniumbase import SB
 from bs4 import BeautifulSoup
 from typing import Optional
-import time
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -84,33 +82,6 @@ def parse_results(html: str) -> list[Fic]:
         soup.decompose()
 
 
-def search(query: str, fandom: Optional[str] = None, pages: int = 1) -> list[Fic]:
-    results = []
-    with SB(uc=True, headless=False) as sb:
-        for page in range(1, pages + 1):
-            url = build_search_url(query, fandom=fandom, page=page)
-            if url is None:
-                print(f"Skipping AO3: no tag configured for '{fandom}'")
-                break
-            print(f"Fetching page {page}: {url}")
-            sb.open(url)
-            if page == 1:
-                print("If AO3 shows an interstitial, click through it now.")
-                print("Waiting 10 seconds...")
-                time.sleep(10)
-            try:
-                sb.wait_for_element("li.work.blurb.group", timeout=20)
-            except Exception:
-                print(f"Page {page}: no results found or timed out")
-                break
-            html = sb.get_page_source()
-            fics = parse_results(html)
-            results.extend(fics)
-            print(f"Page {page}: found {len(fics)} results")
-            if page < pages:
-                time.sleep(0)
-    return results
-
 def parse_int(text: Optional[str]) -> Optional[int]:
     if not text:
         return None
@@ -118,8 +89,3 @@ def parse_int(text: Optional[str]) -> Optional[int]:
         return int(text.strip().replace(",", ""))
     except ValueError:
         return None
-        
-if __name__ == "__main__":
-    fics = search("enemies to lovers slow burn", fandom="Harry Potter", pages=2)
-    for fic in fic:
-        print(f"{fic.title} | {fic.kudos} kudos | {fic.word_count} words")

@@ -1,7 +1,6 @@
 import logging
 import os
 import sys
-import time
 import numpy as np
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -47,11 +46,9 @@ def _is_rate_limit(exc: BaseException) -> bool:
     before_sleep=before_sleep_log(logger, logging.WARNING),
     reraise=True,
 )
-def _embed_single(contents, task_type: str, title: str = None):
+def _embed_single(contents, task_type: str):
     """Single embed_content call with up to 5 retries on rate-limit errors."""
     kwargs = dict(task_type=task_type, output_dimensionality=EMBEDDING_DIMS)
-    if title is not None:
-        kwargs['title'] = title
     return client.models.embed_content(
         model=EMBEDDING_MODEL,
         contents=contents,
@@ -109,17 +106,6 @@ def _format_fic_text(summary: str | None, tags: list[str], fandom: str | None = 
     return "\n".join(parts)
 
 
-def embed_fic(title: str, summary: str, tags: list[str], fandom: str = None) -> list[float]:
-    """Generate an embedding for a single fic using RETRIEVAL_DOCUMENT task type.
-    
-    The title is passed via the dedicated `title` parameter (not in content string)
-    so the model gets a structured signal about the document.
-    """
-    text = _format_fic_text(summary, tags, fandom)
-    result = _embed_single(text, task_type="RETRIEVAL_DOCUMENT", title=title)
-    return _normalize(result.embeddings[0].values)
-
-
 def embed_query(query: str) -> list[float]:
     """Generate an embedding for a user search query using RETRIEVAL_QUERY task type."""
     print(f"[embedder] sending to Gemini ({EMBEDDING_MODEL}): {query!r}", flush=True)
@@ -132,7 +118,6 @@ def embed_fics_batch(fics: list, fandom: str = None, batch_size: int = 25) -> li
     
     Note: The batch API doesn't support per-item title params, so we bake the
     title into the content string for batch calls as a pragmatic tradeoff.
-    Single-fic calls via embed_fic() use the proper title parameter.
     """
     texts = [
         f"Title: {fic.title}\n{_format_fic_text(fic.summary, fic.tags, fandom)}"

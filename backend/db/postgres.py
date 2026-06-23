@@ -137,9 +137,6 @@ def migrate_tags_to_array():
             print(f"[migrate-tags] Unexpected data_type '{data_type}' — aborting.")
             return
 
-        pre_count = conn.execute(text("SELECT COUNT(*) FROM fics")).scalar()
-        print(f"[migrate-tags] Pre-migration row count: {pre_count}")
-
         conn.execute(text("ALTER TABLE fics ADD COLUMN tags_arr text[]"))
         conn.execute(text(
             "UPDATE fics SET tags_arr = string_to_array(tags, ', ') "
@@ -151,25 +148,6 @@ def migrate_tags_to_array():
         ))
         conn.execute(text("ALTER TABLE fics DROP COLUMN tags"))
         conn.execute(text("ALTER TABLE fics RENAME COLUMN tags_arr TO tags"))
-
-        post_count = conn.execute(text("SELECT COUNT(*) FROM fics")).scalar()
-        null_count = conn.execute(text(
-            "SELECT COUNT(*) FROM fics WHERE tags IS NULL"
-        )).scalar()
-        empty_count = conn.execute(text(
-            "SELECT COUNT(*) FROM fics WHERE array_length(tags, 1) IS NULL"
-        )).scalar()
-        print(f"[migrate-tags] Post-migration row count: {post_count}")
-        print(f"[migrate-tags] Rows with NULL tags (should be 0): {null_count}")
-        print(f"[migrate-tags] Rows with empty tag arrays: {empty_count}")
-
-        sample = conn.execute(text(
-            "SELECT id, title, tags FROM fics "
-            "WHERE array_length(tags, 1) > 0 LIMIT 5"
-        )).fetchall()
-        print("[migrate-tags] Sample rows:")
-        for row in sample:
-            print(f"  {row.id} | {row.title} | {row.tags}")
 
 
 def add_search_text_column():
@@ -269,38 +247,6 @@ def upsert_fic(fic: Fic, fandom: str, embedding: list[float]):
         session.commit()
 
 
-def search_similar(query_embedding: list[float], fandom: str | None, limit: int = 50) -> list[Fic]:
-    """Find fics whose embeddings are closest to the query embedding.
-
-    If fandom is None, searches across all fandoms.
-    """
-    with Session(engine) as session:
-        query = session.query(FicRecord).filter(FicRecord.embedding.isnot(None))
-        if fandom is not None:
-            query = query.filter(FicRecord.fandom == fandom)
-        results = (
-            query
-            .order_by(FicRecord.embedding.cosine_distance(query_embedding))
-            .limit(limit)
-            .all()
-        )
-
-    fics = []
-    for r in results:
-        fics.append(Fic(
-            title=r.title,
-            url=r.url,
-            platform=r.platform,
-            fandom=r.fandom,
-            summary=r.summary,
-            tags=list(r.tags) if r.tags else [],
-            word_count=r.word_count,
-            kudos=r.kudos,
-            hits=r.hits
-        ))
-    return fics
-
-
 PLATFORMS = ("ao3", "ffn", "wattpad")
 RRF_K = 60  # Standard RRF constant — dampens impact of low-ranked results.
 
@@ -338,25 +284,20 @@ def search_rrf(
     # Build extra WHERE fragment from filters. Filter keys are not user-controlled
     # (set by the API layer), values bound as SQL params — never f-string'd.
     filter_clauses: list[str] = []
-    applied_log: list[str] = []
     if filters:
         min_wc = filters.get("min_word_count")
         if isinstance(min_wc, int) and min_wc > 0:
             filter_clauses.append("AND word_count IS NOT NULL AND word_count >= :min_word_count")
             params["min_word_count"] = min_wc
-            applied_log.append(f"min_word_count={min_wc}")
         max_wc = filters.get("max_word_count")
         if isinstance(max_wc, int) and max_wc > 0:
             filter_clauses.append("AND word_count IS NOT NULL AND word_count <= :max_word_count")
             params["max_word_count"] = max_wc
-            applied_log.append(f"max_word_count={max_wc}")
         excluded = filters.get("excluded_tags")
         if isinstance(excluded, list) and excluded:
             filter_clauses.append("AND NOT (tags && CAST(:excluded_tags AS text[]))")
             params["excluded_tags"] = excluded
-            applied_log.append(f"excluded_tags={excluded}")
     filter_fragment = " ".join(filter_clauses)
-    print(f"[search_rrf] filters applied: {', '.join(applied_log) if applied_log else 'none'}", flush=True)
 
     # Build one ranked CTE per (embedding, platform) pair, UNION them, then RRF-score.
     # pgvector's <=> is cosine distance; ORDER BY distance asc → lower rank number = better match.

@@ -1,93 +1,119 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Loader2, Check, Search, Sparkles, Binary, Database, ListChecks } from 'lucide-react';
 import { SITE } from '@/lib/site';
+import { cn } from '@/lib/cn';
+
+/**
+ * The loading screen, as an "agent planning" timeline: the real search pipeline
+ * (read → expand → embed → retrieve → re-rank) revealed step by step. Self-driven
+ * (no backend coupling); reduced-motion shows it settled rather than animating.
+ */
 
 const STEPS = [
-  { mark: '“', sub: 'Query', label: 'Reading your query' },
-  { mark: 'C', sub: 'Claude', label: 'Expanding the search (HyDE)' },
-  { mark: 'G', sub: 'Gemini', label: 'Embedding the meaning' },
-  { mark: 'pg', sub: 'Postgres', label: `Vector search · ${SITE.ficsIndexed.toLocaleString()} fics` },
-  { mark: 'C', sub: 'Claude', label: 'Re-ranking the best matches' },
-];
+  { icon: Search, title: 'Reading your query', sub: 'Pulling out tropes, pairings, and constraints' },
+  { icon: Sparkles, title: 'Expanding the search', sub: 'Drafting hypothetical fic summaries with Claude (HyDE)' },
+  { icon: Binary, title: 'Embedding the meaning', sub: 'Gemini · 768-dimension vectors' },
+  { icon: Database, title: `Searching ${SITE.ficsIndexed.toLocaleString()} fics`, sub: 'Hybrid vector retrieval across AO3, FFN & Wattpad' },
+  { icon: ListChecks, title: 'Re-ranking the best matches', sub: 'Scoring each candidate against your query' },
+] as const;
+
+type StepState = 'pending' | 'active' | 'complete';
 
 export function ArchitectureBeam() {
   const [active, setActive] = useState(0);
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setActive(STEPS.length - 1);
+      return;
+    }
     const timer = window.setInterval(() => {
-      setActive((current) => (current >= STEPS.length - 1 ? 3 + ((current + 1) % 2) : current + 1));
-    }, 700);
+      setActive((current) => Math.min(current + 1, STEPS.length - 1));
+    }, 760);
     return () => window.clearInterval(timer);
   }, []);
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col items-center gap-8 px-6 py-16">
-      {/* horizontal on desktop */}
-      <div className="hidden w-full items-stretch justify-center gap-2 sm:flex">
-        {STEPS.map((step, index) => (
-          <div key={`${step.sub}-${index}`} className="flex flex-1 items-center gap-2">
-            <PipelineNode step={step} active={index === active} complete={index < active} />
-            {index < STEPS.length - 1 && <Connector lit={index < active} />}
-          </div>
-        ))}
-      </div>
+    <div className="mx-auto max-w-xl px-6 py-12">
+      <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-soft">
+        {/* spectrum hairline — ties the loader to the hero aurora */}
+        <div aria-hidden className="spectrum-strip h-[3px] w-full" />
 
-      {/* vertical on mobile */}
-      <div className="flex flex-col items-center gap-2 sm:hidden">
-        {STEPS.map((step, index) => (
-          <div key={`${step.sub}-m-${index}`} className="flex flex-col items-center gap-2">
-            <PipelineNode step={step} active={index === active} complete={index < active} />
-            {index < STEPS.length - 1 && <Connector vertical lit={index < active} />}
-          </div>
-        ))}
-      </div>
+        <div className="flex items-center gap-2.5 border-b border-border px-4 py-3.5">
+          <Loader2 className="h-4 w-4 animate-spin text-ink-2" aria-hidden />
+          <span className="text-[15px] font-semibold tracking-tight text-ink">Searching the archive…</span>
+          <span className="ml-auto font-mono text-[11px] text-ink-3">usually sub-second</span>
+        </div>
 
-      <div
-        className="min-h-12 rounded-md border border-border bg-surface px-4 py-3 text-center font-mono text-sm text-ink-2"
-        aria-live="polite"
-      >
-        {STEPS[active]?.label}
-      </div>
-    </div>
-  );
-}
+        <ol className="flex flex-col p-5" aria-label="Search progress">
+          {STEPS.map((step, index) => {
+            const state: StepState = index < active ? 'complete' : index === active ? 'active' : 'pending';
+            const isLast = index === STEPS.length - 1;
+            const Icon = step.icon;
+            return (
+              <li
+                key={step.title}
+                className="relative flex gap-4"
+                aria-current={state === 'active' ? 'step' : undefined}
+              >
+                {/* connector */}
+                {!isLast && (
+                  <span
+                    aria-hidden
+                    className="absolute left-[11px] top-7 -bottom-1 w-px"
+                    style={{
+                      backgroundColor:
+                        index < active
+                          ? 'color-mix(in srgb, var(--ink-3) 55%, transparent)'
+                          : 'var(--border)',
+                    }}
+                  />
+                )}
 
-function Connector({ vertical = false, lit }: { vertical?: boolean; lit: boolean }) {
-  return (
-    <span
-      aria-hidden
-      className={vertical ? 'h-5 w-px' : 'h-px flex-1'}
-      style={{ backgroundColor: lit ? 'var(--accent)' : 'var(--border)' }}
-    />
-  );
-}
+                {/* status node */}
+                <span
+                  className={cn(
+                    'relative z-10 mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-full bg-surface ring-4 ring-surface transition-colors duration-300',
+                    state === 'complete' && 'border border-status-complete text-status-complete',
+                    state === 'active' && 'border border-ring text-ink',
+                    state === 'pending' && 'border border-border text-ink-3'
+                  )}
+                  style={
+                    state === 'active'
+                      ? { boxShadow: '0 0 0 4px color-mix(in srgb, var(--ring) 20%, transparent)' }
+                      : undefined
+                  }
+                >
+                  {state === 'complete' ? (
+                    <Check className="h-3.5 w-3.5" aria-hidden />
+                  ) : state === 'active' ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+                  ) : (
+                    <Icon className="h-3.5 w-3.5" aria-hidden />
+                  )}
+                </span>
 
-function PipelineNode({
-  step,
-  active,
-  complete,
-}: {
-  step: { mark: string; sub: string; label: string };
-  active: boolean;
-  complete: boolean;
-}) {
-  const on = active || complete;
-  return (
-    <div className="flex min-w-[80px] flex-col items-center gap-2 text-center">
-      <div
-        className="flex h-12 w-12 items-center justify-center rounded-full border font-mono text-sm font-semibold transition-colors duration-300 ease-out"
-        style={{
-          backgroundColor: on ? 'var(--accent-soft)' : 'var(--surface)',
-          borderColor: active ? 'var(--accent)' : 'var(--border-strong)',
-          color: on ? 'var(--accent-text)' : 'var(--ink-2)',
-          boxShadow: active ? '0 0 0 4px var(--accent-soft)' : 'none',
-        }}
-      >
-        {step.mark}
+                {/* label */}
+                <div className={cn('flex-1 pb-6', state === 'pending' && 'opacity-55')}>
+                  <p
+                    className={cn(
+                      'text-[14px] tracking-tight transition-colors',
+                      state === 'active' ? 'font-semibold text-ink' : state === 'complete' ? 'font-medium text-ink-2' : 'font-medium text-ink-3'
+                    )}
+                  >
+                    {step.title}
+                  </p>
+                  {index <= active && (
+                    <p className="mt-0.5 font-mono text-[11px] leading-relaxed text-ink-3">{step.sub}</p>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
       </div>
-      <div className="font-mono text-[10px] uppercase tracking-wide text-ink-3">{step.sub}</div>
     </div>
   );
 }

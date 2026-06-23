@@ -43,6 +43,7 @@ export default function PromptSearchBar({
 
   useEffect(() => {
     if (compact) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     let index = 0;
     const timer = window.setInterval(() => {
       index = (index + 1) % EXAMPLES.length;
@@ -79,6 +80,8 @@ export default function PromptSearchBar({
     return (
       <div className="flex items-center gap-2 rounded-full border border-border-strong bg-surface px-2 py-1 shadow-soft">
         <input
+          id="fic-search-compact"
+          name="q"
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           onKeyDown={handleKeyDown}
@@ -109,6 +112,8 @@ export default function PromptSearchBar({
       <div className="flex min-h-[152px] flex-col rounded-[8px] bg-surface px-4 pb-3 pt-4">
         <textarea
           ref={textareaRef}
+          id="fic-search"
+          name="fic-search"
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
           onKeyDown={handleKeyDown}
@@ -122,8 +127,8 @@ export default function PromptSearchBar({
           <FilterChips fandom={fandom} onFandomChange={setFandom} />
           <div className="flex items-center gap-3">
             <span className="hidden font-mono text-[11px] text-ink-3 sm:inline">⌘↵ to search</span>
-            <Button onClick={handleSubmit} disabled={isSearching || !prompt.trim()}>
-              {isSearching ? 'Steeping…' : 'Steep a pot'}
+            <Button variant="glow" onClick={handleSubmit} disabled={isSearching || !prompt.trim()}>
+              {isSearching ? 'Searching…' : 'Search'}
             </Button>
           </div>
         </div>

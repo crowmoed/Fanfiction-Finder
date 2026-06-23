@@ -19,6 +19,8 @@ from botocore.config import Config
 from pydantic import BaseModel
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+from ai._json_utils import strip_fences
+
 # ── Client setup ──────────────────────────────────────────────────────────────
 
 # Explicit timeouts so a hung Bedrock call can't block a worker indefinitely.
@@ -37,13 +39,8 @@ HAIKU_MODEL = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
 
 class EnrichedQuery(BaseModel):
     semantic_descriptions: list[str]  # 3 hypothetical fic summaries at different angles (HyDE-style)
-    ao3_tags: list[str]              # Canonical AO3 tag suggestions
     ao3_filters: dict                # Rating, warning, category, word count, etc.
-    ffn_keywords: list[str]          # FFN-compatible search terms
     ffn_filters: dict                # FFN genre, rating, length filters
-    detected_fandoms: list[str]      # Extracted fandom references
-    detected_ships: list[str]        # Extracted relationship/ship references
-    detected_characters: list[str]   # Extracted character references
     excluded_tags: list[str]         # Anything the user wants to avoid
 
 
@@ -55,21 +52,11 @@ For every query, you must produce a JSON object with these fields:
 
 1. "semantic_descriptions": Write 3 different hypothetical fanfiction summaries, each exploring a different interpretation or angle of the user's query. Each should be 2-4 sentences. The three summaries MUST target different sub-audiences: one should focus on the primary/obvious interpretation, one should explore an unusual or niche angle, and one should emphasize the emotional tone or atmosphere rather than plot. Return them as a JSON array in the semantic_descriptions field.
 
-2. "ao3_tags": List of canonical AO3 freeform/relationship tags relevant to the query.
+2. "ao3_filters": Object with any of: rating, warnings, category, completion_status, min_word_count, max_word_count. Only include filters the user explicitly or strongly implicitly requests.
 
-3. "ao3_filters": Object with any of: rating, warnings, category, completion_status, min_word_count, max_word_count. Only include filters the user explicitly or strongly implicitly requests.
+3. "ffn_filters": Object with any of: rating, genre, status, min_words, max_words. Only include filters explicitly requested.
 
-4. "ffn_keywords": List of FFN-compatible keyword search terms.
-
-5. "ffn_filters": Object with any of: rating, genre, status, min_words, max_words. Only include filters explicitly requested.
-
-6. "detected_fandoms": Fandoms mentioned or implied in the query.
-
-7. "detected_ships": Relationships detected, in canonical AO3 format (use "/" for romantic, "&" for platonic).
-
-8. "detected_characters": Individual characters referenced.
-
-9. "excluded_tags": Anything the user wants to avoid ("no MCD", "no non-con", etc.)
+4. "excluded_tags": Anything the user wants to avoid ("no MCD", "no non-con", etc.)
 
 Key rules:
 - Expand portmanteau ship names: "Drarry" = "Draco Malfoy/Harry Potter", "Destiel" = "Dean Winchester/Castiel", "Johnlock" = "Sherlock Holmes/John Watson", "Stucky" = "James 'Bucky' Barnes/Steve Rogers"
@@ -88,13 +75,8 @@ Example output:
     "Two people who despise each other are thrown into emotional crisis, and the only person available to offer comfort is the last one they would choose. The caretaker wrestles with their own feelings as they watch their enemy break down, and old grievances start to feel less important than the connection forming between them. Emotional Hurt/Comfort with Mutual Pining and Angst with a Happy Ending.",
     "Former rivals who have spent years trading barbs find themselves stripped of their defenses when one of them is at their lowest. What begins as obligation or guilt slowly becomes genuine tenderness, as the other's suffering makes hatred impossible to sustain. A slow burn hurt/comfort arc where the transformation from antagonism to love is gradual and hard-won."
   ],
-  "ao3_tags": ["Hurt/Comfort", "Enemies to Lovers", "Slow Burn", "Emotional Hurt/Comfort", "Mutual Pining", "Angst with a Happy Ending"],
   "ao3_filters": {},
-  "ffn_keywords": ["hurt comfort", "enemies to lovers", "rivals to romance"],
   "ffn_filters": {},
-  "detected_fandoms": [],
-  "detected_ships": [],
-  "detected_characters": [],
   "excluded_tags": []
 }
 
@@ -106,13 +88,8 @@ Example output:
     "A completed, high-word-count fic in which Harry and Draco are thrown together by circumstance — shared work, proximity, or a forced truce — and neither can deny the tension between them for long. The story takes its time, savoring the slow dissolution of old hatred into something hungrier, with explicit scenes arriving only once trust has been genuinely earned. Mutual Pining and Enemies to Lovers with deliberate pacing.",
     "A post-Hogwarts completed Drarry story built around the slow erosion of a years-long rivalry into obsession and then love. Draco and Harry circle each other across many chapters, neither willing to admit what they want, the narrative tension ratcheting up until the eventual explicit payoff feels inevitable. Slow Burn with Pining, Unresolved Sexual Tension, and a satisfying explicit resolution."
   ],
-  "ao3_tags": ["Slow Burn", "Draco Malfoy/Harry Potter", "Enemies to Lovers", "Sexual Content", "Romance", "Post-Hogwarts"],
   "ao3_filters": {"rating": "Explicit", "category": "M/M", "completion_status": "Complete", "min_word_count": 50000},
-  "ffn_keywords": ["Draco Harry slow burn romance"],
   "ffn_filters": {"rating": "M", "genre": "Romance", "status": "Complete", "min_words": 60000},
-  "detected_fandoms": ["Harry Potter - J. K. Rowling"],
-  "detected_ships": ["Draco Malfoy/Harry Potter"],
-  "detected_characters": ["Draco Malfoy", "Harry Potter"],
   "excluded_tags": []
 }
 
@@ -174,13 +151,7 @@ def enhance_query(user_query: str, fandom: str = None) -> EnrichedQuery:
 
         body = json.loads(response["body"].read())
         print(f"[query_enhancer] raw body: {json.dumps(body)}", flush=True)
-        raw = body["content"][0]["text"].strip()
-        # Strip markdown code fences if the model wraps output in ```json ... ``` or ``` ... ```
-        if raw.startswith("```"):
-            raw = raw.split("```", 2)[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-            raw = raw.strip()
+        raw = strip_fences(body["content"][0]["text"].strip())
         data = json.loads(raw)
         enriched = EnrichedQuery(**data)
 
@@ -190,8 +161,6 @@ def enhance_query(user_query: str, fandom: str = None) -> EnrichedQuery:
 
         for i, desc in enumerate(enriched.semantic_descriptions):
             print(f"[query_enhancer] semantic_descriptions[{i}]: {desc[:80]}...", flush=True)
-        print(f"[query_enhancer] ao3_tags: {enriched.ao3_tags}", flush=True)
-        print(f"[query_enhancer] ships: {enriched.detected_ships}", flush=True)
         print(f"[query_enhancer] excluded: {enriched.excluded_tags}", flush=True)
 
         return enriched
@@ -201,13 +170,8 @@ def enhance_query(user_query: str, fandom: str = None) -> EnrichedQuery:
         # Fallback: return the raw query as the semantic description
         return EnrichedQuery(
             semantic_descriptions=[user_query],
-            ao3_tags=[],
             ao3_filters={},
-            ffn_keywords=[],
             ffn_filters={},
-            detected_fandoms=[fandom] if fandom else [],
-            detected_ships=[],
-            detected_characters=[],
             excluded_tags=[],
         )
 

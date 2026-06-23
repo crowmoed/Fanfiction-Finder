@@ -5,7 +5,6 @@ import logging
 import time
 import uuid
 from datetime import datetime, timezone
-from contextlib import asynccontextmanager
 
 # Force UTF-8 on stdout/stderr so the diagnostic print()s (which contain box-drawing
 # and arrow characters) don't crash a request with UnicodeEncodeError on a non-UTF-8
@@ -28,8 +27,7 @@ from data.fandoms import FANDOMS
 from ai.embedder import embed_query
 from ai.query_enhancer import enhance_query
 from ai.ranker import rank
-from db.postgres import search_rrf, get_fic_count, get_indexed_fandoms, get_admin_stats, ensure_vector_index, engine
-from sqlalchemy import text
+from db.postgres import search_rrf, get_fic_count, get_indexed_fandoms, get_admin_stats
 
 from auth.auth import verify_google_token, create_jwt
 from auth.user_store import user_store
@@ -38,19 +36,12 @@ from auth.stripe_handler import create_checkout_session, create_portal_session, 
 import stripe
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # ensure_vector_index()  # skip on startup — HNSW build blocks if index is missing
-    yield
-
-
 # Interactive API docs (/docs, /redoc, /openapi.json) are disabled by default so the
 # full schema isn't exposed in production. Set ENABLE_DOCS=1 to turn them back on
 # (e.g. in a staging environment).
 _DOCS_ENABLED = os.environ.get("ENABLE_DOCS", "") == "1"
 app = FastAPI(
     title="FicFinder API",
-    lifespan=lifespan,
     docs_url="/docs" if _DOCS_ENABLED else None,
     redoc_url="/redoc" if _DOCS_ENABLED else None,
     openapi_url="/openapi.json" if _DOCS_ENABLED else None,
@@ -87,12 +78,7 @@ async def request_context(request: Request, call_next):
     request_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex
     request.state.request_id = request_id
     start = time.perf_counter()
-    try:
-        response = await call_next(request)
-    except Exception:
-        # Unhandled error past the route — logged by the exception handler below;
-        # re-raise so Starlette routes it there.
-        raise
+    response = await call_next(request)
     elapsed_ms = round((time.perf_counter() - start) * 1000, 1)
     _log(
         "request",
@@ -182,15 +168,19 @@ def me(user: dict = Depends(get_current_user)):
     return user
 
 
-@app.post("/auth/checkout")
-def checkout(user: dict = Depends(get_current_user)):
-    """Create a Stripe Checkout Session and return the URL."""
+def _stripe_url(fn, *args) -> str:
+    """Call a Stripe session-creating fn, mapping StripeError → HTTP 502."""
     try:
-        url = create_checkout_session(user["id"], user["email"])
+        return fn(*args)
     except stripe.error.StripeError as e:
         msg = getattr(e, "user_message", None) or str(e)
         raise HTTPException(status_code=502, detail=f"Stripe error: {msg}")
-    return {"url": url}
+
+
+@app.post("/auth/checkout")
+def checkout(user: dict = Depends(get_current_user)):
+    """Create a Stripe Checkout Session and return the URL."""
+    return {"url": _stripe_url(create_checkout_session, user["id"], user["email"])}
 
 
 @app.post("/auth/billing-portal")
@@ -199,12 +189,7 @@ def billing_portal(user: dict = Depends(get_current_user)):
     customer_id = user.get("stripe_customer_id")
     if not customer_id:
         raise HTTPException(status_code=400, detail="No Stripe customer on file")
-    try:
-        url = create_portal_session(customer_id)
-    except stripe.error.StripeError as e:
-        msg = getattr(e, "user_message", None) or str(e)
-        raise HTTPException(status_code=502, detail=f"Stripe error: {msg}")
-    return {"url": url}
+    return {"url": _stripe_url(create_portal_session, customer_id)}
 
 
 @app.post("/webhooks/stripe")
@@ -290,20 +275,14 @@ def search(
         label = "any fandom" if is_all_fandoms else f"'{fandom}'"
         raise HTTPException(status_code=404, detail=f"No fics indexed for {label}. Run the indexer first.")
 
-    print(f"\n[search] ── new request ──────────────────", flush=True)
-    print(f"[search] fandom : {fandom!r}", flush=True)
-    print(f"[search] query  : {q!r}", flush=True)
-    print(f"[search] strict mode: {strict}", flush=True)
-
     search_fandom = None if is_all_fandoms else fandom
 
     # Step 1: Enhance the query (HyDE — generate 3 hypothetical fic descriptions at different angles)
     enriched = enhance_query(q, fandom=search_fandom)
-    print(f"[search] enhanced query ready ({len(enriched.semantic_descriptions)} descriptions)", flush=True)
 
     # Build hard-filter dict from enhancer output (only when strict=True).
     # Schema-supported filters: min_word_count, max_word_count, excluded_tags.
-    # rating/warnings/completion_status are logged but skipped — those columns don't exist.
+    # rating/warnings/completion_status are ignored — those columns don't exist.
     filters: dict = {}
     if strict:
         ao3 = enriched.ao3_filters or {}
@@ -316,14 +295,9 @@ def search(
             filters["max_word_count"] = max(maxs)
         if enriched.excluded_tags:
             filters["excluded_tags"] = enriched.excluded_tags
-        for key in ("rating", "warnings", "completion_status"):
-            ffn_key = key.replace("completion_status", "status")
-            if ao3.get(key) or ffn.get(ffn_key):
-                print(f"[search] filter '{key}' requested but column not in schema — ignored", flush=True)
 
     # Step 2: Embed raw query once (shared across all angles)
     raw_embedding = embed_query(q)
-    print(f"[search] raw embedding ready ({len(raw_embedding)} dims)", flush=True)
 
     # Step 3: Build query embeddings — 3 HyDE blends at varying ratios + 1 pure raw.
     # All embeddings fuse via Reciprocal Rank Fusion in one SQL round trip with
@@ -345,11 +319,9 @@ def search(
         total_limit=None,
         filters=filters or None,
     )
-    print(f"[search] RRF fused {len(query_embeddings)} embeddings → {len(candidates)} candidates", flush=True)
 
     # Step 4: AI rank the candidates against the original user query
     ranked = rank(fics=candidates, query=q)
-    print(f"[search] ranking done, returning {min(limit, len(ranked))} results", flush=True)
 
     results = ranked[:limit]
 

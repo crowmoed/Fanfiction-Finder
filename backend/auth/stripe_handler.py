@@ -145,8 +145,6 @@ def _downgrade_by_customer_id(customer_id: str) -> None:
     Uses a DynamoDB scan since there's no GSI on stripe_customer_id.
     Acceptable for the low volume of cancellation webhooks.
     """
-    import boto3
-
     table = user_store._table
     resp = table.scan(
         FilterExpression="stripe_customer_id = :cid",
