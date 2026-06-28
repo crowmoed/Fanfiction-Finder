@@ -1,10 +1,12 @@
 import os
 import sys
+import hashlib
 import json
 import logging
 import time
 import uuid
 from datetime import datetime, timezone
+from http import HTTPStatus
 
 # Force UTF-8 on stdout/stderr so the diagnostic print()s (which contain box-drawing
 # and arrow characters) don't crash a request with UnicodeEncodeError on a non-UTF-8
@@ -14,7 +16,9 @@ for _stream in (sys.stdout, sys.stderr):
         _stream.reconfigure(encoding="utf-8")
     except (AttributeError, ValueError):
         pass
-from fastapi import FastAPI, Query, HTTPException, Depends, Request, Header
+from fastapi import FastAPI, Query, HTTPException, Depends, Request, Header, Response
+from fastapi.exceptions import RequestValidationError
+from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
@@ -47,12 +51,20 @@ app = FastAPI(
     openapi_url="/openapi.json" if _DOCS_ENABLED else None,
 )
 
+# Pin CORS to known frontend origins (OWASP API #8). The wildcard + credentials combo
+# is spec-invalid and unsafe; set CORS_ALLOW_ORIGINS (comma-separated) in the deploy env
+# to the production frontend origin(s). Defaults to the local dev frontend.
+_CORS_ORIGINS = [
+    o.strip()
+    for o in os.environ.get("CORS_ALLOW_ORIGINS", "http://localhost:3000").split(",")
+    if o.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Tighten to frontend origin in production
+    allow_origins=_CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
 )
 
 
@@ -92,6 +104,47 @@ async def request_context(request: Request, call_next):
     return response
 
 
+# ── RFC 9457 problem+json errors ──────────────────────────────────
+# One machine-readable error contract. `request_id` is kept as an extension member so a
+# client-visible error still maps to a server log line (and stays back-compatible with
+# the previous {detail, request_id} body).
+
+_PROBLEM_SLUGS = {
+    400: "bad-request",
+    401: "unauthorized",
+    403: "forbidden",
+    404: "not-found",
+    422: "validation-error",
+    429: "rate-limited",
+    500: "internal-error",
+}
+
+
+def _problem(status: int, detail, request_id, instance=None, **extra) -> JSONResponse:
+    """Build an RFC 9457 application/problem+json response."""
+    try:
+        title = HTTPStatus(status).phrase
+    except ValueError:
+        title = "Error"
+    body = {
+        "type": f"/problems/{_PROBLEM_SLUGS.get(status, 'error')}",
+        "title": title,
+        "status": status,
+        "detail": detail,
+    }
+    if instance:
+        body["instance"] = instance
+    if request_id:
+        body["request_id"] = request_id
+    body.update(extra)
+    return JSONResponse(
+        status_code=status,
+        content=body,
+        media_type="application/problem+json",
+        headers={"X-Request-ID": request_id} if request_id else None,
+    )
+
+
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     request_id = getattr(request.state, "request_id", None)
@@ -103,10 +156,24 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         status=exc.status_code,
         detail=str(exc.detail),
     )
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.detail, "request_id": request_id},
-        headers={"X-Request-ID": request_id} if request_id else None,
+    return _problem(exc.status_code, exc.detail, request_id, instance=request.url.path)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    request_id = getattr(request.state, "request_id", None)
+    _log(
+        "validation_error",
+        request_id=request_id,
+        path=request.url.path,
+        status=422,
+    )
+    return _problem(
+        422,
+        "Request validation failed",
+        request_id,
+        instance=request.url.path,
+        errors=jsonable_encoder(exc.errors()),
     )
 
 
@@ -122,11 +189,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
         error_type=type(exc).__name__,
         error=str(exc),
     )
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error", "request_id": request_id},
-        headers={"X-Request-ID": request_id} if request_id else None,
-    )
+    return _problem(500, "Internal server error", request_id, instance=request.url.path)
 
 
 # ── Request models ────────────────────────────────────────────────
@@ -236,10 +299,14 @@ ALL_FANDOMS = "All Fandoms"
 
 
 @app.get("/fandoms")
-def get_fandoms():
-    """Returns supported fandoms with their collection status."""
+def get_fandoms(request: Request):
+    """Returns supported fandoms with their collection status.
+
+    Stable read (changes only on a manual re-index), so it carries an ETag +
+    Cache-Control and honors If-None-Match with a 304 (RFC 9111).
+    """
     indexed = get_indexed_fandoms()
-    return {
+    body = {
         "fandoms": [
             {"name": ALL_FANDOMS, "collected": True},
             *[
@@ -248,6 +315,14 @@ def get_fandoms():
             ],
         ]
     }
+    digest = hashlib.sha256(
+        json.dumps(body, separators=(",", ":"), sort_keys=True).encode()
+    ).hexdigest()[:32]
+    etag = f'"{digest}"'
+    cache_headers = {"ETag": etag, "Cache-Control": "public, max-age=300"}
+    if request.headers.get("if-none-match") == etag:
+        return Response(status_code=304, headers=cache_headers)
+    return JSONResponse(content=body, headers=cache_headers)
 
 
 @app.get("/search", response_model=list[Fic])

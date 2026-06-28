@@ -7,6 +7,15 @@
  * Presentational; the design layer restyles it (this is the "book portal").
  */
 import type { Fic } from "@/lib/contracts";
+import {
+  ficAuthor,
+  ficChapters,
+  ficComplete,
+  ficLanguage,
+  ficNativeStats,
+  ficRating,
+  ficUpdated,
+} from "@/lib/results/meta";
 import { MatchScore } from "@/components/MatchScore";
 import { Highlight } from "@/components/Highlight";
 import { PlatformLogo, platformName } from "@/components/PlatformLogo";
@@ -16,15 +25,31 @@ function fmt(n: number | null | undefined): string {
 }
 
 export function FicDetail({ fic }: { fic: Fic }) {
+  const author = ficAuthor(fic);
+  const rating = ficRating(fic);
+  const complete = ficComplete(fic);
+  const chapters = ficChapters(fic);
+  const updated = ficUpdated(fic);
+  const language = ficLanguage(fic);
+  const nativeStats = ficNativeStats(fic.meta);
+
   return (
     <article className="stack" style={{ gap: "1.25rem" }}>
       <header className="stack" style={{ gap: "0.4rem" }}>
         <h1 style={{ margin: 0 }}>
           <Highlight text={fic.title} />
         </h1>
-        <div className="row muted" style={{ gap: "1rem" }}>
+        {author && <p className="muted" style={{ margin: 0 }}>by {author}</p>}
+        <div className="row muted" style={{ gap: "1rem", flexWrap: "wrap" }}>
           <span>{fic.platform}</span>
           {fic.fandom && <span>{fic.fandom}</span>}
+          {rating && <span>Rated {rating}</span>}
+          {complete != null && (
+            <span>{complete ? "Complete" : "In progress"}</span>
+          )}
+          {chapters && <span>{chapters}</span>}
+          {language && <span>{language}</span>}
+          {updated && <span>Updated {updated}</span>}
           <MatchScore score={fic.match_score} />
         </div>
       </header>
@@ -47,7 +72,7 @@ export function FicDetail({ fic }: { fic: Fic }) {
         </p>
       </section>
 
-      <section className="row" style={{ gap: "2rem" }}>
+      <section className="row" style={{ gap: "2rem", flexWrap: "wrap" }}>
         <div className="stack" style={{ gap: "0.1rem" }}>
           <span className="muted">Words</span>
           <strong>{fmt(fic.word_count)}</strong>
@@ -60,6 +85,14 @@ export function FicDetail({ fic }: { fic: Fic }) {
           <span className="muted">Hits</span>
           <strong>{fmt(fic.hits)}</strong>
         </div>
+        {/* Platform-native stats (favs/follows/votes/reads/…) that the flat
+            kudos/hits columns don't cover. */}
+        {nativeStats.map((s) => (
+          <div key={s.label} className="stack" style={{ gap: "0.1rem" }}>
+            <span className="muted">{s.label}</span>
+            <strong>{fmt(s.value)}</strong>
+          </div>
+        ))}
       </section>
 
       {fic.tags.length > 0 && (

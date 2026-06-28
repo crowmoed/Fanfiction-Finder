@@ -231,6 +231,9 @@ def _row_from_fic(fic, fandom: str, now: str) -> dict:
         "word_count": fic.word_count,
         "kudos": fic.kudos,
         "hits": fic.hits,
+        # Platform-specific metadata, stored as a JSON string (the parquet column stays
+        # a flat Utf8 — `meta` is heterogeneous per platform, so no struct schema).
+        "meta": json.dumps(fic.meta.model_dump(mode="json")) if getattr(fic, "meta", None) else None,
         "fandom": fandom,
         "indexed_at": now,
     }
@@ -252,6 +255,68 @@ def upsert_fics_batch_local(fics, fandom: str, embeddings: list[list[float]]) ->
     except Exception as e:
         print(f"  [local] Batch save failed: {e}")
         return 0, len(fics)
+
+
+def update_meta_local(fandom: str, id_to_meta: dict) -> int:
+    """Set the `meta` column for the given fic ids in the local canonical store, so the
+    backfill keeps local in sync with the cloud. `id_to_meta` maps fic id → meta dict.
+    Returns the number of rows updated. No-op if the fandom isn't compacted locally."""
+    if not id_to_meta:
+        return 0
+    with _FandomLock(fandom):
+        df, embs = _load_canonical(fandom)
+        if df is None or embs is None:
+            return 0
+        meta_json = {fid: json.dumps(m) for fid, m in id_to_meta.items()}
+        existing = df["meta"].to_list() if "meta" in df.columns else [None] * df.height
+        ids = df["id"].to_list()
+        new_meta = [meta_json.get(fid, existing[i]) for i, fid in enumerate(ids)]
+        df = df.with_columns(pl.Series("meta", new_meta, dtype=pl.Utf8))
+        _write_canonical(fandom, df, embs)
+        return sum(1 for fid in ids if fid in meta_json)
+
+
+def list_local_fandoms() -> list[str]:
+    """Display names of every fandom that has a local canonical store."""
+    if not FANDOMS_DIR.exists():
+        return []
+    names = []
+    for d in sorted(FANDOMS_DIR.iterdir()):
+        if d.is_dir() and (d / CANONICAL_PARQUET).exists():
+            mj = d / "meta.json"
+            name = d.name
+            if mj.exists():
+                try:
+                    name = json.loads(mj.read_text()).get("fandom_name", d.name)
+                except Exception:
+                    pass
+            names.append(name)
+    return names
+
+
+def get_local_fics_needing_meta(fandom: str | None = None, platform: str | None = None,
+                                limit: int | None = None) -> list[dict]:
+    """Backfill work-list from the LOCAL canonical parquet store: {id, url, platform,
+    fandom} for fics whose `meta` is null/missing. The local store is the source we
+    enrich; a later `swap_tool push` publishes it to AWS."""
+    fandoms = [fandom] if fandom else list_local_fandoms()
+    out: list[dict] = []
+    for fn in fandoms:
+        parquet_path, _ = _canonical_paths(fn)
+        if not parquet_path.exists():
+            continue
+        df = pl.read_parquet(parquet_path)
+        has_meta = "meta" in df.columns
+        for row in df.iter_rows(named=True):
+            if platform and row.get("platform") != platform:
+                continue
+            if has_meta and row.get("meta") is not None:
+                continue
+            out.append({"id": row["id"], "url": row["url"],
+                        "platform": row["platform"], "fandom": fn})
+            if limit and len(out) >= limit:
+                return out
+    return out
 
 
 def compact(fandom: str) -> int:

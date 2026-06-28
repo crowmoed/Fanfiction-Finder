@@ -24,7 +24,7 @@ import os
 from typing import Iterator
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from data.schema import Fic
+from data.schema import Fic, WattpadMeta
 
 BASE_URL = "https://www.wattpad.com/v4/search/stories/"
 
@@ -32,8 +32,9 @@ BASE_URL = "https://www.wattpad.com/v4/search/stories/"
 FIELDS = (
     "stories("
     "id,title,voteCount,readCount,commentCount,description,"
-    "completed,url,numParts,isPaywalled,length,"
-    "language(id),user(name),lastPublishedPart(createDate),"
+    "completed,url,numParts,isPaywalled,length,cover,"
+    "language(id,name),user(name,username,numFollowers),"
+    "lastPublishedPart(createDate),firstPublishedPart(createDate),"
     "mature,tags"
     "),total,nextUrl"
 )
@@ -300,6 +301,26 @@ def parse_story(story: dict) -> Fic:
     """Convert a Wattpad API story object to a Fic model."""
     tags = story.get("tags", []) or []
 
+    last_part = story.get("lastPublishedPart") or {}
+    first_part = story.get("firstPublishedPart") or {}
+    user = story.get("user") or {}
+    lang = story.get("language") or {}
+    meta = WattpadMeta(
+        author=user.get("name"),
+        author_username=user.get("username"),
+        author_followers=user.get("numFollowers"),
+        mature=story.get("mature"),
+        complete=story.get("completed"),
+        parts=story.get("numParts"),
+        votes=story.get("voteCount"),
+        reads=story.get("readCount"),
+        comments=story.get("commentCount"),
+        cover=story.get("cover"),
+        language=lang.get("name"),
+        published=first_part.get("createDate"),
+        updated=last_part.get("createDate"),
+    )
+
     return Fic(
         title=story.get("title", "").strip(),
         url=story.get("url", f"https://www.wattpad.com/story/{story.get('id', '')}"),
@@ -309,12 +330,14 @@ def parse_story(story: dict) -> Fic:
         word_count=None,  # Wattpad 'length' is characters, not reliable as word count
         kudos=story.get("voteCount"),
         hits=story.get("readCount"),
+        meta=meta,
     )
 
 
 # ── Main search ──────────────────────────────────────────────────────────────
 
-def search_iter(query: str, max_pages: int = 0, quality_offset: int = 0) -> Iterator[list[Fic]]:
+def search_iter(query: str, max_pages: int = 0, quality_offset: int = 0,
+                filtered: bool = True) -> Iterator[list[Fic]]:
     """Streaming version of search() — yields one list of Fic objects per page.
 
     Callers embed + persist each yielded batch before pulling the next page,
@@ -322,19 +345,28 @@ def search_iter(query: str, max_pages: int = 0, quality_offset: int = 0) -> Iter
     grows with the full corpus but is lightweight (just strings).
 
     Yields empty lists on pages where nothing qualified, so callers can skip.
+
+    `filtered=False` is the BACKFILL mode: it skips calibration and disables the
+    vote/read quality filter (min_ratio=0) so EVERY valid story is yielded. The
+    calibrated cutoff is recomputed per run, so it would surface a different subset
+    each time — wrong for re-finding the exact fics we already indexed. Indexing
+    keeps the default (filtered=True) to curate what it adds.
     """
     session = _make_session()
 
-    # ── Phase 1: Calibration ──────────────────────────────────────────────
-    print(f"\n[Wattpad] ── Calibrating for '{query}' ({CALIBRATION_PAGES} sample pages)... ──")
-    cal = calibrate(query, session, quality_offset)
-
-    print(f"[Wattpad] Fandom total: {cal['total']:,} stories")
-    print(f"[Wattpad] Sample size: {cal['sample_size']} stories")
-    print(f"[Wattpad] Using P{cal['percentile_used']} cutoff → min ratio: {cal['min_ratio']:.2%}")
-
-    min_ratio = cal["min_ratio"]
-    total = cal["total"]
+    # ── Phase 1: Calibration (skipped in unfiltered/backfill mode) ─────────
+    if filtered:
+        print(f"\n[Wattpad] ── Calibrating for '{query}' ({CALIBRATION_PAGES} sample pages)... ──")
+        cal = calibrate(query, session, quality_offset)
+        print(f"[Wattpad] Fandom total: {cal['total']:,} stories")
+        print(f"[Wattpad] Sample size: {cal['sample_size']} stories")
+        print(f"[Wattpad] Using P{cal['percentile_used']} cutoff → min ratio: {cal['min_ratio']:.2%}")
+        min_ratio = cal["min_ratio"]
+        total = cal["total"]
+    else:
+        print(f"\n[Wattpad] ── Backfill mode for '{query}': quality filter OFF (match all) ──")
+        min_ratio = 0.0
+        total = 0
 
     # ── Phase 2: Plan shards to work around the 10k offset cap ────────────
     print(f"\n[Wattpad] ── Planning shards (corpus: {total:,}) ──")

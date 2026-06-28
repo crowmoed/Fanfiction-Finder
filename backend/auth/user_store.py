@@ -166,6 +166,11 @@ class UserStore:
         )
         return _item_to_dict(resp["Attributes"])
 
+    def is_event_processed(self, event_id: str) -> bool:
+        """Return True if this Stripe event id was already recorded (webhook idempotency)."""
+        resp = self._table.get_item(Key={"id": f"stripe_event:{event_id}"})
+        return resp.get("Item") is not None
+
     def mark_event_processed(self, event_id: str) -> bool:
         """Record a Stripe event id exactly once, for webhook idempotency.
 

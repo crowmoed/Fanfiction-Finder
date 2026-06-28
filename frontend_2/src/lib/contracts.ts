@@ -22,6 +22,64 @@
 
 export type Platform = "AO3" | "FFN" | "Wattpad" | (string & {});
 
+// ── Platform-specific per-fic metadata (mirror of backend/data/schema.py) ──────
+// The backend returns one tagged blob per fic in `Fic.meta`, discriminated by
+// `type` (== the fic's source platform, lowercased). Every field is optional: a
+// missed scrape or a legacy row indexed before the `meta` column existed has
+// `meta: null`, and even a present blob may have holes. Switch on `meta.type` to
+// read platform-native fields; see lib/results/meta.ts for normalized accessors
+// that hide the per-platform shape from the UI.
+
+/** AO3 work-blurb metadata. */
+export interface AO3Meta {
+  type: "ao3";
+  author: string | null; // co-authors joined with ", "
+  rating: string | null; // General Audiences / Teen / Mature / Explicit / Not Rated
+  category: string[]; // M/M, F/M, Gen, ...
+  warnings: string[]; // archive warnings
+  language: string | null;
+  chapters: string | null; // "5/12" (posted/total); "?" total ⇒ WIP
+  complete: boolean | null;
+  kudos: number | null;
+  hits: number | null;
+  bookmarks: number | null;
+  comments: number | null;
+  updated: string | null; // last-updated date as shown on the blurb
+}
+
+/** FanFiction.Net z-list row metadata. */
+export interface FFNMeta {
+  type: "ffn";
+  author: string | null;
+  rating: string | null; // K / K+ / T / M
+  genres: string[];
+  characters: string[];
+  language: string | null;
+  chapters: number | null;
+  complete: boolean | null;
+  favs: number | null;
+  follows: number | null;
+  reviews: number | null;
+  updated: string | null;
+  published: string | null;
+}
+
+/** Wattpad v4 search-API metadata. */
+export interface WattpadMeta {
+  type: "wattpad";
+  author: string | null;
+  mature: boolean | null;
+  complete: boolean | null;
+  parts: number | null;
+  votes: number | null;
+  reads: number | null;
+  comments: number | null;
+  updated: string | null; // lastPublishedPart.createDate
+}
+
+/** Discriminated union — parse by `meta.type`. */
+export type FicMeta = AO3Meta | FFNMeta | WattpadMeta;
+
 /** Mirror of the Pydantic `Fic` model returned by GET /search. */
 export interface Fic {
   title: string;
@@ -33,6 +91,8 @@ export interface Fic {
   word_count: number | null;
   kudos: number | null;
   hits: number | null;
+  /** Platform-specific rich metadata (tagged by `type`); null for legacy rows. */
+  meta: FicMeta | null;
   /** 0–100 when the LLM ranker scored it; null when it omitted the fic. */
   match_score: number | null;
   match_reason: string | null;

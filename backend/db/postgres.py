@@ -1,10 +1,11 @@
 import os
 import sys
+import json
 import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import create_engine, Column, String, Integer, Text, Float, DateTime, text, func as sqlfunc
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import declarative_base, Session
 from pgvector.sqlalchemy import Vector
 import config
@@ -51,6 +52,7 @@ class FicRecord(Base):
     word_count = Column(Integer)
     kudos = Column(Integer)
     hits = Column(Integer)
+    meta = Column(JSONB)                          # platform-specific per-fic metadata (tagged by `type`)
     fandom = Column(String)
     embedding = Column(Vector(EMBEDDING_DIMS))   # pgvector column — 768 dims
     indexed_at = Column(DateTime(timezone=True), server_default=sqlfunc.now())
@@ -222,6 +224,24 @@ def add_search_text_column():
             print(f"  rank={row.rank:.4f} | {row.id} | {row.title}")
 
 
+def add_meta_column():
+    """Add a JSONB `meta` column on fics for platform-specific per-fic metadata.
+
+    Idempotent — no-op if it already exists. Non-destructive: existing rows get NULL
+    meta (Fic.meta is Optional) until they're re-indexed; no embedding rebuild needed.
+    """
+    with engine.begin() as conn:
+        existing = conn.execute(text(
+            "SELECT 1 FROM information_schema.columns "
+            "WHERE table_name = 'fics' AND column_name = 'meta'"
+        )).fetchone()
+        if existing is not None:
+            print("[add-meta] meta column already exists — no-op.")
+            return
+        conn.execute(text("ALTER TABLE fics ADD COLUMN meta JSONB"))
+        print("[add-meta] Added JSONB meta column on fics.")
+
+
 def upsert_fic(fic: Fic, fandom: str, embedding: list[float]):
     """Insert or update a fic record with its embedding."""
     fic_id = f"{fic.platform}:{fic.url}"
@@ -239,12 +259,43 @@ def upsert_fic(fic: Fic, fandom: str, embedding: list[float]):
         record.word_count = fic.word_count
         record.kudos = fic.kudos
         record.hits = fic.hits
+        record.meta = fic.meta.model_dump(mode="json") if fic.meta else None
         record.fandom = fandom
         record.embedding = embedding
         record.indexed_at = datetime.datetime.now(datetime.timezone.utc)
 
         session.merge(record)
         session.commit()
+
+
+def get_fics_needing_meta(platform: str | None = None, fandom: str | None = None,
+                          limit: int | None = None) -> list[dict]:
+    """Work-list for the metadata backfill: {id, url, platform, fandom} for every fic
+    whose `meta` is still NULL. Optionally scope by platform/fandom."""
+    clauses = ["meta IS NULL"]
+    params: dict = {}
+    if platform:
+        clauses.append("platform = :platform")
+        params["platform"] = platform
+    if fandom:
+        clauses.append("fandom = :fandom")
+        params["fandom"] = fandom
+    limit_sql = f" LIMIT {int(limit)}" if limit else ""
+    sql = (f"SELECT id, url, platform, fandom FROM fics "
+           f"WHERE {' AND '.join(clauses)} ORDER BY platform, fandom{limit_sql}")
+    with engine.connect() as conn:
+        rows = conn.execute(text(sql), params).all()
+    return [{"id": r.id, "url": r.url, "platform": r.platform, "fandom": r.fandom} for r in rows]
+
+
+def update_fic_meta(fic_id: str, meta: dict | None) -> None:
+    """Set only the `meta` column for one fic — the backfill enriches in place,
+    never re-embedding."""
+    with engine.begin() as conn:
+        conn.execute(
+            text("UPDATE fics SET meta = CAST(:meta AS jsonb) WHERE id = :id"),
+            {"id": fic_id, "meta": json.dumps(meta) if meta is not None else None},
+        )
 
 
 PLATFORMS = ("ao3", "ffn", "wattpad")
@@ -339,7 +390,7 @@ def search_rrf(
             GROUP BY id
         )
         SELECT f.id, f.title, f.url, f.platform, f.fandom, f.summary, f.tags,
-               f.word_count, f.kudos, f.hits, fused.rrf_score
+               f.word_count, f.kudos, f.hits, f.meta, fused.rrf_score
         FROM fused
         JOIN fics f ON f.id = fused.id
         ORDER BY fused.rrf_score DESC
@@ -360,6 +411,7 @@ def search_rrf(
             word_count=r.word_count,
             kudos=r.kudos,
             hits=r.hits,
+            meta=r.meta,
         )
         for r in rows
     ]
@@ -468,7 +520,9 @@ if __name__ == "__main__":
         migrate_tags_to_array()
     elif len(sys.argv) > 1 and sys.argv[1] == "add-search-text":
         add_search_text_column()
+    elif len(sys.argv) > 1 and sys.argv[1] == "add-meta":
+        add_meta_column()
     else:
-        print("Usage: python -m db.postgres [migrate-tags | add-search-text]")
+        print("Usage: python -m db.postgres [migrate-tags | add-search-text | add-meta]")
         print("(no arg) — runs init_db()")
         init_db()

@@ -177,6 +177,46 @@ def test_pay1_handle_webhook_applies_once_then_noops(monkeypatch, fake_table):
     assert calls == {"set_tier": 1, "set_cust": 1}  # no double-fulfillment
 
 
+def test_pay1_handle_webhook_failure_leaves_event_unmarked(monkeypatch, fake_table):
+    # A6: if processing fails mid-way, the event must NOT be marked processed — so
+    # Stripe's retry re-runs the (idempotent) side effects instead of silently
+    # dropping them. Guards against the old mark-before-process ordering.
+    import stripe
+    import auth.user_store as US
+    import auth.stripe_handler as SH
+
+    importlib.reload(US)
+    importlib.reload(SH)
+    SH.user_store._table = fake_table
+
+    calls = {"set_tier": 0}
+
+    def boom_then_ok(uid, t):
+        calls["set_tier"] += 1
+        if calls["set_tier"] == 1:
+            raise RuntimeError("transient DynamoDB error")
+
+    SH.user_store.set_tier = boom_then_ok
+    SH.user_store.set_stripe_customer_id = lambda uid, c: None
+
+    event = {
+        "id": "evt_fail",
+        "type": "checkout.session.completed",
+        "data": {"object": {"client_reference_id": "u1", "customer": "cus_1"}},
+    }
+    monkeypatch.setattr(stripe.Webhook, "construct_event", lambda payload, sig, secret: event)
+
+    # First delivery fails mid-processing — event stays unmarked.
+    with pytest.raises(RuntimeError):
+        SH.handle_webhook(b"{}", "sig")
+    assert SH.user_store.is_event_processed("evt_fail") is False
+
+    # Stripe's retry re-runs the side effect (not skipped) and then marks it done.
+    SH.handle_webhook(b"{}", "sig")
+    assert calls["set_tier"] == 2
+    assert SH.user_store.is_event_processed("evt_fail") is True
+
+
 def test_pay2_signature_error_is_not_value_error():
     import stripe
 

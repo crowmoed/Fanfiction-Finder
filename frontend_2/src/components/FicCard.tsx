@@ -7,6 +7,13 @@ import Link from "next/link";
 
 import type { Fic } from "@/lib/contracts";
 import { ficId } from "@/lib/results/ficId";
+import {
+  ficAuthor,
+  ficChapters,
+  ficComplete,
+  ficRating,
+  ficUpdated,
+} from "@/lib/results/meta";
 import { MatchScore } from "@/components/MatchScore";
 import { QuickViewButton } from "@/components/QuickViewButton";
 import { Highlight } from "@/components/Highlight";
@@ -17,6 +24,12 @@ function fmt(n: number | null | undefined): string {
 }
 
 export function FicCard({ fic }: { fic: Fic }) {
+  const author = ficAuthor(fic);
+  const rating = ficRating(fic);
+  const complete = ficComplete(fic);
+  const chapters = ficChapters(fic);
+  const updated = ficUpdated(fic);
+
   return (
     <article className="card stack" style={{ gap: "0.5rem" }}>
       <div className="row" style={{ justifyContent: "space-between" }}>
@@ -31,12 +44,22 @@ export function FicCard({ fic }: { fic: Fic }) {
         </span>
       </div>
 
-      <div className="row muted" style={{ gap: "1rem" }}>
+      {author && (
+        <p className="muted" style={{ margin: 0 }}>
+          by {author}
+        </p>
+      )}
+
+      <div className="row muted" style={{ gap: "1rem", flexWrap: "wrap" }}>
         <span>{fic.platform}</span>
         {fic.fandom && <span>{fic.fandom}</span>}
+        {rating && <span>rated {rating}</span>}
+        {complete != null && <span>{complete ? "Complete" : "In progress"}</span>}
+        {chapters && <span>{chapters}</span>}
         <span>words: {fmt(fic.word_count)}</span>
         <span>kudos: {fmt(fic.kudos)}</span>
         <span>hits: {fmt(fic.hits)}</span>
+        {updated && <span>updated {updated}</span>}
       </div>
 
       {fic.summary && (

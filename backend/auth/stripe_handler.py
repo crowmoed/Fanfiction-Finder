@@ -70,11 +70,13 @@ def handle_webhook(payload: bytes, sig_header: str) -> None:
     """
     event = stripe.Webhook.construct_event(payload, sig_header, WEBHOOK_SECRET)
 
-    # Idempotency: Stripe retries deliveries for up to 72h. Record the event id once
-    # (conditional write); if it was already processed, this is a retry — no-op.
-    # Recorded only after signature verification so unverified events can't poison
-    # the dedupe table.
-    if not user_store.mark_event_processed(event["id"]):
+    # Idempotency: Stripe retries deliveries for up to 72h. Skip if this event id was
+    # already fully processed. We dedupe AFTER processing (below), not before, so a
+    # failure mid-processing leaves the event un-marked and the retry actually re-runs
+    # it — the handlers here are all idempotent writes (set_tier / set_stripe_customer_id
+    # / downgrade), so at-least-once delivery is safe. Checked only after signature
+    # verification so unverified events can't probe the dedupe table.
+    if user_store.is_event_processed(event["id"]):
         return
 
     if event["type"] == "checkout.session.completed":
@@ -89,6 +91,10 @@ def handle_webhook(payload: bytes, sig_header: str) -> None:
         customer_id = subscription["customer"]
         # Find user by stripe_customer_id — scan is fine for this low-volume event
         _downgrade_by_customer_id(customer_id)
+
+    # Record only after successful processing, so a failure above leaves the event
+    # un-marked and Stripe's retry re-runs the (idempotent) side effects.
+    user_store.mark_event_processed(event["id"])
 
 
 def verify_paid_user(user: dict) -> dict:
