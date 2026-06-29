@@ -11,7 +11,9 @@
  * URL "just works", and history entries are plain links to these URLs.
  *
  * Local-only by design (like the /fic pages). Capped, newest-wins, with a TTL so
- * stale snapshots eventually fall out.
+ * stale snapshots eventually fall out. Backed by an in-memory mirror with
+ * write-through: reads hit memory (no JSON.parse of the whole store per lookup),
+ * writes update memory then persist. The mirror is hydrated lazily on first use.
  */
 import type { Fic, SearchParams } from "@/lib/contracts";
 
@@ -30,6 +32,9 @@ export interface CachedResults {
 
 type Store = Record<string, CachedResults>;
 
+// In-memory mirror of the persisted store. `null` = not yet hydrated this session.
+let cache: Store | null = null;
+
 /**
  * Canonical, stable key for a search. Normalizes the query (trim + lowercase +
  * collapse whitespace) so trivially-different spellings of the same search hit
@@ -42,30 +47,35 @@ export function searchKey(params: SearchParams): string {
   return `${q}::${fandom}::${strict}`;
 }
 
-function read(): Store {
+/** Hydrate the in-memory mirror from localStorage once, then reuse it. */
+function load(): Store {
+  if (cache) return cache;
   if (typeof window === "undefined") return {};
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Store) : {};
+    cache = raw ? (JSON.parse(raw) as Store) : {};
   } catch {
-    return {};
+    cache = {};
   }
+  return cache;
 }
 
-function write(store: Store) {
+/** Persist the mirror (after TTL prune + cap), keeping memory and storage in sync. */
+function persist(store: Store) {
+  let entries = Object.values(store);
+  // Drop expired, then enforce the cap (keep most recent).
+  const now = Date.now();
+  entries = entries.filter((e) => now - e.at < TTL_MS);
+  entries.sort((a, b) => b.at - a.at);
+  entries = entries.slice(0, MAX_ENTRIES);
+  const next: Store = {};
+  for (const e of entries) next[e.key] = e;
+  cache = next;
   if (typeof window === "undefined") return;
   try {
-    let entries = Object.values(store);
-    // Drop expired, then enforce the cap (keep most recent).
-    const now = Date.now();
-    entries = entries.filter((e) => now - e.at < TTL_MS);
-    entries.sort((a, b) => b.at - a.at);
-    entries = entries.slice(0, MAX_ENTRIES);
-    const next: Store = {};
-    for (const e of entries) next[e.key] = e;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   } catch {
-    /* storage full/disabled — ignore */
+    /* storage full/disabled — the in-memory mirror still holds this session. */
   }
 }
 
@@ -76,15 +86,15 @@ export function cacheResults(
   count: number,
   elapsedMs: number | null
 ): void {
-  const store = read();
+  const store = { ...load() };
   const key = searchKey(params);
   store[key] = { key, params, fics, count, elapsedMs, at: Date.now() };
-  write(store);
+  persist(store);
 }
 
 /** Restore a cached result set for these params, or null (miss / expired). */
 export function getCachedResults(params: SearchParams): CachedResults | null {
-  const entry = read()[searchKey(params)];
+  const entry = load()[searchKey(params)];
   if (!entry) return null;
   if (Date.now() - entry.at >= TTL_MS) return null;
   return entry;

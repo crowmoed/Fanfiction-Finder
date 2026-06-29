@@ -6,16 +6,8 @@ import Link from "next/link";
 import {
   unsaveSearch,
   useSavedSearches,
-  type SavedSearch,
 } from "@/lib/results/savedSearches";
-
-function resultsHref(s: SavedSearch): string {
-  return `/results?${new URLSearchParams({
-    q: s.params.q,
-    fandom: s.params.fandom,
-    strict: String(s.params.strict ?? false),
-  }).toString()}`;
-}
+import { resultsHref } from "@/lib/results/searchUrl";
 
 /** Followed-searches panel (shown in the Saved modal). */
 export function SavedPanel({ onNavigate }: { onNavigate?: () => void }) {
@@ -42,7 +34,7 @@ export function SavedPanel({ onNavigate }: { onNavigate?: () => void }) {
           {saved.map((s) => (
             <li key={s.key} className="card row" style={{ justifyContent: "space-between" }}>
               <div className="stack" style={{ gap: "0.2rem" }}>
-                <Link href={resultsHref(s)} onClick={onNavigate}>
+                <Link href={resultsHref(s.params)} onClick={onNavigate}>
                   <strong>{s.params.q}</strong>
                 </Link>
                 <span className="muted">

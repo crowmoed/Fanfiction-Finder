@@ -10,20 +10,13 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { useSearchHistory } from "@/lib/client/history";
-
-function resultsHref(h: { q: string; fandom: string; strict: boolean }): string {
-  return `/results?${new URLSearchParams({
-    q: h.q,
-    fandom: h.fandom,
-    strict: String(h.strict),
-  }).toString()}`;
-}
+import { resultsHref } from "@/lib/results/searchUrl";
 
 // How many recent searches to show in the sidebar shortcut. The full log is
 // behind the History button.
 const SIDEBAR_LIMIT = 12;
 
-export function SidebarSearches({ onViewAll }: { onViewAll?: () => void }) {
+export function SidebarSearches() {
   const history = useSearchHistory();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -57,10 +50,10 @@ export function SidebarSearches({ onViewAll }: { onViewAll?: () => void }) {
           </li>
         ))}
       </ul>
-      {history.length > SIDEBAR_LIMIT && onViewAll && (
-        <button className="sidebar-viewall sidebar-label" onClick={onViewAll}>
+      {history.length > SIDEBAR_LIMIT && (
+        <Link href="/history" className="sidebar-viewall sidebar-label">
           View all {history.length}
-        </button>
+        </Link>
       )}
     </div>
   );

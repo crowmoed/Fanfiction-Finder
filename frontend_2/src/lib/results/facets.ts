@@ -111,9 +111,12 @@ export function applyFacets(fics: Fic[], f: FacetState): Fic[] {
       if (f.completion === "wip" && c) return false;
     }
 
-    // AND semantics: the fic must carry every selected tag.
+    // AND semantics: the fic must carry every selected tag. Build a Set of the
+    // fic's tags once so each membership check is O(1) rather than scanning the
+    // array per selected tag.
     if (f.tags.size > 0) {
-      for (const t of f.tags) if (!fic.tags.includes(t)) return false;
+      const ficTags = new Set(fic.tags);
+      for (const t of f.tags) if (!ficTags.has(t)) return false;
     }
 
     const wc = fic.word_count ?? null;

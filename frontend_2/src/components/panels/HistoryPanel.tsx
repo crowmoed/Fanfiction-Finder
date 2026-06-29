@@ -5,15 +5,8 @@ import Link from "next/link";
 
 import { clearHistory, useSearchHistory } from "@/lib/client/history";
 import { hasCachedResults } from "@/lib/results/resultsCache";
+import { resultsHref } from "@/lib/results/searchUrl";
 import { HistoryListSkeleton } from "@/components/ResultsSkeleton";
-
-function resultsHref(h: { q: string; fandom: string; strict: boolean }): string {
-  return `/results?${new URLSearchParams({
-    q: h.q,
-    fandom: h.fandom,
-    strict: String(h.strict),
-  }).toString()}`;
-}
 
 /** Reading-log panel (shown in the History modal). */
 export function HistoryPanel({ onNavigate }: { onNavigate?: () => void }) {

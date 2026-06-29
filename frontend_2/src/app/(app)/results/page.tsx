@@ -87,7 +87,11 @@ function ResultsInner() {
 
   return (
     <div className="stack" style={{ gap: "1.5rem" }}>
+      {/* Keyed by the search so navigating to a different /results query remounts
+          the form with the new initial values — SearchForm reads `initial` only
+          on mount, so without this the input would keep showing the old query. */}
       <SearchForm
+        key={searchKey({ q, fandom, strict })}
         initial={{ q, fandom, strict }}
         onSubmit={submit}
         busy={phase === "searching"}

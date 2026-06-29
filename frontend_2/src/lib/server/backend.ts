@@ -90,8 +90,16 @@ async function fetchOnce(
   init: BackendRequestInit
 ): Promise<Response> {
   const { json, token, timeoutMs = 60_000, revalidate, ...rest } = init;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const timeoutController = new AbortController();
+  const timer = setTimeout(() => timeoutController.abort(), timeoutMs);
+
+  // Compose the timeout with any caller-supplied signal so BOTH are honored.
+  // (Previously `rest.signal ?? controller.signal` dropped the timeout entirely
+  // whenever a caller passed its own signal — e.g. the search route, whose 115s
+  // timeout therefore never fired.) Either abort aborts the fetch.
+  const signal = rest.signal
+    ? AbortSignal.any([rest.signal, timeoutController.signal])
+    : timeoutController.signal;
 
   // Cacheable when a revalidate window is given; otherwise never cache.
   const cacheOpts: Pick<RequestInit, "cache"> & { next?: { revalidate: number } } =
@@ -105,16 +113,20 @@ async function fetchOnce(
       ...rest,
       headers: buildHeaders({ json, token, ...rest }),
       body: json !== undefined ? JSON.stringify(json) : (rest as RequestInit).body,
-      signal: rest.signal ?? controller.signal,
+      signal,
       ...cacheOpts,
     });
   } catch (err) {
     clearTimeout(timer);
     const aborted = err instanceof Error && err.name === "AbortError";
-    throw new BackendCallError(
-      0,
-      aborted ? "Backend request timed out" : "Could not reach the backend"
-    );
+    // Distinguish our own timeout from a caller-initiated abort: only the timeout
+    // controller firing means "timed out". A caller abort (client disconnect)
+    // re-throws so the route can treat it as a disconnect, not a backend error.
+    if (aborted && timeoutController.signal.aborted) {
+      throw new BackendCallError(0, "Backend request timed out");
+    }
+    if (aborted) throw err; // caller-initiated abort — propagate as AbortError
+    throw new BackendCallError(0, "Could not reach the backend");
   }
   clearTimeout(timer);
 

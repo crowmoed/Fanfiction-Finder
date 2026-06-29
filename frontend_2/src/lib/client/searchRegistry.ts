@@ -43,6 +43,7 @@ import { getToken } from "@/lib/client/token";
 import { searchKey, cacheResults } from "@/lib/results/resultsCache";
 import { addHistory } from "@/lib/client/history";
 import { recordCheck } from "@/lib/results/savedSearches";
+import { saveFics } from "@/lib/results/ficStore";
 import { markPending, clearPending } from "@/lib/client/pendingOps";
 
 export type SearchPhase = "idle" | "searching" | "done" | "error";
@@ -164,9 +165,10 @@ function finalizeSuccess(
   if (!op || op.finalized) return;
   ops.set(key, { ...op, finalized: true });
   // Completion side effects, exactly once per op (no longer tied to whichever
-  // component is mounted): cache the set, log history, and update any followed
-  // search's "new since last check" diff.
+  // component is mounted): cache the set, save each fic for its on-demand /fic
+  // page, log history, and update any followed search's "new since last check".
   cacheResults(params, fics, count, elapsedMs);
+  saveFics(fics);
   addHistory(params, count);
   recordCheck(params, fics);
 }
@@ -327,6 +329,9 @@ export function hydrateOp(
     controller: null,
     finalized: true,
   });
+  // Re-save the fics so their on-demand /fic/[id] pages render after a cache
+  // restore too (cheap, write-through to the in-memory store).
+  saveFics(fics);
   clearPending(key);
   emit();
   return key;

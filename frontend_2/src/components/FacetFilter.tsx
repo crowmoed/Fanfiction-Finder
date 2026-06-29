@@ -8,6 +8,8 @@
  * Controlled: the parent owns FacetState and re-derives the filtered list.
  * Skeleton styling only.
  */
+import { useMemo } from "react";
+
 import type { Fic, Platform } from "@/lib/contracts";
 import {
   type FacetState,
@@ -36,14 +38,18 @@ export function FacetFilter({
   onChange: (next: FacetState) => void;
   filteredCount: number;
 }) {
-  const platforms = platformsIn(fics);
-  const ratings = ratingsIn(fics);
-  const showCompletion = hasCompletionData(fics);
+  // These derive only from `fics`, so memoize them — otherwise every facet
+  // toggle (which only changes `value`) recomputes the full tag frequency map etc.
+  const platforms = useMemo(() => platformsIn(fics), [fics]);
+  const ratings = useMemo(() => ratingsIn(fics), [fics]);
+  const showCompletion = useMemo(() => hasCompletionData(fics), [fics]);
+  const allTags = useMemo(() => tagsIn(fics), [fics]);
+
   // Cap the tag chips so a huge tag set doesn't swamp the panel; the most common
   // tags are the most useful to filter by. Always keep already-selected tags
-  // visible even if they fall outside the top slice.
+  // visible even if they fall outside the top slice. (This slice depends on the
+  // current selection, so it's intentionally not memoized on `fics` alone.)
   const TAG_LIMIT = 16;
-  const allTags = tagsIn(fics);
   const tags = allTags
     .filter((t, i) => i < TAG_LIMIT || value.tags.has(t.tag))
     .slice(0, Math.max(TAG_LIMIT, value.tags.size + TAG_LIMIT));

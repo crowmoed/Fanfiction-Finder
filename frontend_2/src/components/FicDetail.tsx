@@ -109,11 +109,17 @@ export function FicDetail({ fic }: { fic: Fic }) {
       )}
 
       <section>
-        <a href={fic.url} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-          <button className="row" style={{ gap: "0.5rem", alignItems: "center" }}>
-            <PlatformLogo platform={fic.platform} size={18} />
-            Read on {platformName(fic.platform)} →
-          </button>
+        {/* A single anchor styled as a button — not an <a> wrapping a <button>,
+            which is invalid HTML and confuses assistive tech. */}
+        <a
+          href={fic.url}
+          target="_blank"
+          rel="noreferrer"
+          className="button-link row"
+          style={{ gap: "0.5rem", alignItems: "center" }}
+        >
+          <PlatformLogo platform={fic.platform} size={18} />
+          Read on {platformName(fic.platform)} →
         </a>
       </section>
     </article>

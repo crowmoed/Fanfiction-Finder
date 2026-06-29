@@ -22,30 +22,51 @@ export function Modal({
   width?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  // The element focused when the dialog opened, so focus returns there on close
+  // (showModal moves focus into the dialog; the browser only restores focus
+  // automatically for native invokers, not a React state-driven open).
+  const triggerRef = useRef<HTMLElement | null>(null);
 
+  // The dialog stays mounted; showModal()/close() (not the `open` attribute) is
+  // what gives us the backdrop + focus trap + Esc handling. Mounting it
+  // unconditionally is essential — an early `return null` would unmount it before
+  // this effect could ever call showModal(), so it would never open.
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
+    if (open && !dialog.open) {
+      triggerRef.current =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
+      dialog.showModal();
+    } else if (!open && dialog.open) {
+      dialog.close();
+    }
   }, [open]);
-
-  if (!open) return null;
 
   return (
     <dialog
       ref={ref}
-      onClose={onClose}
+      // Fires for every close path (Esc, close(), backdrop). Notify the parent
+      // to flip `open`, then return focus to whatever opened the dialog.
+      onClose={() => {
+        onClose();
+        triggerRef.current?.focus();
+        triggerRef.current = null;
+      }}
       onClick={(e) => {
-        if (e.target === ref.current) onClose();
+        // Backdrop click: close natively so the onClose path above runs once.
+        if (e.target === ref.current) ref.current?.close();
       }}
       className="modal"
       style={{ width: `min(${width}, calc(100% - 2rem))` }}
+      aria-label={title}
     >
       <div className="modal-body stack">
         <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
           <strong style={{ fontSize: "1.1rem" }}>{title}</strong>
-          <button onClick={onClose} aria-label="Close">
+          <button onClick={() => ref.current?.close()} aria-label="Close">
             ✕
           </button>
         </div>

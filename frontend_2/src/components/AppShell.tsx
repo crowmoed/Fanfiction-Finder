@@ -11,7 +11,6 @@
  */
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import { SidebarSearches } from "@/components/SidebarSearches";
 import { SettingsModal } from "@/components/SettingsModal";
@@ -25,7 +24,6 @@ const COLLAPSE_KEY = "ficfinder.sidebar.collapsed";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     try {
@@ -48,6 +46,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={`app-shell${collapsed ? " is-collapsed" : ""}`}>
+      {/* Skip link — first focusable element, so keyboard/screen-reader users can
+          jump past the sidebar straight to the content. */}
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
       <aside className="sidebar">
         <div className="sidebar-top">
           <Link href="/" className="sidebar-brand">
@@ -63,37 +66,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
 
-        <button
-          className="sidebar-cta"
-          onClick={() => router.push("/")}
-          title="New search"
-        >
+        <Link className="sidebar-cta" href="/" title="New search">
           <span className="sidebar-ic" aria-hidden>
             ＋
           </span>
           <span className="sidebar-label">New search</span>
-        </button>
+        </Link>
 
         <nav className="sidebar-nav">
-          <button className="sidebar-link" onClick={() => router.push("/saved")} title="Saved">
+          <Link className="sidebar-link" href="/saved" title="Saved">
             <span className="sidebar-ic" aria-hidden>
               ★
             </span>
             <span className="sidebar-label">Saved</span>
-          </button>
-          <button className="sidebar-link" onClick={() => router.push("/history")} title="History">
+          </Link>
+          <Link className="sidebar-link" href="/history" title="History">
             <span className="sidebar-ic" aria-hidden>
               ↺
             </span>
             <span className="sidebar-label">History</span>
-          </button>
+          </Link>
         </nav>
 
         {/* Recent searches live in the sidebar (claude.ai-style) as a shortcut;
             the History button opens the full /history page. */}
         <div className="sidebar-scroll">
           <Suspense fallback={null}>
-            <SidebarSearches onViewAll={() => router.push("/history")} />
+            <SidebarSearches />
           </Suspense>
         </div>
 
@@ -119,7 +118,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <main className="app-main">{children}</main>
+      <main id="main-content" className="app-main">
+        {children}
+      </main>
 
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>

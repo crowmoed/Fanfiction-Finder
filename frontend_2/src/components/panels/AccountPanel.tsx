@@ -6,6 +6,23 @@ import { api, ApiError } from "@/lib/client/api";
 import { useAuth } from "@/lib/client/auth";
 import { GoogleSignIn } from "@/components/GoogleSignIn";
 
+/**
+ * Only follow a billing redirect to Stripe's own https domains. The URL comes
+ * from our backend, but validating it here is cheap open-redirect defense — a
+ * compromised/buggy upstream can't bounce the user to an arbitrary site.
+ */
+function isStripeUrl(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    return (
+      u.protocol === "https:" &&
+      (u.hostname === "stripe.com" || u.hostname.endsWith(".stripe.com"))
+    );
+  } catch {
+    return false;
+  }
+}
+
 /** Account panel (shown in the Account modal). */
 export function AccountPanel() {
   const { status, user, signOut, refresh } = useAuth();
@@ -17,6 +34,11 @@ export function AccountPanel() {
     setError(null);
     try {
       const { url } = await fn();
+      if (!isStripeUrl(url)) {
+        setError("Got an unexpected billing redirect. Please try again.");
+        setBusy(null);
+        return;
+      }
       window.location.href = url;
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Something went wrong");

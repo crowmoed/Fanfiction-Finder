@@ -85,6 +85,13 @@ export function ResultsTable({ fics }: { fics: Fic[] }) {
             {COLUMNS.map((col) => {
               const sortable = Boolean(col.sortValue);
               const active = col.id === sortId;
+              const indicator = active
+                ? dir === "asc"
+                  ? " ▲"
+                  : " ▼"
+                : sortable
+                  ? " ⇅"
+                  : "";
               return (
                 <th
                   key={col.id}
@@ -93,10 +100,25 @@ export function ResultsTable({ fics }: { fics: Fic[] }) {
                   aria-sort={
                     active ? (dir === "asc" ? "ascending" : "descending") : "none"
                   }
-                  onClick={sortable ? () => toggleSort(col.id) : undefined}
                 >
-                  {col.label}
-                  {active ? (dir === "asc" ? " ▲" : " ▼") : sortable ? " ⇅" : ""}
+                  {sortable ? (
+                    // A real <button> so the column is sortable by keyboard, not
+                    // just mouse. aria-sort stays on the <th> per the data-grid
+                    // pattern; the button just toggles it.
+                    <button
+                      type="button"
+                      className="xl-sort"
+                      onClick={() => toggleSort(col.id)}
+                    >
+                      {col.label}
+                      {indicator}
+                    </button>
+                  ) : (
+                    <>
+                      {col.label}
+                      {indicator}
+                    </>
+                  )}
                 </th>
               );
             })}

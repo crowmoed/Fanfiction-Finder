@@ -72,8 +72,10 @@ export function PipelineStatus({
         })}
       </ol>
 
-      {/* Adaptive, duration-aware reassurance — tone escalates as the wait grows. */}
-      <span className="muted" data-tone={message.tone} aria-live="polite">
+      {/* Adaptive, duration-aware reassurance — tone escalates as the wait grows.
+          No aria-live here: the whole card is already a polite live region, and a
+          nested live region causes duplicate/erratic screen-reader announcements. */}
+      <span className="muted" data-tone={message.tone}>
         {message.text}
       </span>
 

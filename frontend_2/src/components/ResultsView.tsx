@@ -4,11 +4,10 @@
  * fics. Both the real /results page and the demo harness feed it state, so every
  * state is identical between production and demos.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import type { Fic, SearchParams } from "@/lib/contracts";
 import type { SearchError, SearchPhase, StageState } from "@/lib/client/useSearch";
-import { saveFics } from "@/lib/results/ficStore";
 import { EMPTY_FACETS, applyFacets, type FacetState } from "@/lib/results/facets";
 import { FicCard } from "@/components/FicCard";
 import { PipelineStatus } from "@/components/PipelineStatus";
@@ -55,11 +54,9 @@ export function ResultsView({
   // Client-side faceted refinement — instant, no re-search.
   const visible = useMemo(() => applyFacets(results, facets), [results, facets]);
 
-  // Cache every result locally so its on-demand /fic/[id] page can render
-  // (incl. after a refresh) without any backend.
-  useEffect(() => {
-    if (results.length) saveFics(results);
-  }, [results]);
+  // (Saving each fic for its on-demand /fic/[id] page now happens once per op in
+  // the search registry's finalizeSuccess / hydrateOp — not here — so it no
+  // longer depends on this view being mounted.)
 
   if (phase === "idle") {
     return <p className="muted">Enter a query above to search.</p>;
@@ -85,7 +82,7 @@ export function ResultsView({
 
   if (phase === "error" && error) {
     return (
-      <div className="card stack">
+      <div className="card stack" role="alert">
         <strong className="error">Search failed</strong>
         <p className="error" style={{ margin: 0 }}>
           {error.message}
@@ -103,7 +100,7 @@ export function ResultsView({
   // done
   if (results.length === 0) {
     return (
-      <div className="card stack">
+      <div className="card stack" role="status">
         <strong>No matches found</strong>
         <p className="muted" style={{ margin: 0 }}>
           Nothing in the archive matched this search. Try loosening the wording or
@@ -116,7 +113,7 @@ export function ResultsView({
   return (
     <div className="stack enter-rise">
       <div className="row" style={{ justifyContent: "space-between" }}>
-        <p className="muted" style={{ margin: 0 }}>
+        <p className="muted" style={{ margin: 0 }} role="status" aria-live="polite">
           {results.length} result{results.length === 1 ? "" : "s"}
           {elapsedMs != null ? ` · ${(elapsedMs / 1000).toFixed(1)}s` : ""}
         </p>
@@ -163,7 +160,7 @@ export function ResultsView({
             {visible.map((fic, i) => (
               <div
                 key={`${fic.url}-${i}`}
-                className="xl-row-enter"
+                className="xl-row-enter results-card-item"
                 style={{ animationDelay: `${Math.min(i, 12) * 35}ms` }}
               >
                 <FicCard fic={fic} />

@@ -29,9 +29,14 @@ export function HighlightProvider({
 
 export function Highlight({ text }: { text: string | null | undefined }) {
   const terms = useContext(HighlightContext);
+  // Segmenting runs a regex over the text on every render otherwise; memoize on
+  // the inputs. `terms` is a stable reference from HighlightProvider's useMemo.
+  const segments = useMemo(
+    () => (text && terms.length > 0 ? highlightSegments(text, terms) : null),
+    [text, terms]
+  );
   if (!text) return null;
-  if (terms.length === 0) return <>{text}</>;
-  const segments = highlightSegments(text, terms);
+  if (!segments) return <>{text}</>;
   return (
     <>
       {segments.map((seg, i) =>

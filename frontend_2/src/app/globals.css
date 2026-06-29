@@ -59,6 +59,20 @@ button:disabled {
   cursor: default;
 }
 
+/* An anchor that should read as a button (e.g. a "Read on AO3" CTA that's
+   genuinely a link, so it must be an <a>, not an <a> wrapping a <button>).
+   Skeleton look only — mirrors the default button styling. */
+.button-link {
+  display: inline-flex;
+  cursor: pointer;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  background: #f5f5f5;
+  border-radius: 4px;
+  text-decoration: none;
+  color: inherit;
+}
+
 input[type="text"],
 input[type="search"],
 select {
@@ -66,6 +80,34 @@ select {
   border: 1px solid var(--border);
   border-radius: 4px;
   width: 100%;
+}
+
+/* Keyboard focus: a single, consistent, visible focus ring for every
+   interactive element. Functional placeholder (neutral) — the design layer can
+   restyle the color/offset; the point is that keyboard focus is never invisible.
+   :focus-visible (not :focus) so a mouse click doesn't leave a ring behind. */
+:focus-visible {
+  outline: 2px solid #4a78d6;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip link: off-screen until focused, then it slides into the top-left so a
+   keyboard user can jump straight to <main id="main-content">. */
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -3rem;
+  z-index: 100;
+  padding: 0.5rem 0.9rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: top 160ms ease;
+}
+.skip-link:focus {
+  top: 0.5rem;
 }
 
 /* ── structural utilities (NOT design — just layout scaffolding) ── */
@@ -183,6 +225,16 @@ select {
 
 .xl-row-enter {
   animation: enter-rise 280ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  /* Cheap "virtualization": skip rendering/layout of off-screen rows. The
+     intrinsic-size keeps the scrollbar stable for rows not yet rendered. A real
+     windowing lib can replace this later if result sets get huge. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 2.2rem;
+}
+/* Card layout: same off-screen skip, taller intrinsic size (cards are bigger). */
+.results-card-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 12rem;
 }
 /* The Refine panel + results header ease in as a unit. */
 .enter-rise {
@@ -240,9 +292,27 @@ select {
 }
 .xl-table th.sortable {
   cursor: pointer;
+  padding: 0; /* the inner button owns the padding so the whole cell is clickable */
 }
 .xl-table th.sortable:hover {
   background: #e4e7eb;
+}
+/* The sortable header's interactive element: a full-width, transparent button
+   that inherits the header's look so it reads as the header, not chrome. */
+.xl-sort {
+  width: 100%;
+  text-align: inherit;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+}
+.xl-table th.xl-num .xl-sort {
+  text-align: right;
 }
 .xl-table tbody tr:nth-child(even) {
   background: #f7f8fa;
@@ -515,11 +585,13 @@ mark.hl {
   font-weight: 600;
 }
 .sidebar-viewall {
+  display: block;
   width: 100%;
   text-align: left;
   border: none;
   background: transparent;
   color: var(--muted);
+  text-decoration: none;
   padding: 0.35rem 0.6rem;
   border-radius: 8px;
   font-size: 0.82rem;
@@ -640,7 +712,7 @@ mark.hl {
 .settings-tab:hover {
   background: var(--sidebar-hover);
 }
-.settings-tab[aria-current="page"] {
+.settings-tab[aria-selected="true"] {
   background: var(--sidebar-hover);
   font-weight: 600;
 }
