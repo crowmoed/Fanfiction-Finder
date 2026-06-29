@@ -1,0 +1,16 @@
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+import { FlatCompat } from "@eslint/eslintrc";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const compat = new FlatCompat({ baseDirectory: __dirname });
+
+const eslintConfig = [
+  // Generated / build output + Node CommonJS tooling — not app code to lint.
+  { ignores: [".next/**", "node_modules/**", "next-env.d.ts", "scripts/**"] },
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
+];
+
+export default eslintConfig;

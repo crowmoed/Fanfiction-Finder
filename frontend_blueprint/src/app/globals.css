@@ -1,0 +1,784 @@
+/*
+ * globals.css — intentionally minimal.
+ *
+ * This is the SKELETON build: readable, accessible defaults only, NO visual
+ * design. The "Hearth Archive" design layer replaces this file (and adds Tailwind
+ * + tokens) later. Everything here is plain CSS so there's nothing to undo —
+ * just a sane reading baseline and a few structural utility classes that the
+ * surfaces reference by name.
+ */
+
+:root {
+  --maxw: 880px;
+  --gap: 1rem;
+  --border: #ccc;
+  --muted: #666;
+  --bg: #fff;
+  --fg: #111;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* An anchor that should read as a button (e.g. a "Read on AO3" CTA that's
+   genuinely a link, so it must be an <a>, not an <a> wrapping a <button>).
+   Skeleton look only — mirrors the default button styling. */
+.button-link {
+  display: inline-flex;
+  cursor: pointer;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  background: #f5f5f5;
+  border-radius: 4px;
+  text-decoration: none;
+  color: inherit;
+}
+
+input[type="text"],
+input[type="search"],
+select {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  width: 100%;
+}
+
+/* Keyboard focus: a single, consistent, visible focus ring for every
+   interactive element. Functional placeholder (neutral) — the design layer can
+   restyle the color/offset; the point is that keyboard focus is never invisible.
+   :focus-visible (not :focus) so a mouse click doesn't leave a ring behind. */
+:focus-visible {
+  outline: 2px solid #4a78d6;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip link: off-screen until focused, then it slides into the top-left so a
+   keyboard user can jump straight to <main id="main-content">. */
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -3rem;
+  z-index: 100;
+  padding: 0.5rem 0.9rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: top 160ms ease;
+}
+.skip-link:focus {
+  top: 0.5rem;
+}
+
+/* ── structural utilities (NOT design — just layout scaffolding) ── */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+.row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.muted {
+  color: var(--muted);
+  font-size: 0.9em;
+}
+.card {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.9rem 1rem;
+}
+.tag {
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+  font-size: 0.8em;
+  margin: 0 0.25rem 0.25rem 0;
+}
+.nav {
+  border-bottom: 1px solid var(--border);
+}
+.nav-inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.spacer {
+  flex: 1;
+}
+.error {
+  color: #a00;
+}
+.skeleton-banner {
+  background: repeating-linear-gradient(
+    45deg,
+    #fafafa,
+    #fafafa 10px,
+    #f0f0f0 10px,
+    #f0f0f0 20px
+  );
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85em;
+  color: var(--muted);
+}
+
+/* ── Skeleton loaders ──────────────────────────────────────────────
+   A single placeholder block with a left-to-right shimmer. Components
+   compose these into content-shaped layouts (table rows, cards, etc).
+   Design layer can restyle the colors; the shimmer respects reduced motion. */
+.skeleton {
+  display: block;
+  border-radius: 4px;
+  background: #ececec;
+  background-image: linear-gradient(
+    90deg,
+    #ececec 0%,
+    #f5f5f5 50%,
+    #ececec 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ── Entrance animations ───────────────────────────────────────────
+   Content fades + rises into place instead of popping in. ease-out so it
+   feels responsive; short and subtle so it never reads as slow. Result
+   rows/cards get a per-item stagger via inline animation-delay. */
+@keyframes enter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes enter-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.xl-row-enter {
+  animation: enter-rise 280ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  /* Cheap "virtualization": skip rendering/layout of off-screen rows. The
+     intrinsic-size keeps the scrollbar stable for rows not yet rendered. A real
+     windowing lib can replace this later if result sets get huge. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 2.2rem;
+}
+/* Card layout: same off-screen skip, taller intrinsic size (cards are bigger). */
+.results-card-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 12rem;
+}
+/* The Refine panel + results header ease in as a unit. */
+.enter-rise {
+  animation: enter-rise 260ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+  /* Keep the collapse instant (no width/label motion) for motion-sensitive
+     users; the layout still changes, just without the sliding animation. */
+  .sidebar,
+  .sidebar-label,
+  .sidebar-scroll,
+  .app-main {
+    transition: none;
+  }
+  /* No entrance motion — content just appears (no opacity/transform anim). */
+  .xl-row-enter,
+  .enter-rise,
+  .modal,
+  .modal::backdrop {
+    animation: none;
+  }
+}
+
+/* ── Results table — spreadsheet ("Excel") look ────────────────────
+   Gridlines on every cell, a filled header row, zebra striping, and a
+   fixed layout so long text columns can be truncated to one line (the
+   full text lives in the quick-view popup). Design layer can recolor. */
+.xl-table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  font-size: 0.85rem;
+  border: 1px solid #b0b4ba;
+}
+.xl-table th,
+.xl-table td {
+  border: 1px solid #d4d7dc;
+  padding: 0.3rem 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap; /* one line; truncated cells use ellipsis */
+  vertical-align: middle;
+}
+.xl-table thead th {
+  background: #eef0f3;
+  border-color: #b0b4ba;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  user-select: none;
+}
+.xl-table th.sortable {
+  cursor: pointer;
+  padding: 0; /* the inner button owns the padding so the whole cell is clickable */
+}
+.xl-table th.sortable:hover {
+  background: #e4e7eb;
+}
+/* The sortable header's interactive element: a full-width, transparent button
+   that inherits the header's look so it reads as the header, not chrome. */
+.xl-sort {
+  width: 100%;
+  text-align: inherit;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+}
+.xl-table th.xl-num .xl-sort {
+  text-align: right;
+}
+.xl-table tbody tr:nth-child(even) {
+  background: #f7f8fa;
+}
+.xl-table tbody tr:hover {
+  background: #eef4fb;
+}
+.xl-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.xl-truncate {
+  /* width is set per-column inline; this just keeps the single-line clamp */
+  max-width: 0; /* lets ellipsis work inside a fixed-layout table cell */
+}
+
+/* ── Search autocomplete (history-backed) ──────────────────────────
+   Dropdown of matching recent searches under the query input. Skeleton
+   styling — the design layer restyles. */
+.autocomplete {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  margin: 0;
+  padding: 0.2rem;
+  list-style: none;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+.autocomplete-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+}
+.autocomplete-item:hover {
+  background: #f0f0f0;
+}
+
+/* ── Match highlighting ────────────────────────────────────────────
+   Where the user's query terms appear in a fic's text. Skeleton style:
+   a plain highlight; the design layer recolors. Inherits text color so
+   it stays legible in any future theme. */
+mark.hl {
+  background: #fff2a8;
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+/* ── Platform link button (replaces the text "open" in the Link column) ──
+   Favicon + external-link arrow inside a bordered pill, so it clearly reads as
+   "open the original site in a new tab", not a decorative icon. */
+.platform-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  text-decoration: none;
+  color: var(--muted);
+  line-height: 1;
+  transition: background 120ms ease, border-color 120ms ease,
+    transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.platform-link:hover {
+  background: #f5f5f5;
+  border-color: #b8b8b8;
+  color: var(--fg);
+}
+.platform-link:active {
+  transform: scale(0.96);
+}
+.platform-link-ext {
+  font-size: 0.8em;
+  line-height: 1;
+}
+
+/* ── App shell: claude.ai-style collapsible sidebar + content canvas ──
+   Mirrors the claude.ai web sidebar: soft tinted panel, icon+label rows
+   with rounded hover fills, a collapse toggle that shrinks it to an icon
+   rail. Skeleton palette — the design layer recolors. */
+:root {
+  --sidebar-w: 256px;
+  --sidebar-w-collapsed: 60px;
+  --sidebar-bg: #f5f4ef;
+  --sidebar-hover: #eceae2;
+  --sidebar-fg: #2b2b29;
+  /* Strong curves (per Emil): the built-in CSS easings are too weak. */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1); /* iOS-like panel move */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+}
+.app-shell {
+  /* One source of truth for the live sidebar width. The sidebar IS this wide,
+     and the content reserves exactly this much on the left — both read the same
+     variable, so they can never get out of phase. */
+  --current-sidebar-w: var(--sidebar-w);
+  min-height: 100vh;
+}
+.app-shell.is-collapsed {
+  --current-sidebar-w: var(--sidebar-w-collapsed);
+}
+.sidebar {
+  /* Fixed so it never participates in (and never re-flows) the content layout —
+     the content just reserves space for it. This is what kills the "jump": the
+     centered column no longer teleports as flex space recomputes mid-animation. */
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--current-sidebar-w);
+  background: var(--sidebar-bg);
+  color: var(--sidebar-fg);
+  border-right: 1px solid #e7e5dd;
+  padding: 0.6rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: width 260ms var(--ease-drawer);
+  overflow: hidden;
+  z-index: 10;
+}
+.is-collapsed .sidebar {
+  width: var(--sidebar-w-collapsed);
+}
+
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  padding: 0.15rem 0.25rem;
+}
+.sidebar-toggle {
+  border: none;
+  background: transparent;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  line-height: 1;
+  transition: background 120ms ease, transform 140ms var(--ease-out-strong);
+}
+.sidebar-toggle:hover {
+  background: var(--sidebar-hover);
+}
+.sidebar-toggle:active {
+  transform: scale(0.9);
+}
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-decoration: none;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* Shared row look for cta / nav / account / dev (claude.ai's list rows). */
+.sidebar-cta,
+.sidebar-link,
+.sidebar-account,
+.sidebar-dev {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-decoration: none;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  white-space: nowrap;
+  font-size: 0.92rem;
+  /* Hover fill + press feedback (color/transform only — GPU friendly). */
+  transition: background 120ms ease, transform 140ms var(--ease-out-strong);
+}
+.sidebar-cta {
+  font-weight: 600;
+  background: #fff;
+  border: 1px solid #e2e0d7;
+  margin-bottom: 0.25rem;
+}
+.sidebar-cta:hover,
+.sidebar-link:hover,
+.sidebar-account:hover,
+.sidebar-dev:hover {
+  background: var(--sidebar-hover);
+}
+.sidebar-cta:active,
+.sidebar-link:active,
+.sidebar-account:active,
+.sidebar-dev:active {
+  transform: scale(0.97);
+}
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.sidebar-ic {
+  flex-shrink: 0;
+  width: 1.2rem;
+  text-align: center;
+  font-size: 0.95rem;
+}
+.sidebar-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  border-top: 1px solid #e7e5dd;
+  padding-top: 0.4rem;
+}
+.sidebar-dev {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* Recent searches list in the sidebar (grows + scrolls between nav and foot). */
+.sidebar-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin: 0.25rem -0.5rem;
+  padding: 0 0.5rem;
+}
+.sidebar-section-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 0.4rem 0.6rem 0.2rem;
+}
+.sidebar-search-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+.sidebar-search-item {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+}
+.sidebar-search-item:hover {
+  background: var(--sidebar-hover);
+}
+.sidebar-search-item[aria-current="page"] {
+  background: var(--sidebar-hover);
+  font-weight: 600;
+}
+.sidebar-viewall {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+}
+.sidebar-viewall:hover {
+  background: var(--sidebar-hover);
+}
+
+/* Labels fade + collapse their width with the panel, so collapsing reads as one
+   coordinated motion rather than text popping out of existence. */
+.sidebar-label {
+  transition: opacity 160ms var(--ease-out-strong), max-width 260ms var(--ease-drawer);
+  max-width: 12rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.is-collapsed .sidebar-label {
+  opacity: 0;
+  max-width: 0;
+  /* Faster than the panel so text is gone before the rail finishes narrowing,
+     avoiding a cramped mid-state. */
+  transition: opacity 120ms ease, max-width 200ms var(--ease-drawer);
+}
+/* The recent list has no icon to keep, so it can leave outright (faded). */
+.sidebar-scroll {
+  transition: opacity 140ms ease;
+}
+.is-collapsed .sidebar-scroll {
+  opacity: 0;
+  pointer-events: none;
+}
+.is-collapsed .sidebar-cta,
+.is-collapsed .sidebar-link,
+.is-collapsed .sidebar-dev,
+.is-collapsed .sidebar-brand {
+  justify-content: center;
+}
+/* Stack the logo above the chevron in the narrow rail. */
+.is-collapsed .sidebar-top {
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-main {
+  /* Reserve exactly the sidebar's live width on the left, transitioning on the
+     SAME curve/duration as the sidebar — so the panel slide and the content
+     shift move in perfect lockstep (no teleport, no jump). The inner content
+     stays centered within the remaining space via the box-sizing padding. */
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 1.5rem 1.5rem 4rem;
+  padding-left: calc(var(--current-sidebar-w) + 1.5rem);
+  transition: padding-left 260ms var(--ease-drawer);
+}
+.app-main > * {
+  max-width: var(--maxw);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Modal (claude.ai popup style: centered, soft, rounded) ────────── */
+.modal {
+  border: 1px solid #e7e5dd;
+  border-radius: 16px;
+  padding: 0;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+  color: var(--fg);
+  /* Scale + fade from center (modals aren't anchored to a trigger). */
+  transform-origin: center;
+  animation: enter-pop 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.modal::backdrop {
+  background: rgba(40, 38, 34, 0.4);
+  backdrop-filter: blur(2px);
+  animation: enter-fade 200ms ease both;
+}
+@keyframes enter-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.modal-body {
+  padding: 1.25rem 1.5rem 1.5rem;
+  gap: 1rem;
+}
+
+/* ── Settings: claude.ai-style tabbed dialog (left rail + pane) ─────── */
+.settings {
+  display: flex;
+  gap: 1.25rem;
+  min-height: 320px;
+}
+.settings-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: 150px;
+  flex-shrink: 0;
+  border-right: 1px solid #e7e5dd;
+  padding-right: 0.5rem;
+}
+.settings-tab {
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.92rem;
+}
+.settings-tab:hover {
+  background: var(--sidebar-hover);
+}
+.settings-tab[aria-selected="true"] {
+  background: var(--sidebar-hover);
+  font-weight: 600;
+}
+.settings-pane {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .settings {
+    flex-direction: column;
+  }
+  .settings-tabs {
+    width: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: none;
+    border-bottom: 1px solid #e7e5dd;
+    padding-right: 0;
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* ── Dev surface chrome (clearly separate from the real app) ───────── */
+.dev-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  background: #1f2430;
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+.dev-bar a {
+  color: #cdd5e0;
+}
+.dev-main {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+/* Narrow screens: sidebar becomes a static top strip; content reserves no left
+   space (drop the fixed-sidebar padding). */
+@media (max-width: 720px) {
+  .sidebar,
+  .app-shell.is-collapsed .sidebar {
+    width: auto;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    border-right: none;
+    border-bottom: 1px solid #e7e5dd;
+  }
+  .app-main {
+    padding-left: 1.5rem;
+  }
+  .sidebar-foot {
+    margin-top: 0;
+    flex-direction: row;
+    border-top: none;
+    padding-top: 0;
+  }
+}
