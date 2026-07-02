@@ -453,18 +453,24 @@ mark.hl {
 .sidebar-top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.25rem;
+  justify-content: flex-start;
+  gap: 0.5rem;
   padding: 0.15rem 0.25rem;
 }
 .sidebar-toggle {
   border: none;
   background: transparent;
+  /* Nudge so the glyph sits over the nav icon column when expanded. Zeroed when
+     collapsed (there the toggle centres in the rail). */
+  margin-left: 0.35rem;
   padding: 0.35rem 0.5rem;
   border-radius: 8px;
   font-size: 1rem;
   line-height: 1;
   transition: background 120ms ease, transform 140ms var(--ease-out-strong);
+}
+.is-collapsed .sidebar-toggle {
+  margin-left: 0;
 }
 .sidebar-toggle:hover {
   background: var(--sidebar-hover);
@@ -622,18 +628,31 @@ mark.hl {
 .is-collapsed .sidebar-scroll {
   opacity: 0;
   pointer-events: none;
+  /* visibility (not display) keeps the flex space so the footer stays pinned to
+     the bottom, while taking the hidden recents out of the tab order. */
+  visibility: hidden;
 }
 .is-collapsed .sidebar-cta,
 .is-collapsed .sidebar-link,
+.is-collapsed .sidebar-account,
 .is-collapsed .sidebar-dev,
 .is-collapsed .sidebar-brand {
   justify-content: center;
+  /* Zero the icon↔label gap so the lone icon sits dead-centre in the rail rather
+     than being pulled left by the (now zero-width) label's leading gap. */
+  gap: 0;
 }
-/* Stack the logo above the chevron in the narrow rail. */
+/* Collapsed: hide the (empty) brand and centre the toggle so it keeps the same
+   top slot and lines up with the icon column below — no corner-to-corner jump. */
+.is-collapsed .sidebar-brand {
+  display: none;
+}
 .is-collapsed .sidebar-top {
-  flex-direction: column;
-  gap: 0.35rem;
+  justify-content: center;
 }
+
+/* Collapse is a hard lock (toggle / Ctrl+B). No hover behaviour — the collapsed
+   rail stays put; expand it with the toggle to see labels + recents. */
 
 .truncate {
   overflow: hidden;
@@ -780,5 +799,216 @@ mark.hl {
     flex-direction: row;
     border-top: none;
     padding-top: 0;
+  }
+}
+
+/* ── Sidebar recent rows + per-row action menu ─────────────────────
+   A recent row is a link (grows) with a kebab button beside it. The kebab is
+   invisible until the row is hovered/focused (or its menu is open) so the list
+   stays calm, but it's always reachable by keyboard and always shown on touch. */
+.sidebar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  border-radius: 8px;
+}
+.sidebar-row .sidebar-search-item {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+.sidebar-row-kebab {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  padding: 0.15rem 0.35rem;
+  border-radius: 6px;
+  line-height: 1;
+  font-size: 1rem;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 120ms ease, background 120ms ease, color 120ms ease;
+}
+.sidebar-row:hover .sidebar-row-kebab,
+.sidebar-row:focus-within .sidebar-row-kebab,
+.sidebar-row-kebab[aria-expanded="true"] {
+  opacity: 1;
+}
+.sidebar-row-kebab:hover,
+.sidebar-row-kebab[aria-expanded="true"] {
+  background: var(--sidebar-hover);
+  color: var(--sidebar-fg);
+}
+/* No hover (touch): the affordance can't be hover-revealed, so always show it. */
+@media (hover: none) {
+  .sidebar-row-kebab {
+    opacity: 1;
+  }
+}
+
+/* Recents: hydration skeleton + teaching empty state (product register: skeleton
+   over spinner; an empty state that says what will fill it). */
+.sidebar-recents-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+}
+.sidebar-recent-skel {
+  height: 0.8rem;
+  width: 100%;
+  border-radius: 5px;
+}
+.sidebar-recent-skel:nth-child(2) {
+  width: 82%;
+}
+.sidebar-recent-skel:nth-child(3) {
+  width: 90%;
+}
+.sidebar-recent-skel:nth-child(4) {
+  width: 68%;
+}
+.sidebar-recent-skel:nth-child(5) {
+  width: 86%;
+}
+.sidebar-recents-empty,
+.sidebar-recents-nomatch {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  padding: 0.2rem 0.6rem;
+  margin: 0;
+}
+
+/* Inline filter for the recents list */
+.sidebar-filter {
+  display: block;
+  width: 100%;
+  margin: 0.1rem 0 0.45rem;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.82rem;
+}
+
+/* Grouped recents (Pinned / Today / Yesterday / …): a little air between groups
+   so the section labels read as dividers, not crowding the rows. */
+.sidebar-group + .sidebar-group {
+  margin-top: 0.3rem;
+}
+
+/* Pin marker on a pinned row, before the query text. */
+.sidebar-row-pin {
+  flex: 0 0 auto;
+  margin-right: 0.35rem;
+  font-size: 0.72rem;
+  line-height: 1;
+  color: var(--muted);
+}
+
+/* Account control at the foot of the rail */
+.sidebar-account {
+  cursor: pointer;
+}
+.sidebar-avatar {
+  flex: 0 0 auto;
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #e2e0d7;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.sidebar-account-caret {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.is-collapsed .sidebar-account-caret {
+  display: none;
+}
+
+/* ── Menu primitive (native Popover API, rendered in the top layer) ──
+   The outer .menu is a transparent positioned shell; .menu-inner is the visible
+   card that animates in. Splitting them keeps positioning (translate on .menu)
+   from fighting the open animation (scale on .menu-inner). */
+.menu {
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+.menu-inner {
+  min-width: 190px;
+  max-width: 260px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.18);
+  padding: 0.3rem;
+  transform-origin: top left;
+  animation: menu-in 140ms var(--ease-out-strong) both;
+}
+.menu[data-placement="bottom-end"] .menu-inner {
+  transform-origin: top right;
+}
+.menu[data-placement="top-start"] .menu-inner {
+  transform-origin: bottom left;
+}
+.menu[data-placement="top-end"] .menu-inner {
+  transform-origin: bottom right;
+}
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: inherit;
+  padding: 0.45rem 0.55rem;
+  border-radius: 7px;
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+.menu-item:hover:not(:disabled),
+.menu-item:focus-visible {
+  background: var(--sidebar-hover);
+}
+.menu-item:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.menu-item-danger {
+  color: #b3261e;
+}
+.menu-item-danger:hover:not(:disabled),
+.menu-item-danger:focus-visible {
+  background: #fbe9e7;
+}
+.menu-sep {
+  height: 1px;
+  background: var(--border);
+  margin: 0.3rem 0.25rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu-inner {
+    animation: none;
   }
 }

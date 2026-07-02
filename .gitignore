@@ -9,6 +9,7 @@ __pycache__/
 *.pyc
 backend/logs/
 *.log
+backend/.backfill_cursor.json
 
 # Agent tooling artifacts (keep local, don't track)
 .claude/settings.local.json
@@ -17,3 +18,15 @@ graphify-out/
 .serena/
 .mcp.json
 vine-designs.html
+
+# Project docs — local only, not for GitHub
+backend-audit/
+semantic-archive-audit/
+CLAUDE.md
+
+# Working frontends — local only; GitHub tracks just frontend/ and frontend_2/
+frontend_blueprint/
+frontend_sandbox/
+frontend_2/.next/
+frontend_2/out/
+frontend_2/design-explorations/

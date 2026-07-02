@@ -75,6 +75,13 @@ export function clearHistory(): void {
   write([]);
 }
 
+/** Remove a single history entry by id (no-op if it's already gone). */
+export function removeHistory(id: string): void {
+  const current = read();
+  const next = current.filter((e) => e.id !== id);
+  if (next.length !== current.length) write(next);
+}
+
 function subscribe(listener: () => void): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);

@@ -2,47 +2,30 @@
 
 /**
  * AppShell — the real product chrome, styled after the claude.ai web app: a slim
- * collapsible left sidebar + a content canvas.
+ * collapsible left sidebar + a content canvas. Sidebar state lives in
+ * SidebarProvider; the sidebar itself is composed from src/components/sidebar/*.
  *
- * Sidebar (claude.ai layout): New search, Saved, History, then a scrollable list
- * of recent searches (like claude.ai's recent chats), and a Settings button
- * pinned at the bottom. Saved and History are full pages; Settings opens a
- * tabbed dialog. Shareable content (/, /results, /fic) renders in {children}.
+ * Saved and History are full pages; Settings opens a tabbed dialog (owned here so
+ * the sidebar's account menu can trigger it). Shareable content (/, /results,
+ * /fic) renders in {children}.
  */
-import { Suspense, useEffect, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 
-import { SidebarSearches } from "@/components/SidebarSearches";
+import { SidebarProvider, useSidebar } from "@/components/sidebar/SidebarProvider";
+import { Sidebar } from "@/components/sidebar/Sidebar";
 import { SettingsModal } from "@/components/SettingsModal";
 
-const SHOW_DEV =
-  process.env.NEXT_PUBLIC_ENABLE_DEMOS === "1" ||
-  process.env.NODE_ENV !== "production";
-
-const COLLAPSE_KEY = "ficfinder.sidebar.collapsed";
-
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  return (
+    <SidebarProvider>
+      <Shell>{children}</Shell>
+    </SidebarProvider>
+  );
+}
 
-  useEffect(() => {
-    try {
-      setCollapsed(localStorage.getItem(COLLAPSE_KEY) === "1");
-    } catch {
-      /* ignore */
-    }
-  }, []);
-  const toggleCollapsed = () => {
-    setCollapsed((c) => {
-      const next = !c;
-      try {
-        localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  };
+function Shell({ children }: { children: React.ReactNode }) {
+  const { collapsed } = useSidebar();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <div className={`app-shell${collapsed ? " is-collapsed" : ""}`}>
@@ -51,72 +34,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <a href="#main-content" className="skip-link">
         Skip to content
       </a>
-      <aside className="sidebar">
-        <div className="sidebar-top">
-          <Link href="/" className="sidebar-brand">
-            <span className="sidebar-label">FicFinder</span>
-          </Link>
-          <button
-            className="sidebar-toggle"
-            onClick={toggleCollapsed}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? "☰" : "‹"}
-          </button>
-        </div>
 
-        <Link className="sidebar-cta" href="/" title="New search">
-          <span className="sidebar-ic" aria-hidden>
-            ＋
-          </span>
-          <span className="sidebar-label">New search</span>
-        </Link>
-
-        <nav className="sidebar-nav">
-          <Link className="sidebar-link" href="/saved" title="Saved">
-            <span className="sidebar-ic" aria-hidden>
-              ★
-            </span>
-            <span className="sidebar-label">Saved</span>
-          </Link>
-          <Link className="sidebar-link" href="/history" title="History">
-            <span className="sidebar-ic" aria-hidden>
-              ↺
-            </span>
-            <span className="sidebar-label">History</span>
-          </Link>
-        </nav>
-
-        {/* Recent searches live in the sidebar (claude.ai-style) as a shortcut;
-            the History button opens the full /history page. */}
-        <div className="sidebar-scroll">
-          <Suspense fallback={null}>
-            <SidebarSearches />
-          </Suspense>
-        </div>
-
-        <div className="sidebar-foot">
-          <button
-            className="sidebar-link"
-            onClick={() => setSettingsOpen(true)}
-            title="Settings"
-          >
-            <span className="sidebar-ic" aria-hidden>
-              ⚙
-            </span>
-            <span className="sidebar-label">Settings</span>
-          </button>
-          {SHOW_DEV && (
-            <Link href="/dev" className="sidebar-dev">
-              <span className="sidebar-ic" aria-hidden>
-                ⌗
-              </span>
-              <span className="sidebar-label">Dev / demos</span>
-            </Link>
-          )}
-        </div>
-      </aside>
+      <Sidebar onOpenSettings={() => setSettingsOpen(true)} />
 
       <main id="main-content" className="app-main">
         {children}
