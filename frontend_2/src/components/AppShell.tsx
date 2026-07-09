@@ -10,21 +10,27 @@
  * /fic) renders in {children}.
  */
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 import { SidebarProvider, useSidebar } from "@/components/sidebar/SidebarProvider";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { SettingsModal } from "@/components/SettingsModal";
+import { ToastProvider } from "@/components/Toast";
+import { DemoRibbon } from "@/components/DemoRibbon";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider>
-      <Shell>{children}</Shell>
-    </SidebarProvider>
+    <ToastProvider>
+      <SidebarProvider>
+        <Shell>{children}</Shell>
+      </SidebarProvider>
+    </ToastProvider>
   );
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar();
+  const pathname = usePathname();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
@@ -37,7 +43,14 @@ function Shell({ children }: { children: React.ReactNode }) {
 
       <Sidebar onOpenSettings={() => setSettingsOpen(true)} />
 
-      <main id="main-content" className="app-main">
+      {/* Keyed by pathname so the content pane remounts on every client
+          navigation — that remount replays the .app-main route-fade entrance
+          (globals.css §13), giving Home -> Results -> Fic -> Saved a quiet
+          arrival instead of a hard cut. The sidebar sits outside <main>, so it
+          stays put; only the content crossfades. Covers <Link> and
+          router.push alike (both change the pathname). */}
+      <main id="main-content" className="app-main" key={pathname}>
+        <DemoRibbon />
         {children}
       </main>
 

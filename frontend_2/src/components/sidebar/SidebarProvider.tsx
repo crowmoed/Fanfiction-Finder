@@ -1,10 +1,13 @@
 "use client";
 
 /**
- * SidebarProvider — the single owner of sidebar UI state (collapse + the mobile
- * drawer), so the shell chrome and the sidebar tree read the same source instead
- * of prop-drilling a boolean. Collapse is persisted to localStorage; hydration is
- * deferred to an effect to avoid an SSR mismatch.
+ * SidebarProvider — the single owner of sidebar UI state (the collapse flag), so
+ * the shell chrome and the sidebar tree read one source instead of prop-drilling
+ * a boolean. Collapse is persisted to localStorage; hydration is deferred to an
+ * effect to avoid an SSR mismatch, and kept in sync across tabs.
+ *
+ * (There is no mobile-drawer state: narrow screens collapse the sidebar into a
+ * static top strip purely via CSS — see the max-width media query in globals.css.)
  */
 import {
   createContext,
@@ -16,15 +19,14 @@ import {
   type ReactNode,
 } from "react";
 
+import { subscribeToStorageKey } from "@/lib/client/localStore";
+
 const COLLAPSE_KEY = "ficfinder.sidebar.collapsed";
 
 interface SidebarContextValue {
   collapsed: boolean;
   toggleCollapsed: () => void;
   setCollapsed: (value: boolean) => void;
-  mobileOpen: boolean;
-  openMobile: () => void;
-  closeMobile: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextValue | null>(null);
@@ -45,14 +47,18 @@ function persist(collapsed: boolean) {
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsedState] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    try {
-      setCollapsedState(localStorage.getItem(COLLAPSE_KEY) === "1");
-    } catch {
-      /* ignore */
-    }
+    const hydrate = () => {
+      try {
+        setCollapsedState(localStorage.getItem(COLLAPSE_KEY) === "1");
+      } catch {
+        /* ignore */
+      }
+    };
+    hydrate();
+    // Keep the rail in sync if another tab toggles it.
+    return subscribeToStorageKey(COLLAPSE_KEY, hydrate);
   }, []);
 
   const setCollapsed = useCallback((value: boolean) => {
@@ -67,9 +73,6 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
       return next;
     });
   }, []);
-
-  const openMobile = useCallback(() => setMobileOpen(true), []);
-  const closeMobile = useCallback(() => setMobileOpen(false), []);
 
   // Ctrl/Cmd+B toggles the rail (VS Code convention). Ignored while typing so it
   // never steals the shortcut from an input/textarea/contenteditable.
@@ -94,15 +97,8 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   }, [toggleCollapsed]);
 
   const value = useMemo<SidebarContextValue>(
-    () => ({
-      collapsed,
-      toggleCollapsed,
-      setCollapsed,
-      mobileOpen,
-      openMobile,
-      closeMobile,
-    }),
-    [collapsed, toggleCollapsed, setCollapsed, mobileOpen, openMobile, closeMobile]
+    () => ({ collapsed, toggleCollapsed, setCollapsed }),
+    [collapsed, toggleCollapsed, setCollapsed]
   );
 
   return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>;

@@ -11,7 +11,10 @@
  * next/image) so no image-host config is needed.
  *
  * Brand colors (fallback tile): AO3 maroon #990000 · Wattpad orange #FF6122 ·
- * FFN navy #2b3a67.
+ * FFN navy #2b3a67. These literals are DELIBERATE: they're the external
+ * platforms' own brand identities (data baked into an image, like a favicon),
+ * not Ficwell theme paint — they must never swap with a theme, so they stay
+ * out of the token system (see DESIGN.md · Color).
  */
 import { useState } from "react";
 
@@ -65,17 +68,26 @@ const FALLBACK: Brand = {
 };
 
 /** Original lettermark fallback tile (used when the favicon can't load). */
-function LetterTile({ brand, size }: { brand: Brand; size: number }) {
+function LetterTile({
+  brand,
+  size,
+  decorative,
+}: {
+  brand: Brand;
+  size: number;
+  decorative: boolean;
+}) {
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      role="img"
-      aria-label={brand.name}
+      role={decorative ? "presentation" : "img"}
+      aria-label={decorative ? undefined : brand.name}
+      aria-hidden={decorative || undefined}
       style={{ display: "block", flexShrink: 0 }}
     >
-      <rect x="0" y="0" width="24" height="24" rx="5" fill={brand.bg} />
+      <rect x="0" y="0" width="24" height="24" rx="4" fill={brand.bg} />
       <text
         x="12"
         y="12"
@@ -96,15 +108,19 @@ function LetterTile({ brand, size }: { brand: Brand; size: number }) {
 export function PlatformLogo({
   platform,
   size = 20,
+  decorative = false,
 }: {
   platform: Platform;
   size?: number;
+  /** Mark the icon decorative (empty alt / aria-hidden) when adjacent text
+   *  already names the platform, so screen readers don't announce it twice. */
+  decorative?: boolean;
 }) {
   const brand = BRANDS[platform] ?? FALLBACK;
   const [failed, setFailed] = useState(false);
 
   if (failed || !brand.domain) {
-    return <LetterTile brand={brand} size={size} />;
+    return <LetterTile brand={brand} size={size} decorative={decorative} />;
   }
 
   // Google's favicon service returns the site's real favicon by domain.
@@ -113,12 +129,13 @@ export function PlatformLogo({
     // eslint-disable-next-line @next/next/no-img-element -- external favicon, intentionally not next/image (no host config)
     <img
       src={src}
-      alt={brand.name}
+      alt={decorative ? "" : brand.name}
+      aria-hidden={decorative || undefined}
       width={size}
       height={size}
       loading="lazy"
       onError={() => setFailed(true)}
-      style={{ display: "block", flexShrink: 0, borderRadius: 5 }}
+      style={{ display: "block", flexShrink: 0, borderRadius: "var(--r-xs)" }}
     />
   );
 }

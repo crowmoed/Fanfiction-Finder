@@ -38,7 +38,7 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   try {
     res = await fetch(path, { ...init, headers });
   } catch {
-    throw new ApiError(0, "Network error — could not reach the server.");
+    throw new ApiError(0, "Network error: could not reach the server.");
   }
 
   if (!res.ok) {

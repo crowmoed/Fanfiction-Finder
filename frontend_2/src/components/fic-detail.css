@@ -1,0 +1,252 @@
+/*
+ * fic-detail.css — sidecar for FicDetail / FicModal / FicDetailSkeleton
+ * (REDESIGN-SPEC §5 — the "title page").
+ *
+ * Everything reusable (badges, .prose, .meta-list, .null-dash, .btn-lg, the
+ * seal) lives in globals.css already; this file owns the masthead, the
+ * two-column grid + sticky sidecar, and the stats ledger, none of which have
+ * a shared primitive.
+ */
+
+/* ── Back link ────────────────────────────────────────────────────────────
+   .linklike resets button chrome but sets display:inline (a plain text
+   link); this needs the icon + "Back" laid out in a row, with the same
+   quiet-until-hover underline as .link (not .linklike's always-on one). */
+.fic-back-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  text-decoration: none;
+}
+/* A GPU-safe underline that draws in from the left (text-decoration can't
+   transition none→underline), plus a chevron nudge to reinforce direction. */
+.fic-back-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--t-fast) var(--ease-out);
+}
+.fic-back-link .icon {
+  transition: transform var(--t-fast) var(--ease-out);
+}
+.fic-back-link:hover::after,
+.fic-back-link:focus-visible::after {
+  transform: scaleX(1);
+}
+.fic-back-link:hover .icon,
+.fic-back-link:focus-visible .icon {
+  transform: translateX(-2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fic-back-link::after {
+    transition: none;
+  }
+  .fic-back-link:hover .icon,
+  .fic-back-link:focus-visible .icon {
+    transform: none;
+  }
+}
+
+/* ── Masthead ───────────────────────────────────────────────────────────
+   Title -> byline tight, byline -> identity meta looser, then a hairline,
+   then a second (stats) meta line, then .rule-strong closes the block — an
+   internal hierarchy instead of one uniform stack. */
+.fic-masthead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-bottom: var(--sp-5);
+}
+/* Title row: the display title left, the seal anchored at its shoulder —
+   the score is the masthead's second voice, never the metadata strip's
+   nth item (REDESIGN-SPEC §5.1). */
+.fic-masthead-titlerow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-5);
+}
+.fic-masthead-titlerow .seal {
+  flex: none;
+  /* Flush with the display title's cap line, not nudged toward its baseline —
+     the seal reads as anchoring the masthead's top-right corner. */
+}
+/* Byline: the fiction voice, italic, quiet — directly under the title. */
+.fic-byline--masthead {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--text-body);
+  color: var(--ink-mute);
+}
+.fic-masthead-identity {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+}
+.fic-masthead .meta-list--stats {
+  margin-top: 0.3rem;
+}
+
+/* ── Two-column layout (>=1200px only) ──────────────────────────────────
+   Below 1200px the page-wide column alone (720-1160px) leaves too little
+   room for a sidecar without dropping the reading measure under ~55ch
+   (measured live: see the qa script's MEASURE probe) — so the split only
+   engages at the width the spec math requires. */
+.fic-page-grid {
+  display: block;
+}
+.fic-page-body {
+  min-width: 0;
+}
+.fic-page-sidecar {
+  margin-top: var(--sp-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+@media (min-width: 1200px) {
+  .fic-page-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: var(--sp-10);
+    align-items: start;
+  }
+  .fic-page-sidecar {
+    margin-top: 0;
+    position: sticky;
+    /* Clears the masthead's own top padding so the sidecar doesn't crowd
+       the viewport edge while pinned. */
+    top: var(--sp-6);
+  }
+}
+
+/* ── Summary ─────────────────────────────────────────────────────────── */
+.fic-summary-block {
+  max-width: 65ch; /* spec floor: reading measure, not the shared 68ch (F025) */
+}
+
+/* ── Stats ledger (sidecar) ──────────────────────────────────────────────
+   Label column in .eyebrow (ledger furniture budget, REDESIGN-SPEC §1.3),
+   value column right-aligned tabular. Kudos is the one number the product
+   exists to produce a reader trusts, so it gets --ink-strong + one size up
+   (REDESIGN-SPEC §5.2). */
+.fic-ledger {
+  border-top: 1px solid var(--line);
+}
+.fic-ledger-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.fic-ledger-label {
+  /* .eyebrow already sets family/size/weight/caps/tracking/color; this is
+     the layout half only. */
+  flex: none;
+}
+.fic-ledger-value {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--ink-strong);
+  text-align: right;
+}
+.fic-ledger-value .null-dash {
+  font-weight: 400;
+}
+.fic-ledger-row--kudos .fic-ledger-value {
+  font-size: var(--text-lg);
+}
+.fic-ledger-cta {
+  margin-top: var(--sp-2);
+}
+/* Below the two-column break the CTA sits content-sized under the stacked
+   ledger, not stretched to a stray full-width block (REDESIGN-SPEC §5.2). */
+.fic-ledger-cta .button-link {
+  width: max-content;
+}
+@media (min-width: 1200px) {
+  .fic-ledger-cta .button-link {
+    width: 100%;
+  }
+}
+
+/* ── FicModal (REDESIGN-SPEC §5.5) ───────────────────────────────────────
+   Fic quick-view gets a heavier head rule and a bigger serif title than the
+   generic Modal default, plus the seal riding beside it. */
+.modal[data-variant="fic"] .modal-head {
+  padding-bottom: var(--sp-4);
+  border-bottom-width: 1.5px;
+  border-bottom-color: var(--ink-strong);
+}
+.modal[data-variant="fic"] .modal-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+.fic-modal-titlerow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.fic-modal-titlerow .modal-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.fic-modal-titlerow .seal {
+  flex: none;
+}
+
+/* ── Skeleton (mirrors the masthead + two-column layout, F156) ─────────── */
+.fic-skel-masthead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: var(--sp-5);
+}
+.fic-skel-titlerow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-5);
+}
+.fic-skel-identity {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 0.5rem;
+}
+.fic-skel-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.fic-skel-stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.fic-skel-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+@media (max-width: 480px) {
+  .fic-skel-identity {
+    flex-wrap: wrap;
+  }
+}

@@ -4,9 +4,27 @@ import {
   PIPELINE_STAGES,
   type Fic,
   type SearchStreamEvent,
+  type SearchWithVariantsResponse,
 } from "@/lib/contracts";
 import { BackendCallError, backendFetch } from "@/lib/server/backend";
 import { bearerFrom } from "@/lib/server/forward";
+
+// The backend stores and returns platforms lowercased ("ao3" / "ffn" /
+// "wattpad") because the currently-deployed old frontend depends on that exact
+// form. THIS frontend's contract is the display casing ("AO3" / "FFN" /
+// "Wattpad") — slice ordering, ficId prefixes, badges, and favicon links all
+// key off it — so the proxy is the seam that canonicalizes. When the old
+// frontend is retired, move this into the backend response and delete it here.
+const PLATFORM_DISPLAY: Record<string, string> = {
+  ao3: "AO3",
+  ffn: "FFN",
+  wattpad: "Wattpad",
+};
+
+function canonicalFic(fic: Fic): Fic {
+  const display = PLATFORM_DISPLAY[fic.platform?.toLowerCase?.() ?? ""];
+  return display && display !== fic.platform ? { ...fic, platform: display } : fic;
+}
 
 export const dynamic = "force-dynamic";
 // The backend search runs a multi-stage LLM + vector pipeline and can take many
@@ -40,6 +58,7 @@ export async function GET(req: NextRequest) {
   const fandom = url.searchParams.get("fandom") ?? "";
   const limit = url.searchParams.get("limit") ?? "20";
   const strict = url.searchParams.get("strict") ?? "false";
+  const includeVariants = url.searchParams.get("include_variants") === "true";
   const token = bearerFrom(req);
 
   const encoder = new TextEncoder();
@@ -73,12 +92,23 @@ export async function GET(req: NextRequest) {
       const startedAt = Date.now();
       try {
         const backendQs = new URLSearchParams({ q, fandom, limit, strict });
+        if (includeVariants) backendQs.set("include_variants", "true");
         const res = await backendFetch(`/search?${backendQs.toString()}`, {
           token,
           timeoutMs: 115_000,
           signal: upstreamController.signal,
         });
-        const fics = (await res.json()) as Fic[];
+        // Capture the correlation id before consuming the body, so a successful
+        // search carries it for support debugging the same way errors do.
+        const requestId = res.headers.get("x-request-id") ?? undefined;
+        // Plain searches return a bare Fic[]; variant searches return
+        // { results, variants }. Discriminate on the shape, not on our own
+        // request flag, so a backend that ignores the flag degrades cleanly.
+        const payload = (await res.json()) as Fic[] | SearchWithVariantsResponse;
+        const fics = (Array.isArray(payload) ? payload : payload.results).map(canonicalFic);
+        const variants = Array.isArray(payload)
+          ? undefined
+          : payload.variants?.map((v) => ({ ...v, fics: v.fics.map(canonicalFic) }));
 
         // Mark every stage done before delivering the result.
         for (const stage of PIPELINE_STAGES) {
@@ -89,6 +119,8 @@ export async function GET(req: NextRequest) {
           fics,
           count: fics.length,
           elapsed_ms: Date.now() - startedAt,
+          request_id: requestId,
+          ...(variants ? { variants } : {}),
         });
       } catch (err) {
         if (err instanceof BackendCallError) {

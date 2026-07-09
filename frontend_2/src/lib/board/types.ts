@@ -1,12 +1,11 @@
 /**
- * board/types.ts — the domain model for the canvas board.
+ * board/types.ts — the domain model for the board VIEW.
  *
- * The board is a spatial workspace of result TABLES. Its single source of truth
- * is a list of `SearchResultGroup` (one per search you run or seed). How those
- * groups become on-screen table nodes is NOT hardcoded — a swappable
- * `SplitStrategy` maps one group to N `NodePart`s (one combined table, or one
- * per platform, or one per rewritten HyDE prompt, …). Keeping the split behind
- * this interface is what lets the board be "dynamic": adding a new way to slice a
+ * The board is how ONE search's results are shown on /results: its result set is
+ * sliced into on-screen table nodes by a swappable `SplitStrategy`, which maps
+ * the search (`SearchResultGroup`) to N `NodePart`s — one combined table, or one
+ * per platform, or one per rewritten HyDE prompt. Keeping the split behind this
+ * interface is what lets the board be "dynamic": adding a new way to slice a
  * search is just registering another strategy (see ./strategies.ts).
  *
  * Dependency-free except for the wire contracts, so it can be imported anywhere.
@@ -52,8 +51,11 @@ export interface NodeBadge {
 export interface NodePart {
   /** Unique within its group; combined with the group id to form the node id. */
   partKey: string;
+  /** What this slice IS (platform name, "Rewrite 2", …) — the /results header
+   *  already names the search, so parts never repeat the query. */
   title: string;
-  subtitle?: string;
+  /** Optional secondary line, e.g. the full rewritten prompt for a variant. */
+  detail?: string;
   badge?: NodeBadge;
   fics: Fic[];
 }
@@ -64,18 +66,4 @@ export interface SplitStrategy {
   label: string;
   description: string;
   split: (group: SearchResultGroup) => NodePart[];
-}
-
-/**
- * The `data` payload carried by each React Flow node. React Flow requires node
- * data to be a `Record<string, unknown>`, hence the index signature.
- */
-export interface TableNodeData {
-  groupId: string;
-  title: string;
-  subtitle?: string;
-  badge?: NodeBadge;
-  fics: Fic[];
-  origin: "live" | "seed";
-  [key: string]: unknown;
 }

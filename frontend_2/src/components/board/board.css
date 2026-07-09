@@ -1,74 +1,128 @@
 /*
- * board.css — canvas board theme (skeleton-neutral, per frontend convention).
- * Categorical accents (platform / variant) are the only color; everything else
- * is the neutral paper/ink palette so this layers cleanly under the real design.
+ * board.css — the board VIEW (one search's results, sliced onto a small canvas),
+ * embedded inside /results. Built on the Ficwell Ink. design system tokens in
+ * globals.css (paper, ink, line, accent, tone and shadow tokens) — no hardcoded colors.
+ * Structural layout (980px slice width, vertical stack, react-flow overrides,
+ * ghost-loading shape) is unchanged from the skeleton; only the paint moved
+ * onto var(--*).
  */
 
 .board-root {
-  position: fixed;
-  inset: 0;
-  background: #f4f3ee;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* Transparent: the canvas IS the page surface (no window). The Cross grid
+     (registration marks) is the only spatial cue. */
+  background: transparent;
 
-  --tone-ao3: #b3261e;
-  --tone-ffn: #2b5fb3;
-  --tone-wattpad: #c25e12;
-  --tone-variant: #6b4bb0;
-  --tone-all: #5a5a54;
-
-  --board-ink: #1c1c1a;
-  --board-muted: #6b6a63;
-  --board-line: #d9d7cc;
-  --board-surface: #ffffff;
-  --board-surface-2: #faf9f5;
+  /* Board accent = the app's seal color, not a local blue (F172). */
+  --board-accent: var(--accent);
+  /* REDESIGN-SPEC §4.1: react-flow's background pattern reads this custom
+     property (not `color`) from the nearest ancestor that sets it — the old
+     `.react-flow__background { color: var(--line-mid) }` below set the WRONG
+     property on the wrong element (an inherited `color:` keyword, which the
+     pattern's SVG fill never consults). Setting the actual var here is what
+     makes the grid warm instead of react-flow's stock slate gray. Verified via
+     computed getComputedStyle in devtools, not assumed. */
+  --xy-background-pattern-color: var(--line-mid);
 }
 
-/* React Flow surface + dot grid */
-.board-root .react-flow {
-  background: #f4f3ee;
-}
-.board-root .react-flow__background {
-  color: #dad8cd;
-}
-
-/* ─── Node card ─────────────────────────────────────────────────────────── */
-.bnode {
-  width: 560px;
-  background: var(--board-surface);
-  border: 1px solid var(--board-line);
-  border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 28px -18px rgba(0, 0, 0, 0.35);
+/* Embedded in the results page: NO border, NO panel background — integrated
+   with the page. overflow clip only so panned nodes don't bleed into the rest
+   of the page. Parent (.results-board) sets the size. */
+.board-root.is-embedded {
   overflow: hidden;
-  font-size: 0.85rem;
-  color: var(--board-ink);
-  --accent: var(--tone-all);
-  animation: bnode-in 240ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
-.bnode[data-tone="ao3"] { --accent: var(--tone-ao3); }
-.bnode[data-tone="ffn"] { --accent: var(--tone-ffn); }
-.bnode[data-tone="wattpad"] { --accent: var(--tone-wattpad); }
-.bnode[data-tone="variant"] { --accent: var(--tone-variant); }
 
+.board-root .react-flow {
+  background: transparent;
+}
+
+/* ─── Slice node (one table) ────────────────────────────────────────────── */
+.bnode {
+  /* Compact column-width sum (960px, see COL_WIDTH_COMPACT in ResultsTable.tsx)
+     + the scroll area's reserved scrollbar gutter + borders: every column
+     visible at 100% zoom, zero horizontal scroll — including on Windows-style
+     ~17px scrollbars when a tall slice scrolls vertically. */
+  width: 980px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
+  font-size: var(--text-sm);
+  color: var(--ink);
+  --accent-tone: var(--tone-all);
+  animation: bnode-in 240ms var(--ease-out-strong) both;
+  /* Hover/drag lift (react-flow owns the wrapper's position transform; .bnode
+     inside is free to transform). */
+  transition: transform var(--t-fast) var(--ease-out),
+    box-shadow var(--t-med) var(--ease-out);
+}
+/* Hovering a resting slice lifts it a touch — the card body reacts, not just
+   the grip. Stands down while dragging so the two never fight over transform. */
+.react-flow__node:not(.dragging) .bnode:hover:not(.is-selected) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3);
+}
+/* The signature "lift off the table" moment for the board's drag interaction. */
+.react-flow__node.dragging .bnode {
+  transform: scale(1.015);
+  box-shadow: var(--shadow-4);
+}
+.bnode[data-tone="ao3"] { --accent-tone: var(--tone-ao3); }
+.bnode[data-tone="ffn"] { --accent-tone: var(--tone-ffn); }
+.bnode[data-tone="wattpad"] { --accent-tone: var(--tone-wattpad); }
+.bnode[data-tone="variant"] { --accent-tone: var(--tone-variant); }
+
+/* Selection: a full outline in the slice's own tone, so "which table did I
+   pick up" and "which platform is it" read as one signal. (A vermilion-tick
+   variant was tried in the Second Impression pass and rolled back by owner
+   preference: the per-tone full border is the selection language here.) */
 .bnode.is-selected {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--accent-tone);
   outline-offset: 2px;
+}
+
+.board-root .react-flow__node:focus-visible,
+.board-root .react-flow__node.selectable:focus-visible {
+  outline: 2px solid var(--board-accent);
+  outline-offset: 3px;
+  border-radius: var(--r-lg);
 }
 
 .bnode__grip {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
   padding: 0.5rem 0.625rem;
-  background: var(--board-surface-2);
-  border-bottom: 1px solid #ececE3;
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--line);
   cursor: grab;
+  transition: background var(--t-fast) ease;
 }
 .bnode__grip:active {
   cursor: grabbing;
 }
+/* Grip lifts to paper-3 on hover so the drag affordance reads before the
+   pointer commits (REDESIGN-SPEC §4.4 — matches .bnode__btn's same paper-3
+   convention). */
+.bnode__grip:hover {
+  background: var(--paper-3);
+}
+/* Drag-grip icon: ink-mute reads at ~4.5:1 on the paper-2 header — well past
+   the 3:1 non-text-UI floor the unicode glyph missed (F170). Brightens to
+   ink-strong on the same hover so the whole grip reads as "liftable". */
 .bnode__dots {
-  color: #b9b7ad;
-  font-size: 0.95rem;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ink-mute);
+  flex: none;
+  margin-top: 1px;
+  transition: color var(--t-fast) ease;
+}
+.bnode__grip:hover .bnode__dots {
+  color: var(--ink-strong);
 }
 .bnode__titles {
   flex: 1;
@@ -86,255 +140,377 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.bnode__sub {
-  color: var(--board-muted);
-  font-size: 0.72rem;
-  white-space: nowrap;
+.bnode__detail {
+  color: var(--ink-mute);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  margin-top: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 1px;
 }
 .bnode__badge {
   flex: none;
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   line-height: 1.5;
   padding: 0 0.4rem;
-  border-radius: 999px;
-  color: var(--accent);
+  border-radius: var(--r-pill);
+  color: var(--accent-tone);
   border: 1px solid currentColor;
+  font-variant-numeric: tabular-nums;
 }
 .bnode__actions {
   display: flex;
   gap: 0.1rem;
 }
+/* Icon-only collapse button: a faint resting fill so it reads as a control
+   before the pointer ever lands on it, not only on hover (F181). */
 .bnode__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none;
-  background: transparent;
-  color: var(--board-muted);
+  background: color-mix(in oklab, var(--ink) 5%, transparent);
+  color: var(--ink-mute);
   width: 1.5rem;
   height: 1.5rem;
-  border-radius: 6px;
+  border-radius: var(--r-sm);
   cursor: pointer;
-  font-size: 0.8rem;
-  line-height: 1;
+  transition: background var(--t-fast) ease, color var(--t-fast) ease;
 }
 .bnode__btn:hover {
-  background: #eceae1;
-  color: var(--board-ink);
+  background: var(--paper-3);
+  color: var(--ink-strong);
+}
+.bnode__btn:active {
+  transform: scale(0.94); /* icon-button press convention (.icon-btn) */
 }
 .bnode__btn:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--board-accent);
   outline-offset: 1px;
 }
 
-.bnode__scroll {
-  max-height: 320px;
-  overflow: auto;
+/* Collapse chevron rotates rather than swapping icon names (guarded in the
+   reduced-motion block below, which follows this rule so it wins). */
+.bnode__btn .icon {
+  transition: transform var(--t-fast) var(--ease-out);
 }
-.bnode__empty {
-  padding: 1rem;
-  color: var(--board-muted);
-  font-size: 0.8rem;
+.bnode__btn[aria-expanded="false"] .icon {
+  transform: rotate(-90deg);
 }
-
 @keyframes bnode-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .bnode {
-    animation: none;
+  .bnode { animation: none; transition: none; }
+  .react-flow__node:not(.dragging) .bnode:hover:not(.is-selected),
+  .react-flow__node.dragging .bnode { transform: none; }
+  .bswitch__btn.is-active { animation: none; }
+  .bnode__btn .icon { transition: none; }
+  .bnode__btn:active,
+  .bswitch__btn:active,
+  .board-root .react-flow__controls-button:active { transform: none; }
+}
+@media (pointer: coarse) {
+  .bswitch__btn { min-height: 2.5rem; }
+  .bnode__btn { width: 2rem; height: 2rem; }
+}
+
+/* "≤720px: Board segment hidden (Cards/Table only)" lives with the segment
+   itself: ResultsView.tsx marks the button `.seg-btn--board` and results.css
+   hides it inside its 720px block. Nothing to do here. */
+
+/* ─── Board view shell: switcher row (page flow) + canvas below ─────────── */
+.bview {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  gap: 0.5rem;
+}
+
+/* Single-slice case (REDESIGN-SPEC §4.3): exactly one part means there is
+   nothing to pan or compare, so the pan/zoom canvas is pure overhead — render
+   the one table in normal page flow instead. `.bnode`'s own paint (surface,
+   border, shadow-2, radius) still applies via the shared class; only the
+   react-flow chrome (canvas height, Controls, Background) is skipped. */
+.bview--single {
+  height: auto;
+  overflow: visible;
+}
+.bview--single .bnode {
+  width: 100%;
+  max-width: 100%;
+  animation: none; /* page content, not a canvas node dropping in */
+}
+.bview__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: none;
+  /* The three nowrap switcher buttons can't shrink — wrap the hint to a second
+     line on narrow screens instead of overflowing the bar. */
+  flex-wrap: wrap;
+}
+.bview .board-root {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+/* "N more slices below" (REDESIGN-SPEC §4.4): pinned to the canvas's bottom
+   edge in page flow (a thin strip OVER the canvas, not inside react-flow's own
+   layer), so it survives pan/zoom instead of scrolling away with the nodes it
+   is describing. Clicking smooth-pans to the next slice; the paper backdrop
+   matches the controls' treatment so both float on the same visual layer. */
+.bview__more {
+  position: absolute;
+  left: 50%;
+  bottom: var(--sp-3);
+  transform: translateX(-50%);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: color-mix(in oklab, var(--surface) 92%, transparent);
+  backdrop-filter: blur(4px);
+  box-shadow: var(--shadow-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background var(--t-fast) ease, transform var(--t-fast) ease;
+}
+.bview__more:hover {
+  background: var(--paper-3);
+}
+.bview__more:active {
+  transform: translateX(-50%) translateY(1px);
+}
+.bview__more:focus-visible {
+  outline: 2px solid var(--board-accent);
+  outline-offset: 2px;
+}
+.bview__more .icon {
+  color: var(--ink-mute);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bview__more:active {
+    transform: translateX(-50%);
   }
 }
 
-/* ─── Top-left toolbar ──────────────────────────────────────────────────── */
-.btoolbar {
-  width: 280px;
-  background: var(--board-surface);
-  border: 1px solid var(--board-line);
-  border-radius: 10px;
-  padding: 0.6rem 0.7rem;
-  box-shadow: 0 10px 28px -18px rgba(0, 0, 0, 0.35);
-  color: var(--board-ink);
+/* Segmented control (mirrors .seg/.seg-btn's values) — a page control, not a
+   floating window. Active tab gets a real accent-adjacent distinction, not
+   just a shadow (F171). */
+.bswitch__seg {
+  display: inline-flex;
+  gap: 2px;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 2px;
 }
-.btoolbar__brand {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  margin-bottom: 0.55rem;
-}
-.btoolbar__mark {
-  color: var(--board-muted);
-}
-.btoolbar__seg {
-  display: flex;
-  gap: 0.2rem;
-  background: #f1efe8;
-  border-radius: 8px;
-  padding: 0.2rem;
-}
-.btoolbar__segbtn {
-  flex: 1;
+.bswitch__btn {
   border: none;
   background: transparent;
-  border-radius: 6px;
-  padding: 0.32rem 0.3rem;
-  font-size: 0.72rem;
+  border-radius: calc(var(--r-sm) - 2px);
+  padding: 0.26rem 0.7rem;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
   cursor: pointer;
-  color: #55544e;
+  color: var(--ink-mute);
+  white-space: nowrap;
+  transition: background var(--t-fast) ease, color var(--t-fast) ease,
+    box-shadow var(--t-fast) ease;
 }
-.btoolbar__segbtn:hover {
-  color: var(--board-ink);
+.bswitch__btn:hover {
+  color: var(--ink-strong);
 }
-.btoolbar__segbtn.is-active {
-  background: var(--board-surface);
-  color: var(--board-ink);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+.bswitch__btn:active {
+  transform: translateY(1px); /* same press travel as .seg-btn */
+}
+.bswitch__btn.is-active {
+  background: var(--surface);
+  color: var(--ink-strong);
+  box-shadow: var(--shadow-1), inset 0 0 0 1px var(--accent-wash);
   font-weight: 600;
+  /* Switching slicing registers as a small click, not a flat swap. */
+  animation: enter-pop 160ms var(--ease-out-strong) both;
 }
-.btoolbar__hint {
-  margin: 0.45rem 0 0;
-  font-size: 0.72rem;
-  color: var(--board-muted);
-  line-height: 1.45;
-}
-.btoolbar__meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 0.55rem;
-  font-size: 0.72rem;
-  color: var(--board-muted);
-}
-.btoolbar__links {
-  display: flex;
-  gap: 0.5rem;
-}
-.btoolbar__link {
-  border: none;
-  background: transparent;
-  color: var(--tone-ffn);
-  font: inherit;
-  cursor: pointer;
-  padding: 0;
-}
-.btoolbar__link:disabled {
-  color: #b9b7ad;
-  cursor: default;
-}
-
-/* ─── Bottom search dock ────────────────────────────────────────────────── */
-.bdock {
-  width: min(760px, 92vw);
-  background: var(--board-surface);
-  border: 1px solid var(--board-line);
-  border-radius: 12px;
-  padding: 0.55rem;
-  box-shadow: 0 12px 32px -18px rgba(0, 0, 0, 0.4);
-}
-.bdock__row {
-  display: flex;
-  gap: 0.4rem;
-}
-.bdock input {
-  border: 1px solid #d0cec5;
-  border-radius: 8px;
-  padding: 0.5rem 0.6rem;
-  font: inherit;
-  background: var(--board-surface);
-  color: var(--board-ink);
-}
-.bdock input:focus-visible {
-  outline: 2px solid var(--tone-ffn);
-  outline-offset: 1px;
-}
-.bdock__q {
-  flex: 1;
+.bswitch__hint {
+  font-size: var(--text-sm);
+  color: var(--ink-mute);
+  line-height: 1.4;
   min-width: 0;
-}
-.bdock__fandom {
-  width: 150px;
-  flex: none;
-}
-.bdock__go {
-  border: none;
-  border-radius: 8px;
-  background: var(--board-ink);
-  color: #fff;
-  padding: 0.5rem 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
-}
-.bdock__go:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-.bdock__seed {
-  border: 1px solid #d0cec5;
-  border-radius: 8px;
-  background: #f5f4ef;
-  color: #2b2b29;
-  padding: 0.5rem 0.7rem;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.bdock__seed:disabled {
-  opacity: 0.55;
-  cursor: default;
-}
-.bdock__stages {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.45rem;
-  font-size: 0.72rem;
-}
-.bdock__stage {
-  color: #a3a299;
-}
-.bdock__stage.is-active {
-  color: var(--tone-ffn);
-  font-weight: 600;
-}
-.bdock__stage.is-done {
-  color: #3b7d3b;
-}
-.bdock__err {
-  margin-top: 0.4rem;
-  color: var(--tone-ao3);
-  font-size: 0.78rem;
 }
 
-/* ─── React Flow chrome polish ──────────────────────────────────────────── */
-.board-root .react-flow__minimap {
-  background: var(--board-surface);
-  border: 1px solid var(--board-line);
-  border-radius: 8px;
-}
+/* ─── React Flow chrome ─────────────────────────────────────────────────── */
+/* Paper backdrop (REDESIGN-SPEC §4.5): a translucent wash of the same surface
+   the slices are printed on, softened with a blur, so the controls read as
+   part of the print shop rather than a floating app widget. */
 .board-root .react-flow__controls {
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   overflow: hidden;
-  box-shadow: 0 10px 28px -18px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-3);
+  background: color-mix(in oklab, var(--surface) 92%, transparent);
+  backdrop-filter: blur(4px);
 }
 .board-root .react-flow__controls-button {
-  background: var(--board-surface);
-  border-bottom: 1px solid var(--board-line);
-  color: var(--board-ink);
+  background: transparent;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  fill: currentColor;
+  transition: background var(--t-fast) ease, transform var(--t-fast) var(--ease-out);
 }
 .board-root .react-flow__controls-button:hover {
-  background: #eceae1;
+  background: var(--paper-3);
+}
+/* The zoom/fit controls get the same press-scale every other icon button has. */
+.board-root .react-flow__controls-button:active {
+  transform: scale(0.94);
 }
 .board-root .react-flow__attribution {
   background: transparent;
-  font-size: 0.6rem;
+  color: var(--ink-faint);
+  font-size: var(--text-xs);
+}
+
+/* ─── Stitch-style loading: blurred ghost of the board + status ───────────
+   Integrated like the board itself: no border, no panel background — just the
+   blurred shape of the coming layout on the page, with one crisp status line. */
+.bload {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 60vh;
+  background: transparent;
+  overflow: hidden;
+}
+.bload__ghosts {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column; /* mirrors the board's vertical slice stack */
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 2rem;
+  filter: blur(7px);
+  opacity: 0.6;
+  -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent);
+  mask-image: linear-gradient(180deg, #000 55%, transparent);
+}
+.bload__card {
+  flex: none;
+  width: min(980px, 92%);
+  height: 240px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-2);
+  padding: 0.9rem;
+}
+.bload__cardhead {
+  height: 26px;
+  border-radius: var(--r-sm);
+  background: var(--paper-3);
+  margin-bottom: 1rem;
+}
+.bload__row {
+  height: 18px;
+  border-radius: var(--r-sm);
+  margin-bottom: 0.7rem;
+  background: linear-gradient(
+    90deg,
+    var(--paper-3) 0%,
+    color-mix(in oklab, var(--paper-3) 40%, var(--surface)) 40%,
+    var(--paper-3) 80%
+  );
+  background-size: 200% 100%;
+  animation: bload-shimmer 1.4s ease-in-out infinite;
+}
+.bload__status {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: min(360px, 80%);
+  text-align: center;
+}
+/* The hanko leads the status block: the brand doing the work, not a generic
+   ring (the progress fill below is the live indicator). Sized up from the
+   sidebar scale; .stamp-in (globals.css) gives it the one-time settle. */
+.bload__hanko {
+  font-size: 22px;
+}
+/* Status title: serif, the reading voice, matching .pipeline-title (item 5). */
+.bload__label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--ink-strong);
+}
+.bload__dots {
+  display: inline-flex;
+  gap: 3px;
+}
+.bload__dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ink-mute);
+  animation: bload-blink 1.2s ease-in-out infinite;
+}
+.bload__dots i:nth-child(2) { animation-delay: 0.2s; }
+.bload__dots i:nth-child(3) { animation-delay: 0.4s; }
+.bload__track {
+  width: 100%;
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--paper-3);
+  overflow: hidden;
+}
+.bload__cancel {
+  margin-top: 0.35rem;
+}
+.bload__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--board-accent);
+  transition: width 280ms var(--ease-out-strong);
+}
+
+@keyframes bload-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+@keyframes bload-blink {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bload__row,
+  .bload__dots i,
+  .bload__hanko {
+    animation: none;
+  }
 }

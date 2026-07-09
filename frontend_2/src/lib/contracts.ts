@@ -30,13 +30,19 @@ export type Platform = "AO3" | "FFN" | "Wattpad" | (string & {});
 // read platform-native fields; see lib/results/meta.ts for normalized accessors
 // that hide the per-platform shape from the UI.
 
-/** AO3 work-blurb metadata. */
+/** AO3 metadata (mirror of backend AO3Meta). List blurbs give a lumped view; the
+ *  work-page backfill fills the separated tag taxonomy, series, collections, and
+ *  published date. */
 export interface AO3Meta {
   type: "ao3";
   author: string | null; // co-authors joined with ", "
   rating: string | null; // General Audiences / Teen / Mature / Explicit / Not Rated
-  category: string[]; // M/M, F/M, Gen, ...
+  categories: string[]; // F/F, F/M, Gen, M/M, Multi, Other
   warnings: string[]; // archive warnings
+  fandoms: string[];
+  relationships: string[]; // ship tags, e.g. "Harry Potter/Draco Malfoy"
+  characters: string[];
+  freeforms: string[]; // additional / freeform tags
   language: string | null;
   chapters: string | null; // "5/12" (posted/total); "?" total ⇒ WIP
   complete: boolean | null;
@@ -44,7 +50,10 @@ export interface AO3Meta {
   hits: number | null;
   bookmarks: number | null;
   comments: number | null;
+  published: string | null; // work page only
   updated: string | null; // last-updated date as shown on the blurb
+  series: string[]; // work page only — "Series Name (3 of 5)"
+  collections: string[]; // work page only
 }
 
 /** FanFiction.Net z-list row metadata. */
@@ -64,16 +73,21 @@ export interface FFNMeta {
   published: string | null;
 }
 
-/** Wattpad v4 search-API metadata. */
+/** Wattpad v4 search-API metadata (mirror of backend WattpadMeta). */
 export interface WattpadMeta {
   type: "wattpad";
   author: string | null;
+  author_username: string | null;
+  author_followers: number | null;
   mature: boolean | null;
   complete: boolean | null;
   parts: number | null;
   votes: number | null;
   reads: number | null;
   comments: number | null;
+  cover: string | null; // cover image URL — Wattpad-only
+  language: string | null; // language.name
+  published: string | null; // firstPublishedPart.createDate
   updated: string | null; // lastPublishedPart.createDate
 }
 
@@ -96,6 +110,24 @@ export interface Fic {
   /** 0–100 when the LLM ranker scored it; null when it omitted the fic. */
   match_score: number | null;
   match_reason: string | null;
+}
+
+/**
+ * One pre-fusion retrieval list: how a single query variant (the raw query or
+ * one HyDE rewrite) ranks the corpus before RRF fusion + LLM re-ranking.
+ * Returned only when the search asked for variants (`include_variants=true`).
+ * Mirror of backend api.py `SearchVariant`.
+ */
+export interface SearchVariant {
+  key: string; // "raw" | "hyde-1" | "hyde-2" | "hyde-3"
+  label: string; // the exact prompt text this list was retrieved with
+  fics: Fic[];
+}
+
+/** Shape of GET /search?include_variants=true (plain Fic[] otherwise). */
+export interface SearchWithVariantsResponse {
+  results: Fic[];
+  variants: SearchVariant[];
 }
 
 /** One entry from GET /fandoms. */
@@ -150,7 +182,20 @@ export interface SearchParams {
   fandom: string;
   limit?: number;
   strict?: boolean;
+  /**
+   * Ask the backend for its pre-fusion per-variant retrieval lists alongside
+   * the merged results (the board's "by rewritten prompt" split). Not part of
+   * the cache/history identity of a search — see resultsCache.searchKey.
+   */
+  includeVariants?: boolean;
 }
+
+/**
+ * Default result cap requested from the backend when `SearchParams.limit` is
+ * unset. The backend accepts 1–100 (api.py); we request this many. Shared so the
+ * request and the "showing top N" UI note can't drift apart.
+ */
+export const DEFAULT_SEARCH_LIMIT = 20;
 
 // ───────────────────────────────────────────────────────────────────────────
 // 3. The SSE pipeline protocol
@@ -188,7 +233,15 @@ export const STAGE_LABELS: Record<PipelineStageId, string> = {
 /** Discriminated union of everything the /api/search SSE stream can emit. */
 export type SearchStreamEvent =
   | { type: "stage"; stage: PipelineStageId; status: StageStatus; at: number }
-  | { type: "result"; fics: Fic[]; count: number; elapsed_ms: number }
+  | {
+      type: "result";
+      fics: Fic[];
+      count: number;
+      elapsed_ms: number;
+      request_id?: string; // backend X-Request-ID, for support correlation
+      /** Pre-fusion per-variant lists — present only when the search asked for them. */
+      variants?: SearchVariant[];
+    }
   | {
       type: "error";
       message: string;

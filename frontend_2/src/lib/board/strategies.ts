@@ -5,14 +5,17 @@
  * nodes (`NodePart[]`). This is the swap point the board is designed around:
  *   - combined     → one table, everything ranked together.
  *   - by-platform  → one table per source database (AO3 / FFN / Wattpad).
- *   - by-variant   → one table per rewritten HyDE prompt we vectorize with.
+ *   - by-variant   → one table per query variant the pipeline retrieved with
+ *                    (the raw query + each HyDE rewrite), straight from the
+ *                    backend's pre-fusion lists in `group.variants`.
  * Register a new function here and it shows up in the board's strategy switcher —
  * no other code changes.
+ *
+ * Parts never repeat the search query: the /results page header already names
+ * the search; a part's title only says what the SLICE is.
  */
 import type { Fic } from "@/lib/contracts";
 import type { BadgeTone, NodePart, SplitStrategy } from "./types";
-
-const score = (f: Fic): number => f.match_score ?? -1;
 
 function platformTone(platform: string): BadgeTone {
   const p = platform.toLowerCase();
@@ -22,6 +25,21 @@ function platformTone(platform: string): BadgeTone {
   return "all";
 }
 
+/** A live search can legitimately return zero fics. Emit one placeholder part
+ *  so the slice's empty state renders instead of the search silently producing
+ *  no table at all. Keyed per strategy so switching between two empty strategies
+ *  is a structural change (fresh layout), not a stale-position carry-over. */
+function emptyPart(strategyId: string, tone: BadgeTone): NodePart[] {
+  return [
+    {
+      partKey: `${strategyId}:empty`,
+      title: "No results",
+      badge: { label: "0", tone },
+      fics: [],
+    },
+  ];
+}
+
 const combined: SplitStrategy = {
   id: "combined",
   label: "Combined",
@@ -29,11 +47,7 @@ const combined: SplitStrategy = {
   split: (g): NodePart[] => [
     {
       partKey: "all",
-      title:
-        g.params.fandom && g.params.fandom !== "All Fandoms"
-          ? g.params.fandom
-          : "All results",
-      subtitle: g.params.q,
+      title: "All results",
       badge: { label: `${g.fics.length} fics`, tone: "all" },
       fics: g.fics,
     },
@@ -43,8 +57,9 @@ const combined: SplitStrategy = {
 const byPlatform: SplitStrategy = {
   id: "by-platform",
   label: "By platform",
-  description: "One table per source database — AO3, FFN, Wattpad.",
+  description: "One table per source database: AO3, FFN, Wattpad.",
   split: (g): NodePart[] => {
+    if (g.fics.length === 0) return emptyPart("by-platform", "all");
     const order = ["AO3", "FFN", "Wattpad"];
     const buckets = new Map<string, Fic[]>();
     for (const fic of g.fics) {
@@ -60,44 +75,50 @@ const byPlatform: SplitStrategy = {
     return keys.map((platform) => ({
       partKey: `platform:${platform}`,
       title: platform,
-      subtitle: g.params.q,
       badge: { label: `${buckets.get(platform)!.length}`, tone: platformTone(platform) },
       fics: buckets.get(platform)!,
     }));
   },
 };
 
-// The 3 rewritten prompts the enhancer produces (HyDE). Real per-variant lists
-// need the backend to expose query_enhancer.semantic_descriptions retrieval
-// before RRF fusion; until then, synthesize a visibly-different demo split from
-// the merged set so the strategy is exercisable end-to-end.
-const VARIANT_LENSES: { key: string; label: string; sort: (a: Fic, b: Fic) => number }[] = [
-  { key: "literal", label: "Prompt 1 · literal phrasing", sort: (a, b) => score(b) - score(a) },
-  { key: "thematic", label: "Prompt 2 · thematic expansion", sort: (a, b) => (b.kudos ?? 0) - (a.kudos ?? 0) },
-  { key: "vibes", label: "Prompt 3 · tone / vibes", sort: (a, b) => (b.hits ?? 0) - (a.hits ?? 0) },
-];
-
 const byVariant: SplitStrategy = {
   id: "by-variant",
-  label: "By rewritten prompt",
-  description: "One table per HyDE query rewrite — how each expanded prompt ranks the shelf.",
+  label: "By prompt",
+  description:
+    "One table per query variant the pipeline retrieved with: your query, plus each rewritten prompt.",
   split: (g): NodePart[] => {
+    // Real pre-fusion lists (live /results searches request them, and seeded
+    // demos carry them). Zero total results collapses to one placeholder.
     if (g.variants?.length) {
-      return g.variants.map((v) => ({
-        partKey: `variant:${v.key}`,
-        title: v.label,
-        subtitle: g.params.q,
-        badge: { label: `${v.fics.length}`, tone: "variant" },
-        fics: v.fics,
-      }));
+      if (g.variants.every((v) => v.fics.length === 0)) return emptyPart("by-variant", "variant");
+      let rewrite = 0;
+      return g.variants.map((v) => {
+        const isRaw = v.key === "raw";
+        if (!isRaw) rewrite += 1;
+        return {
+          partKey: `variant:${v.key}`,
+          title: isRaw ? "Your query, verbatim" : `Rewrite ${rewrite}`,
+          // The full rewritten prompt; the raw list's prompt IS the query the
+          // /results page header already shows, so it carries no detail line.
+          detail: isRaw ? undefined : v.label,
+          badge: { label: `${v.fics.length}`, tone: "variant" },
+          fics: v.fics,
+        };
+      });
     }
-    return VARIANT_LENSES.map((lens) => ({
-      partKey: `variant:${lens.key}`,
-      title: lens.label,
-      subtitle: g.params.q,
-      badge: { label: `${g.fics.length}`, tone: "variant" },
-      fics: [...g.fics].sort(lens.sort),
-    }));
+    // No per-variant data on this group (e.g. restored from a cache entry saved
+    // before variants were stored). Show the merged list honestly instead of
+    // fabricating a split.
+    return [
+      {
+        partKey: "no-variants",
+        title: "Per-prompt view unavailable",
+        detail:
+          "This search was loaded without per-prompt data. Re-run it (Refresh above) to fetch one table per rewritten prompt.",
+        badge: { label: `${g.fics.length}`, tone: "variant" },
+        fics: g.fics,
+      },
+    ];
   },
 };
 

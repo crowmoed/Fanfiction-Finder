@@ -53,48 +53,63 @@ export function SettingsModal({
     tabRefs.current[id]?.focus();
   };
 
+  // A single-tab settings dialog has no navigational choice to offer — the rail
+  // and its redundant pane heading are dead chrome (F190/F197). Render the pane
+  // alone; keep the full tablist path the moment a second tab is added.
+  const singleTab = TABS.length <= 1;
+
   return (
     <Modal open={open} onClose={onClose} title="Settings" width="720px">
-      <div className="settings">
-        <nav
-          className="settings-tabs"
-          role="tablist"
-          aria-orientation="vertical"
-          aria-label="Settings sections"
-        >
-          {TABS.map((t) => {
-            const selected = t.id === active;
-            return (
-              <button
-                key={t.id}
-                ref={(el) => {
-                  tabRefs.current[t.id] = el;
-                }}
-                id={`settings-tab-${t.id}`}
-                className="settings-tab"
-                role="tab"
-                aria-selected={selected}
-                aria-controls={`settings-panel-${t.id}`}
-                tabIndex={selected ? 0 : -1}
-                onClick={() => setActive(t.id)}
-                onKeyDown={onTabKeyDown}
-              >
-                {t.label}
-              </button>
-            );
-          })}
-        </nav>
-        <section
-          className="settings-pane"
-          role="tabpanel"
-          id={`settings-panel-${activeTab.id}`}
-          aria-labelledby={`settings-tab-${activeTab.id}`}
-          tabIndex={0}
-        >
-          <h3 style={{ margin: "0 0 0.75rem" }}>{activeTab.label}</h3>
-          {activeTab.render()}
+      {singleTab ? (
+        <section aria-label={activeTab.label}>
+          {/* Only mount the pane while the modal is open. The dialog stays mounted
+              (Modal needs it for showModal), but rendering AccountPanel when closed
+              would load the Google Identity script on every page for every
+              visitor — so gate the content on `open`. */}
+          {open && activeTab.render()}
         </section>
-      </div>
+      ) : (
+        <div className="settings">
+          <nav
+            className="settings-tabs"
+            role="tablist"
+            aria-orientation="vertical"
+            aria-label="Settings sections"
+          >
+            {TABS.map((t) => {
+              const selected = t.id === active;
+              return (
+                <button
+                  key={t.id}
+                  ref={(el) => {
+                    tabRefs.current[t.id] = el;
+                  }}
+                  id={`settings-tab-${t.id}`}
+                  className="settings-tab"
+                  role="tab"
+                  aria-selected={selected}
+                  aria-controls={`settings-panel-${t.id}`}
+                  tabIndex={selected ? 0 : -1}
+                  onClick={() => setActive(t.id)}
+                  onKeyDown={onTabKeyDown}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </nav>
+          <section
+            className="settings-pane"
+            role="tabpanel"
+            id={`settings-panel-${activeTab.id}`}
+            aria-labelledby={`settings-tab-${activeTab.id}`}
+            tabIndex={0}
+          >
+            <h3 style={{ margin: "0 0 0.75rem" }}>{activeTab.label}</h3>
+            {open && activeTab.render()}
+          </section>
+        </div>
+      )}
     </Modal>
   );
 }

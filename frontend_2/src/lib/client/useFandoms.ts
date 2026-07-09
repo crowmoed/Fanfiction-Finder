@@ -9,15 +9,18 @@
  * every mount.
  */
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { ALL_FANDOMS, type FandomOption } from "@/lib/contracts";
 import { api } from "@/lib/client/api";
+import { isDemoMode, fakeFandoms } from "@/lib/demo/demoMode";
 
 interface FandomsState {
   fandoms: FandomOption[];
   loading: boolean;
   error: string | null;
+  /** Re-fetch after a failed load, bypassing the session cache (F103). */
+  retry: () => void;
 }
 
 // Session-level cache: resolved data, or the in-flight promise so concurrent
@@ -25,8 +28,11 @@ interface FandomsState {
 let cached: FandomOption[] | null = null;
 let inflight: Promise<FandomOption[]> | null = null;
 
-function loadFandoms(): Promise<FandomOption[]> {
-  if (cached) return Promise.resolve(cached);
+function loadFandoms(force = false): Promise<FandomOption[]> {
+  // Demo mode: fixed fake list, no fetch and no module cache (so exiting demo
+  // mode via reload returns to the real list cleanly).
+  if (isDemoMode()) return Promise.resolve(fakeFandoms());
+  if (cached && !force) return Promise.resolve(cached);
   if (inflight) return inflight;
   inflight = api
     .fandoms()
@@ -41,16 +47,16 @@ function loadFandoms(): Promise<FandomOption[]> {
 }
 
 export function useFandoms(): FandomsState {
-  const [state, setState] = useState<FandomsState>(() =>
+  const [state, setState] = useState<Omit<FandomsState, "retry">>(() =>
     cached
       ? { fandoms: cached, loading: false, error: null }
       : { fandoms: [{ name: ALL_FANDOMS, collected: true }], loading: true, error: null }
   );
 
-  useEffect(() => {
-    if (cached) return; // already have it — no fetch
+  const fetchAll = useCallback((force: boolean) => {
     let active = true;
-    loadFandoms()
+    setState((p) => ({ ...p, loading: true, error: null }));
+    loadFandoms(force)
       .then((fandoms) => {
         if (active) setState({ fandoms, loading: false, error: null });
       })
@@ -63,5 +69,14 @@ export function useFandoms(): FandomsState {
     };
   }, []);
 
-  return state;
+  useEffect(() => {
+    if (cached) return; // already have it — no fetch
+    return fetchAll(false);
+  }, [fetchAll]);
+
+  const retry = useCallback(() => {
+    fetchAll(true);
+  }, [fetchAll]);
+
+  return { ...state, retry };
 }

@@ -1,10 +1,11 @@
 /**
  * PlatformLink — an outbound "open on the source site" button. Pairs the site's
- * favicon with an external-link arrow (↗) inside a bordered button so it clearly
+ * favicon with an external-link arrow icon inside a bordered button so it clearly
  * reads as "this leaves the app and opens the original site", not decoration.
  */
 import type { Platform } from "@/lib/contracts";
 import { PlatformLogo, platformName } from "@/components/PlatformLogo";
+import { Icon } from "@/components/Icon";
 
 export function PlatformLink({
   url,
@@ -27,7 +28,7 @@ export function PlatformLink({
     >
       <PlatformLogo platform={platform} size={size} />
       <span className="platform-link-ext" aria-hidden>
-        ↗
+        <Icon name="arrow-up-right" size={11} />
       </span>
     </a>
   );

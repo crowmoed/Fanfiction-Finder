@@ -1,0 +1,47 @@
+/*
+ * dev.css — sidecar for the /dev/* out-of-band chrome (DevLayout).
+ *
+ * globals.css defines .dev-bar / .dev-main (base look — the dark strip + the
+ * measured content column) but ships no responsive treatment for them (unlike
+ * .sidebar/.app-main, which get a 720px breakpoint). At narrow widths the bar's
+ * "DEV / DEMOS" label + two nav links can crowd the sticky row (F208). This
+ * sidecar adds the missing layout/responsive behavior only — colors still
+ * resolve through the same var(--*) tokens the base rule in globals.css uses.
+ *
+ * REDESIGN-SPEC §7.5 (5-minute pass): the label moves to the serif display
+ * voice at a letterspaced weight instead of default bold sans, and link hover
+ * gets the one vermilion tick instead of the old white/gray swap — same
+ * "one seal, spent on commitment" discipline as everywhere else, here spent on
+ * "you are looking at the right link".
+ */
+.dev-bar strong {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+/* color + text-underline-offset already come from the base rule in
+   globals.css; this only adds the vermilion tick so it survives cascade
+   without restating a literal this file doesn't own. */
+.dev-bar a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}
+.dev-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (max-width: 520px) {
+  .dev-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.6rem 0.85rem;
+  }
+  .dev-nav {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+}

@@ -1,0 +1,10 @@
+/*
+ * saved-search-button.css — sidecar for SavedSearchButton.
+ *
+ * The seal color is spent almost exclusively on the match score and moments of
+ * commitment (DESIGN.md); following a search is one such moment, so the filled
+ * star earns vermilion while the button itself stays a plain `.btn-sm`.
+ */
+.saved-star {
+  color: var(--accent);
+}

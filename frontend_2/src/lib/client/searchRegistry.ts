@@ -33,18 +33,22 @@
 
 import {
   PIPELINE_STAGES,
+  DEFAULT_SEARCH_LIMIT,
   type Fic,
   type PipelineStageId,
   type SearchParams,
   type SearchStreamEvent,
+  type SearchVariant,
   type StageStatus,
 } from "@/lib/contracts";
-import { getToken } from "@/lib/client/token";
+import { getToken, clearTokenIfUnauthorized } from "@/lib/client/token";
 import { searchKey, cacheResults } from "@/lib/results/resultsCache";
 import { addHistory } from "@/lib/client/history";
 import { recordCheck } from "@/lib/results/savedSearches";
 import { saveFics } from "@/lib/results/ficStore";
 import { markPending, clearPending } from "@/lib/client/pendingOps";
+import { isDemoMode, fakeSearchFics, fakeVariants } from "@/lib/demo/demoMode";
+import { track } from "@vercel/analytics";
 
 export type SearchPhase = "idle" | "searching" | "done" | "error";
 
@@ -64,8 +68,12 @@ export interface SearchState {
   count: number;
   elapsedMs: number | null;
   error: SearchError | null;
+  /** Backend X-Request-ID for the delivered result set, for support correlation. */
+  requestId: string | null;
   /** The params of the in-flight / last search (handy for the UI + retry). */
   lastParams: SearchParams | null;
+  /** Pre-fusion per-variant lists — only when the op asked for includeVariants. */
+  variants: SearchVariant[] | null;
 }
 
 function initialStages(): StageState {
@@ -89,8 +97,21 @@ export const INITIAL: SearchState = {
   count: 0,
   elapsedMs: null,
   error: null,
+  requestId: null,
   lastParams: null,
+  variants: null,
 };
+
+/**
+ * Registry key for an op. Variant-requesting searches (the board) are distinct
+ * ops from plain searches of the same text — attaching a variant caller to an
+ * in-flight plain op would resolve without variants. The suffix stays LOCAL to
+ * the registry: cache / history / pending markers keep using searchKey(params),
+ * so both flavors share one cached result set.
+ */
+export function opKey(params: SearchParams): string {
+  return params.includeVariants ? `${searchKey(params)}::variants` : searchKey(params);
+}
 
 interface SearchOp {
   key: string;
@@ -105,6 +126,22 @@ interface SearchOp {
 // the op object so subscribers see a new reference and re-render.
 const ops = new Map<string, SearchOp>();
 const listeners = new Set<() => void>();
+
+// Finished ops are kept so navigating back to a search re-attaches instead of
+// re-running, but they're never otherwise deleted — so cap the registry and
+// evict the oldest *settled* (non-searching) ops. Insertion order ≈ creation
+// order (Map.set on an existing key preserves position), so we drop from the
+// front. Live searches are always kept; an evicted finished op still restores
+// from resultsCache if revisited.
+const MAX_OPS = 50;
+function pruneSettledOps(exemptKey?: string) {
+  if (ops.size <= MAX_OPS) return;
+  for (const [k, op] of ops) {
+    if (ops.size <= MAX_OPS) break;
+    if (k === exemptKey) continue;
+    if (op.state.phase !== "searching") ops.delete(k);
+  }
+}
 
 function emit() {
   listeners.forEach((l) => l());
@@ -159,7 +196,8 @@ function finalizeSuccess(
   params: SearchParams,
   fics: Fic[],
   count: number,
-  elapsedMs: number
+  elapsedMs: number,
+  variants?: SearchVariant[]
 ) {
   const op = ops.get(key);
   if (!op || op.finalized) return;
@@ -167,8 +205,11 @@ function finalizeSuccess(
   // Completion side effects, exactly once per op (no longer tied to whichever
   // component is mounted): cache the set, save each fic for its on-demand /fic
   // page, log history, and update any followed search's "new since last check".
-  cacheResults(params, fics, count, elapsedMs);
+  cacheResults(params, fics, count, elapsedMs, variants);
   saveFics(fics);
+  // Variant lists can carry fics that didn't make the merged top-N; save them
+  // too so the board's quick view → /fic/[id] path works for every row.
+  if (variants?.length) saveFics(variants.flatMap((v) => v.fics));
   addHistory(params, count);
   recordCheck(params, fics);
 }
@@ -177,9 +218,10 @@ async function runSSE(key: string, params: SearchParams, controller: AbortContro
   const qs = new URLSearchParams({
     q: params.q,
     fandom: params.fandom,
-    limit: String(params.limit ?? 20),
+    limit: String(params.limit ?? DEFAULT_SEARCH_LIMIT),
     strict: String(params.strict ?? false),
   });
+  if (params.includeVariants) qs.set("include_variants", "true");
 
   const headers = new Headers({ accept: "text/event-stream" });
   const token = getToken();
@@ -193,7 +235,7 @@ async function runSSE(key: string, params: SearchParams, controller: AbortContro
       setOpState(key, (p) => ({
         ...p,
         phase: "error",
-        error: { message: "Network error — could not start the search.", retryable: true },
+        error: { message: "Network error: could not start the search.", retryable: true },
       }));
     }
     clearPending(key);
@@ -208,6 +250,9 @@ async function runSSE(key: string, params: SearchParams, controller: AbortContro
     } catch {
       /* keep generic */
     }
+    // A rejected/expired JWT on the search proxy should drop the dead session so
+    // the auth UI flips to anonymous in place (not stay falsely "signed in").
+    clearTokenIfUnauthorized(res.status);
     setOpState(key, (p) => ({
       ...p,
       phase: "error",
@@ -239,6 +284,8 @@ async function runSSE(key: string, params: SearchParams, controller: AbortContro
                 results: ev.fics,
                 count: ev.count,
                 elapsedMs: ev.elapsed_ms,
+                requestId: ev.request_id ?? null,
+                variants: ev.variants ?? null,
               };
             case "error":
               return {
@@ -256,9 +303,10 @@ async function runSSE(key: string, params: SearchParams, controller: AbortContro
           }
         });
         if (ev.type === "result") {
-          finalizeSuccess(key, params, ev.fics, ev.count, ev.elapsed_ms);
+          finalizeSuccess(key, params, ev.fics, ev.count, ev.elapsed_ms, ev.variants);
           clearPending(key);
         } else if (ev.type === "error") {
+          if (typeof ev.status === "number") clearTokenIfUnauthorized(ev.status);
           clearPending(key);
         }
       }
@@ -278,13 +326,64 @@ async function runSSE(key: string, params: SearchParams, controller: AbortContro
   }
 }
 
+const DEMO_STAGE_GAP_MS = 550;
+
+/**
+ * Demo-mode replacement for runSSE: emit the SAME stage → result event sequence
+ * on timers with query-tailored fake data, so the real ResultsView / pipeline UI
+ * and every completion side effect (cache, history, saved, fic store) run exactly
+ * as they do against the backend — no network. Aborting the op stops the timers.
+ */
+function runSimulated(key: string, params: SearchParams, controller: AbortController) {
+  const fics = fakeSearchFics(params);
+  const variants = params.includeVariants ? fakeVariants(params, fics) : undefined;
+
+  const steps: (() => void)[] = [];
+  PIPELINE_STAGES.forEach((stage, i) => {
+    if (i > 0) {
+      const prev = PIPELINE_STAGES[i - 1];
+      steps.push(() =>
+        setOpState(key, (p) => ({ ...p, stages: { ...p.stages, [prev]: "done" } }))
+      );
+    }
+    steps.push(() =>
+      setOpState(key, (p) => ({ ...p, stages: { ...p.stages, [stage]: "active" } }))
+    );
+  });
+  // The final step marks the last stage done and delivers the result. Its index
+  // decides the elapsed time so every event stays monotonically ordered.
+  const elapsed = steps.length * DEMO_STAGE_GAP_MS;
+  steps.push(() => {
+    const last = PIPELINE_STAGES[PIPELINE_STAGES.length - 1];
+    setOpState(key, (prev) => ({
+      ...prev,
+      phase: "done",
+      stages: { ...prev.stages, [last]: "done" },
+      results: fics,
+      count: fics.length,
+      elapsedMs: elapsed,
+      requestId: "demo-request",
+      variants: variants ?? null,
+    }));
+    finalizeSuccess(key, params, fics, fics.length, elapsed, variants);
+    clearPending(key);
+  });
+
+  steps.forEach((run, i) => {
+    const id = setTimeout(() => {
+      if (!controller.signal.aborted) run();
+    }, i * DEMO_STAGE_GAP_MS);
+    controller.signal.addEventListener("abort", () => clearTimeout(id), { once: true });
+  });
+}
+
 /**
  * Start a search, or attach to one already running for the same key. Returns the
  * op key the caller should subscribe to. A live search for this exact key is NOT
  * restarted — we dedup to a single backend request and let all callers share it.
  */
 export function startSearch(params: SearchParams): string {
-  const key = searchKey(params);
+  const key = opKey(params);
   const existing = ops.get(key);
   if (existing && existing.state.phase === "searching") return key;
 
@@ -295,9 +394,22 @@ export function startSearch(params: SearchParams): string {
     controller,
     finalized: false,
   });
+  // The interrupted-search marker drives /results' "resuming…" affordance. It's
+  // keyed by searchKey (variant-agnostic), so it's marked for every search —
+  // /results now always runs variant ops, and skipping them (as the retired
+  // board once required) would leave the marker never written and resuming dead.
   markPending(params);
+  pruneSettledOps(key);
   emit();
-  void runSSE(key, params, controller);
+  if (isDemoMode()) runSimulated(key, params, controller);
+  else {
+    // Product analytics: one event per real (non-demo) search op. Fandom +
+    // variant flag only — never the query text (privacy; mirrors the backend,
+    // which also refuses to store raw queries). No-op until Analytics is
+    // enabled in the Vercel project.
+    track("search", { fandom: params.fandom, variants: Boolean(params.includeVariants) });
+    void runSSE(key, params, controller);
+  }
   return key;
 }
 
@@ -311,9 +423,10 @@ export function hydrateOp(
   params: SearchParams,
   fics: Fic[],
   count: number,
-  elapsedMs: number | null
+  elapsedMs: number | null,
+  variants?: SearchVariant[] | null
 ): string {
-  const key = searchKey(params);
+  const key = opKey(params);
   ops.get(key)?.controller?.abort();
   ops.set(key, {
     key,
@@ -325,6 +438,9 @@ export function hydrateOp(
       count,
       elapsedMs,
       lastParams: params,
+      // Restore cached per-variant lists so the board's "by rewritten prompt"
+      // slice works on a revisit, not just the first live view.
+      variants: variants ?? null,
     },
     controller: null,
     finalized: true,
@@ -332,7 +448,9 @@ export function hydrateOp(
   // Re-save the fics so their on-demand /fic/[id] pages render after a cache
   // restore too (cheap, write-through to the in-memory store).
   saveFics(fics);
+  if (variants?.length) saveFics(variants.flatMap((v) => v.fics));
   clearPending(key);
+  pruneSettledOps(key);
   emit();
   return key;
 }

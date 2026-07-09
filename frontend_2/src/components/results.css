@@ -1,0 +1,324 @@
+/*
+ * results.css — the /results surface (REDESIGN-SPEC §3).
+ *
+ * Owns: the query-as-headline block (kicker + folio + display quote + rule),
+ * its board-mode compact collapse, the refine bottom sheet at <=720px, and the
+ * per-surface overrides (table thead eyebrow, card seal/title weight) that
+ * DESIGN.md's shared classes don't carry on their own. Everything here maps to
+ * a token from globals.css — no hardcoded colors/space.
+ */
+
+/* ── Query-as-headline (page.tsx) ──────────────────────────────────────
+   Replaces the old sr-only h1 + always-editable composer: when a query
+   exists, the page reads as a masthead (kicker/folio, then the query as a
+   real, visible h1) instead of pre-search chrome. */
+.results-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.results-head__folio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4em;
+}
+/* Tabular numbers for the count/timing facts; the separators and action
+   words share the eyebrow's letterspacing so the whole line reads as one
+   register (folio furniture, not a sentence). */
+.results-head__folio .num {
+  font-variant-numeric: tabular-nums;
+}
+.results-head__folio-sep {
+  color: var(--line-strong);
+}
+.results-head__folio-action {
+  font: inherit;
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-mute);
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 0;
+  border-radius: 2px;
+}
+.results-head__folio-action:hover:not(:disabled) {
+  color: var(--accent);
+  background: none;
+  border-color: transparent;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.results-head__folio-action:disabled {
+  color: var(--ink-faint);
+  background: none;
+  border-color: transparent;
+}
+/* Fandom + strict facts, when set: quieter than the folio's live facts. */
+.results-head__scope {
+  color: var(--ink-faint);
+}
+
+.results-head__quote {
+  /* .t-display-quote sets font/size/weight; this file only positions it. */
+  max-width: 52ch;
+}
+
+/* Board mode: the masthead collapses to ONE compact strip so the fixed-
+   height workspace loses <=48px, not a full page head (REDESIGN-SPEC §3.1).
+   Query drops to serif body size, folio sits inline beside it, no rule. */
+.results-head--compact {
+  flex-direction: row;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5em 0.75em;
+}
+.results-head--compact .results-head__quote {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  color: var(--ink-strong);
+  max-width: 42ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.results-head--compact .results-head__folio {
+  font-size: 0.6875rem;
+}
+
+/* ── Boxed composer's Edit-search Cancel (REDESIGN-SPEC §3.1) ──────────
+   Only rendered when SearchForm gets an onCancel — i.e. opened via /results'
+   Edit search, where there's a headline to restore. Sits before Search in the
+   control rail so Search stays the rightmost/primary action. */
+.composer-cancel {
+  margin-left: auto;
+}
+.composer-cancel + .composer-send {
+  margin-left: 0;
+}
+
+/* ── Table thead: ledger furniture budget (REDESIGN-SPEC §1.3/§3.4) ───── */
+.xl-table thead .xl-sort,
+.xl-table thead th {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-strong);
+}
+/* Score column widened so the seal chip never clips (REDESIGN-SPEC §3.4). */
+.xl-table td:first-child,
+.xl-table th:first-child {
+  min-width: 3.5rem;
+}
+/* Row height locked so the table reads as a steady grid, not one that jumps
+   as summaries expand around it (compact seal + single-line cells budget). */
+.xl-table tbody tr {
+  height: 2.375rem; /* ~38px */
+}
+/* The link column's QuickView/PlatformLink icon buttons are the tallest thing
+   in a row (globals.css .icon-btn is 32px, a toolbar-scale control) — shrink
+   them specifically inside the dense table so the row can actually settle at
+   the locked height instead of the icon buttons forcing it past 43px. Every
+   unclassed <button> also carries a global `min-height: 2rem` floor
+   (globals.css base button rule) that a plain `height` override can't beat —
+   min-height wins over height regardless of specificity, so it must be reset
+   here too, or the box stays pinned to 32px. */
+.xl-table .icon-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  min-height: 0;
+}
+/* Title cell now leads with the Quick-view (expand) button, then the title
+   link. Flex row: the button holds its size; the link keeps its single-line
+   ellipsis (min-width:0 lets it shrink; a flex child is blockified so
+   text-overflow works). */
+.rt-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.rt-title .icon-btn {
+  flex: none;
+}
+.rt-title .title-link {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Cards: reading-order weight + scan rhythm (REDESIGN-SPEC §3.5) ────── */
+.fic-card .fic-title {
+  font-weight: 650;
+}
+.fic-card .fic-summary {
+  line-height: 1.5;
+}
+.fic-card .badge {
+  min-height: 1.5rem; /* 24px */
+}
+
+/* ── Refine: distinct fill from result cards + quiet group headers ─────── */
+.refine-pop > .card,
+.card.facet-panel {
+  background: var(--paper-2);
+}
+.facet-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.facet-group + .facet-group {
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+}
+.facet-group__label {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink-mute);
+}
+
+/* ── Refine bottom sheet (<=720px, Table/Cards only) ───────────────────
+   REDESIGN-SPEC §3.3: at narrow widths the inline/popover refine card is
+   replaced by a slide-up sheet with a scrim. Honesty rule: no drag-handle
+   unless pan-to-dismiss is actually wired (it is, below) — a handle with no
+   behavior behind it is a fake affordance. */
+.sheet-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-scrim);
+  background: color-mix(in oklab, var(--ink-strong) 32%, transparent);
+  animation: enter-fade var(--t-fast) var(--ease-out) both;
+}
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-popover);
+  max-height: min(80vh, 620px);
+  display: flex;
+  flex-direction: column;
+  background: var(--paper-2);
+  border-top: 1px solid var(--line-strong);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  box-shadow: var(--shadow-4);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  animation: sheet-in var(--t-slow) var(--ease-drawer) both;
+  touch-action: none; /* the pointer handlers below own vertical drag */
+}
+.sheet[data-closing] {
+  animation: sheet-out 160ms var(--ease-out) both;
+}
+.sheet__handle {
+  display: flex;
+  justify-content: center;
+  padding: 0.55rem 0 0.3rem;
+  cursor: grab;
+  touch-action: none;
+}
+.sheet__handle::before {
+  content: "";
+  width: 2.25rem;
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--line-strong);
+}
+.sheet__handle:active {
+  cursor: grabbing;
+}
+.sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.1rem var(--sp-5) 0.5rem;
+}
+.sheet__title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: var(--text-lg);
+  color: var(--ink-strong);
+}
+.sheet__body {
+  overflow-y: auto;
+  padding: 0 var(--sp-5) var(--sp-5);
+}
+.sheet__body > .card {
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  background: none;
+}
+/* The sheet's own header already says Refine; the panel's inner title would
+   read twice. The count/reset row beside it stays. */
+.sheet__body .facet-panel__title {
+  display: none;
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes sheet-out {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0.4;
+  }
+}
+
+@media (max-width: 720px) {
+  .results-head__quote {
+    max-width: none;
+  }
+  /* The board's 980px slices are unreadable on phones (REDESIGN-SPEC §4.6):
+     the view segment only offers Table/Cards there. An old persisted "board"
+     choice still renders (explicit toggle wins), it just can't be re-picked. */
+  .seg-btn--board {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-scrim {
+    animation: none;
+  }
+  .sheet,
+  .sheet[data-closing] {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Refine toggle chevron: rotates on open rather than swapping icon names. */
+.refine-caret {
+  display: inline-flex;
+  transition: transform var(--t-fast) var(--ease-out);
+}
+.refine-anchor button[aria-expanded="true"] .refine-caret {
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .refine-caret {
+    transition: none;
+  }
+}

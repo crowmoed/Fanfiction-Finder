@@ -6,7 +6,6 @@
  * Filtering the already-fetched candidates (platform / length / kudos / ranked)
  * happens in-memory, so it's immediate — no re-search, no backend round-trip.
  * Controlled: the parent owns FacetState and re-derives the filtered list.
- * Skeleton styling only.
  */
 import { useMemo } from "react";
 
@@ -21,10 +20,37 @@ import {
   tagsIn,
 } from "@/lib/results/facets";
 import type { RatingBucket } from "@/lib/results/meta";
+import { Icon } from "@/components/Icon";
 
 function parseNum(v: string): number | null {
   const n = Number(v.replace(/[^\d]/g, ""));
   return v.trim() === "" || Number.isNaN(n) ? null : n;
+}
+
+/** A pressable filter chip. Pressed state gets a check + the filled chip look
+ *  (globals.css `.chip[aria-pressed]`) — never font-weight alone (F126). */
+function FacetChip({
+  pressed,
+  onClick,
+  title,
+  children,
+}: {
+  pressed: boolean;
+  onClick: () => void;
+  title?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button type="button" className="chip" aria-pressed={pressed} onClick={onClick} title={title}>
+      {/* The check pops in when the chip becomes pressed (mounts → pop-in). */}
+      {pressed && (
+        <span className="pop-in" style={{ display: "inline-flex" }}>
+          <Icon name="check" size={12} />
+        </span>
+      )}
+      {children}
+    </button>
+  );
 }
 
 export function FacetFilter({
@@ -76,18 +102,24 @@ export function FacetFilter({
   };
 
   return (
-    <div className="card stack" style={{ gap: "0.6rem" }}>
+    <div className="card facet-panel stack" style={{ gap: "0.7rem" }}>
       <div className="row" style={{ justifyContent: "space-between" }}>
-        <strong>Refine</strong>
+        {/* Inside the mobile sheet the sheet's own header already says Refine
+            (results.css hides this one there); the count row stays. */}
+        <strong className="facet-panel__title">Refine</strong>
         <span className="muted">
-          {filteredCount} of {fics.length} shown
+          <span className="num">
+            {filteredCount} of {fics.length}
+          </span>{" "}
+          shown
           {facetsActive(value) && (
             <>
               {" · "}
               <button
-                style={{ padding: "0.1rem 0.4rem" }}
+                className="btn-sm btn-ghost pop-in"
                 onClick={() => onChange(EMPTY_FACETS)}
               >
+                <Icon name="refresh" size={12} />
                 Reset
               </button>
             </>
@@ -95,132 +127,119 @@ export function FacetFilter({
         </span>
       </div>
 
-      <div className="row" style={{ gap: "0.4rem" }}>
-        <span className="muted">Platform:</span>
-        {platforms.map((p) => (
-          <button
-            key={p}
-            aria-pressed={value.platforms.has(p)}
-            onClick={() => togglePlatform(p)}
-            style={{
-              padding: "0.1rem 0.5rem",
-              fontWeight: value.platforms.has(p) ? 700 : 400,
-            }}
-          >
-            {p}
-          </button>
-        ))}
+      {/* Group 1: categorical facets (REDESIGN-SPEC §3.3 — 600-weight sans
+          group labels, NOT eyebrows; hairline rules between groups). */}
+      <div className="facet-group">
+        <span className="facet-group__label">Facets</span>
+        <div className="row" style={{ gap: "0.4rem" }}>
+          <span className="muted">Platform:</span>
+          {platforms.map((p) => (
+            <FacetChip key={p} pressed={value.platforms.has(p)} onClick={() => togglePlatform(p)}>
+              {p}
+            </FacetChip>
+          ))}
+        </div>
+
+        {ratings.length > 0 && (
+          <div className="row" style={{ gap: "0.4rem" }}>
+            <span className="muted">Rating:</span>
+            {ratings.map((r) => (
+              <FacetChip key={r} pressed={value.ratings.has(r)} onClick={() => toggleRating(r)}>
+                {r}
+              </FacetChip>
+            ))}
+          </div>
+        )}
+
+        {showCompletion && (
+          <div className="row" style={{ gap: "0.4rem" }}>
+            <span className="muted">Status:</span>
+            {(
+              [
+                ["all", "All"],
+                ["complete", "Complete"],
+                ["wip", "In progress"],
+              ] as const
+            ).map(([key, label]) => (
+              <FacetChip
+                key={key}
+                pressed={value.completion === key}
+                onClick={() => onChange({ ...value, completion: key })}
+              >
+                {label}
+              </FacetChip>
+            ))}
+          </div>
+        )}
       </div>
 
-      {ratings.length > 0 && (
-        <div className="row" style={{ gap: "0.4rem" }}>
-          <span className="muted">Rating:</span>
-          {ratings.map((r) => (
-            <button
-              key={r}
-              aria-pressed={value.ratings.has(r)}
-              onClick={() => toggleRating(r)}
-              style={{
-                padding: "0.1rem 0.5rem",
-                fontWeight: value.ratings.has(r) ? 700 : 400,
-              }}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {showCompletion && (
-        <div className="row" style={{ gap: "0.4rem" }}>
-          <span className="muted">Status:</span>
-          {(
-            [
-              ["all", "All"],
-              ["complete", "Complete"],
-              ["wip", "In progress"],
-            ] as const
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              aria-pressed={value.completion === key}
-              onClick={() => onChange({ ...value, completion: key })}
-              style={{
-                padding: "0.1rem 0.5rem",
-                fontWeight: value.completion === key ? 700 : 400,
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
-
       {tags.length > 0 && (
-        <div className="stack" style={{ gap: "0.3rem" }}>
-          <span className="muted">Tags (match all):</span>
+        <div className="facet-group">
+          <span className="facet-group__label">Tags (match all)</span>
           <div className="row" style={{ gap: "0.3rem", flexWrap: "wrap" }}>
             {tags.map(({ tag, count }) => (
-              <button
+              <FacetChip
                 key={tag}
-                aria-pressed={value.tags.has(tag)}
+                pressed={value.tags.has(tag)}
                 onClick={() => toggleTag(tag)}
                 title={`${count} result${count === 1 ? "" : "s"}`}
-                style={{
-                  padding: "0.1rem 0.5rem",
-                  fontWeight: value.tags.has(tag) ? 700 : 400,
-                }}
               >
                 {tag}
-                <span className="muted"> · {count}</span>
-              </button>
+                <span className="num muted"> · {count}</span>
+              </FacetChip>
             ))}
           </div>
         </div>
       )}
 
-      <div className="row" style={{ gap: "0.75rem" }}>
-        <label className="row" style={{ gap: "0.3rem" }}>
-          <span className="muted">Words ≥</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            style={{ width: "6rem" }}
-            value={value.minWords ?? ""}
-            onChange={(e) => onChange({ ...value, minWords: parseNum(e.target.value) })}
-          />
-        </label>
-        <label className="row" style={{ gap: "0.3rem" }}>
-          <span className="muted">Words ≤</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            style={{ width: "6rem" }}
-            value={value.maxWords ?? ""}
-            onChange={(e) => onChange({ ...value, maxWords: parseNum(e.target.value) })}
-          />
-        </label>
-        <label className="row" style={{ gap: "0.3rem" }}>
-          <span className="muted">Kudos ≥</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            style={{ width: "6rem" }}
-            value={value.minKudos ?? ""}
-            onChange={(e) => onChange({ ...value, minKudos: parseNum(e.target.value) })}
-          />
-        </label>
-        <label className="row" style={{ gap: "0.3rem" }}>
-          <input
-            type="checkbox"
-            style={{ width: "auto" }}
-            checked={value.ranked === "ranked"}
-            onChange={(e) =>
-              onChange({ ...value, ranked: e.target.checked ? "ranked" : "all" })
-            }
-          />
-          <span className="muted">Ranked only</span>
-        </label>
+      <div className="facet-group">
+        <span className="facet-group__label">Range</span>
+        <div className="row" style={{ gap: "0.75rem", flexWrap: "wrap" }}>
+          <label className="row" style={{ gap: "0.3rem" }}>
+            <span className="muted">Words ≥</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="e.g. 50000"
+              style={{ width: "7rem" }}
+              value={value.minWords ?? ""}
+              onChange={(e) => onChange({ ...value, minWords: parseNum(e.target.value) })}
+            />
+          </label>
+          <label className="row" style={{ gap: "0.3rem" }}>
+            <span className="muted">Words ≤</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="e.g. 200000"
+              style={{ width: "7rem" }}
+              value={value.maxWords ?? ""}
+              onChange={(e) => onChange({ ...value, maxWords: parseNum(e.target.value) })}
+            />
+          </label>
+          <label className="row" style={{ gap: "0.3rem" }}>
+            <span className="muted">Kudos ≥</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="e.g. 100"
+              style={{ width: "7rem" }}
+              value={value.minKudos ?? ""}
+              onChange={(e) => onChange({ ...value, minKudos: parseNum(e.target.value) })}
+            />
+          </label>
+          <label className="row" style={{ gap: "0.3rem" }}>
+            <input
+              type="checkbox"
+              style={{ width: "auto" }}
+              checked={value.ranked === "ranked"}
+              onChange={(e) =>
+                onChange({ ...value, ranked: e.target.checked ? "ranked" : "all" })
+              }
+            />
+            <span className="muted">Ranked only</span>
+          </label>
+        </div>
       </div>
     </div>
   );

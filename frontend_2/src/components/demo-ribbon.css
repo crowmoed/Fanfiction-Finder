@@ -1,0 +1,33 @@
+/*
+ * demo-ribbon.css — sidecar for DemoRibbon.
+ *
+ * REDESIGN-SPEC §7.3: a compact hairline slip, not a SaaS trial banner — no
+ * tinted fill, no bordered card. Border-bottom only, one text weight step for
+ * "Demo mode", one sentence, Exit as .btn-sm. Renders as the first child of
+ * .app-main; padding-bottom + the hairline separate it from the content below
+ * on the (--maxw)-clamped column without boxing it in.
+ */
+.demo-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding-bottom: 0.65rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-mute);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+.demo-ribbon .icon {
+  flex: none;
+  color: var(--ink-faint);
+}
+.demo-ribbon strong {
+  font-weight: 600;
+  color: var(--ink-strong);
+}
+.demo-ribbon__exit {
+  margin-left: auto;
+  flex: none;
+}

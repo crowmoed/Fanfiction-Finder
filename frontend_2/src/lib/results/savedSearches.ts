@@ -18,6 +18,11 @@ import { useSyncExternalStore } from "react";
 import type { Fic, SearchParams } from "@/lib/contracts";
 import { searchKey } from "@/lib/results/resultsCache";
 import { ficId } from "@/lib/results/ficId";
+import {
+  readJSON,
+  writeJSON,
+  subscribeToStorageKey,
+} from "@/lib/client/localStore";
 
 const STORAGE_KEY = "ficfinder.saved";
 
@@ -37,25 +42,27 @@ type Store = Record<string, SavedSearch>;
 let cache: Store | null = null;
 const listeners = new Set<() => void>();
 
+function isStore(value: unknown): value is Store {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  return Object.values(value as Record<string, unknown>).every(
+    (e) =>
+      !!e &&
+      typeof e === "object" &&
+      typeof (e as SavedSearch).key === "string" &&
+      Array.isArray((e as SavedSearch).seenIds) &&
+      typeof (e as SavedSearch).createdAt === "number"
+  );
+}
+
 function read(): Store {
   if (cache) return cache;
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    cache = raw ? (JSON.parse(raw) as Store) : {};
-  } catch {
-    cache = {};
-  }
+  cache = readJSON(STORAGE_KEY, isStore, {});
   return cache;
 }
 
 function write(next: Store) {
   cache = next;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  } catch {
-    /* ignore */
-  }
+  writeJSON(STORAGE_KEY, next);
   listeners.forEach((l) => l());
 }
 
@@ -84,6 +91,19 @@ export function unsaveSearch(params: SearchParams): void {
   const store = { ...read() };
   delete store[key];
   write(store);
+}
+
+/**
+ * Re-insert a previously-saved record exactly as it was (REDESIGN-SPEC §6.3):
+ * unlike `saveSearch`, which snapshots seenIds fresh and resets createdAt for a
+ * brand-new follow, this restores the whole `SavedSearch` object as-is so an
+ * Unfollow → Undo doesn't lose the "N new" badge or the original follow date.
+ * No-op if a record for this key already exists (don't clobber a re-follow).
+ */
+export function restoreSearch(record: SavedSearch): void {
+  const store = read();
+  if (record.key in store) return;
+  write({ ...store, [record.key]: record });
 }
 
 export function toggleSaveSearch(params: SearchParams, fics: Fic[]): boolean {
@@ -119,7 +139,15 @@ export function recordCheck(params: SearchParams, fics: Fic[]): string[] {
   return newIds;
 }
 
+let storageBound = false;
 function subscribe(listener: () => void): () => void {
+  if (!storageBound) {
+    storageBound = true;
+    subscribeToStorageKey(STORAGE_KEY, () => {
+      cache = null; // another tab changed saved searches — re-read next access.
+      listeners.forEach((l) => l());
+    });
+  }
   listeners.add(listener);
   return () => listeners.delete(listener);
 }

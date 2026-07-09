@@ -20,8 +20,8 @@ export default function FicDemo() {
 
   return (
     <div className="stack" style={{ gap: "2rem" }}>
-      <header className="stack" style={{ gap: "0.25rem" }}>
-        <h1 style={{ margin: 0 }}>On-demand story page</h1>
+      <header className="page-head">
+        <h1>On-demand story page</h1>
         <p className="muted" style={{ margin: 0 }}>
           Clicking a result opens a generated page built from the indexed data
           (no backend, no live scraping). Inline previews below; the links open
@@ -30,11 +30,11 @@ export default function FicDemo() {
       </header>
 
       <section className="stack">
-        <strong>Open the real route:</strong>
+        <h3>Open the real route</h3>
         <ul className="stack" style={{ gap: "0.3rem", margin: 0, paddingLeft: "1.2rem" }}>
           {SAMPLE_FICS.map((fic) => (
             <li key={fic.url}>
-              <Link href={`/fic/${ficId(fic)}`}>
+              <Link href={`/fic/${ficId(fic)}`} className="link">
                 {fic.title} ({fic.platform})
               </Link>
             </li>

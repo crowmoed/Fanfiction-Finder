@@ -15,7 +15,12 @@
  * write-through: reads hit memory (no JSON.parse of the whole store per lookup),
  * writes update memory then persist. The mirror is hydrated lazily on first use.
  */
-import type { Fic, SearchParams } from "@/lib/contracts";
+import type { Fic, SearchParams, SearchVariant } from "@/lib/contracts";
+import {
+  readJSON,
+  isQuotaError,
+  subscribeToStorageKey,
+} from "@/lib/client/localStore";
 
 const STORAGE_KEY = "ficfinder.results";
 const MAX_ENTRIES = 60;
@@ -27,6 +32,10 @@ export interface CachedResults {
   fics: Fic[];
   count: number;
   elapsedMs: number | null;
+  /** Pre-fusion per-variant lists, so the board's "by rewritten prompt" slice
+   *  survives a cache restore (a revisit is the common path, not the exception).
+   *  Absent for searches cached before this field existed → honest fallback. */
+  variants?: SearchVariant[];
   at: number; // epoch ms
 }
 
@@ -34,6 +43,29 @@ type Store = Record<string, CachedResults>;
 
 // In-memory mirror of the persisted store. `null` = not yet hydrated this session.
 let cache: Store | null = null;
+
+function isStore(value: unknown): value is Store {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  return Object.values(value as Record<string, unknown>).every(
+    (e) =>
+      !!e &&
+      typeof e === "object" &&
+      typeof (e as CachedResults).key === "string" &&
+      Array.isArray((e as CachedResults).fics) &&
+      typeof (e as CachedResults).at === "number"
+  );
+}
+
+// A change in another tab (new search cached, cache cleared) invalidates our
+// mirror so the next read re-hydrates. No subscribers here — reads are on-demand.
+let storageBound = false;
+function ensureStorageSync() {
+  if (storageBound || typeof window === "undefined") return;
+  storageBound = true;
+  subscribeToStorageKey(STORAGE_KEY, () => {
+    cache = null;
+  });
+}
 
 /**
  * Canonical, stable key for a search. Normalizes the query (trim + lowercase +
@@ -50,32 +82,45 @@ export function searchKey(params: SearchParams): string {
 /** Hydrate the in-memory mirror from localStorage once, then reuse it. */
 function load(): Store {
   if (cache) return cache;
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    cache = raw ? (JSON.parse(raw) as Store) : {};
-  } catch {
-    cache = {};
-  }
+  ensureStorageSync();
+  cache = readJSON(STORAGE_KEY, isStore, {});
   return cache;
 }
 
-/** Persist the mirror (after TTL prune + cap), keeping memory and storage in sync. */
+/**
+ * Persist the mirror (after TTL prune + cap), keeping memory and storage in sync.
+ * Result sets are the app's largest localStorage payload (up to MAX_ENTRIES full
+ * `Fic[]` with summaries, tags, and meta blobs), so a quota failure is realistic
+ * — when it hits, halve the retained set and retry rather than silently dropping
+ * the write while the in-memory mirror reports success.
+ */
 function persist(store: Store) {
-  let entries = Object.values(store);
-  // Drop expired, then enforce the cap (keep most recent).
   const now = Date.now();
-  entries = entries.filter((e) => now - e.at < TTL_MS);
-  entries.sort((a, b) => b.at - a.at);
-  entries = entries.slice(0, MAX_ENTRIES);
-  const next: Store = {};
-  for (const e of entries) next[e.key] = e;
-  cache = next;
+  let entries = Object.values(store)
+    .filter((e) => now - e.at < TTL_MS)
+    .sort((a, b) => b.at - a.at)
+    .slice(0, MAX_ENTRIES);
+
+  const build = (list: CachedResults[]): Store => {
+    const next: Store = {};
+    for (const e of list) next[e.key] = e;
+    return next;
+  };
+
+  cache = build(entries);
   if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  } catch {
-    /* storage full/disabled — the in-memory mirror still holds this session. */
+
+  // Try to persist; on quota errors, evict the oldest half and retry until it
+  // fits or there's nothing left to shed.
+  while (entries.length > 0) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
+      return;
+    } catch (err) {
+      if (!isQuotaError(err)) return; // disabled storage etc. — keep memory only.
+      entries = entries.slice(0, Math.floor(entries.length / 2));
+      cache = build(entries);
+    }
   }
 }
 
@@ -84,11 +129,12 @@ export function cacheResults(
   params: SearchParams,
   fics: Fic[],
   count: number,
-  elapsedMs: number | null
+  elapsedMs: number | null,
+  variants?: SearchVariant[]
 ): void {
   const store = { ...load() };
   const key = searchKey(params);
-  store[key] = { key, params, fics, count, elapsedMs, at: Date.now() };
+  store[key] = { key, params, fics, count, elapsedMs, variants, at: Date.now() };
   persist(store);
 }
 

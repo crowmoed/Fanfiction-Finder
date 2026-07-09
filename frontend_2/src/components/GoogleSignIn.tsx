@@ -13,6 +13,8 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useAuth } from "@/lib/client/auth";
+import { Icon } from "@/components/Icon";
+import "./google-signin.css";
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
 
@@ -71,17 +73,25 @@ export function GoogleSignIn() {
 
   if (!CLIENT_ID) {
     return (
-      <div className="skeleton-banner">
-        Google sign-in is not configured (set NEXT_PUBLIC_GOOGLE_CLIENT_ID). The
-        demo harness can simulate a signed-in session without Google.
+      <div className="alert" data-tone="info">
+        <Icon name="info" size={18} />
+        <p>
+          Google sign-in is not configured (set NEXT_PUBLIC_GOOGLE_CLIENT_ID).
+          The demo harness can simulate a signed-in session without Google.
+        </p>
       </div>
     );
   }
 
   return (
     <div className="stack">
-      <div ref={ref} />
-      {error && <p className="error">{error}</p>}
+      <div className="google-signin-slot" ref={ref} />
+      {error && (
+        <div className="alert" data-tone="danger">
+          <Icon name="alert" size={18} />
+          <p>{error}</p>
+        </div>
+      )}
     </div>
   );
 }

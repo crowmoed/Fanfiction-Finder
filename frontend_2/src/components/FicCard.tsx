@@ -1,7 +1,6 @@
 /**
- * FicCard — one search result, rendered with all the fields the design will
- * arrange. Skeleton: a plain card with semantic structure and every data point
- * visible, so the design layer has the full data surface to work from.
+ * FicCard — one search result. Fiction voice (serif) for title/summary, tool
+ * voice (sans) for chrome and data (DESIGN.md · Component language).
  */
 import Link from "next/link";
 
@@ -17,72 +16,98 @@ import {
 import { MatchScore } from "@/components/MatchScore";
 import { QuickViewButton } from "@/components/QuickViewButton";
 import { Highlight } from "@/components/Highlight";
+import { TagList } from "@/components/TagList";
 
-function fmt(n: number | null | undefined): string {
-  if (n === null || n === undefined) return "—";
+function fmt(n: number | null | undefined): React.ReactNode {
+  if (n === null || n === undefined) return <span className="null-dash">—</span>;
   return n.toLocaleString();
 }
 
-export function FicCard({ fic }: { fic: Fic }) {
+const PLATFORM_TONE: Record<string, string> = {
+  AO3: "ao3",
+  FFN: "ffn",
+  Wattpad: "wattpad",
+};
+
+export function FicCard({
+  fic,
+  animate = false,
+}: {
+  fic: Fic;
+  /** Stamp-in the seal on mount — set by ResultsView for the ONE fic that
+   *  earns it (the first high-tier seal of a fresh result set). */
+  animate?: boolean;
+}) {
   const author = ficAuthor(fic);
   const rating = ficRating(fic);
   const complete = ficComplete(fic);
   const chapters = ficChapters(fic);
   const updated = ficUpdated(fic);
+  const tone = PLATFORM_TONE[fic.platform];
 
   return (
-    <article className="card stack" style={{ gap: "0.5rem" }}>
-      <div className="row" style={{ justifyContent: "space-between" }}>
-        <h3 style={{ margin: 0 }}>
-          <Link href={`/fic/${ficId(fic)}`}>
-            <Highlight text={fic.title} />
-          </Link>
-        </h3>
-        <span className="row" style={{ gap: "0.5rem" }}>
+    <article className="fic-card">
+      {/* Seal top-right, weighted equal to the title (REDESIGN-SPEC §3.5): the
+          match score anchors the row the way it anchors the fic-detail
+          masthead, not a minor aside in the metadata strip below. */}
+      <div className="row" style={{ justifyContent: "space-between", flexWrap: "nowrap" }}>
+        <Link href={`/fic/${ficId(fic)}`} className="title-link fic-title">
+          <Highlight text={fic.title} />
+        </Link>
+        <span className="row" style={{ gap: "0.4rem", flexWrap: "nowrap" }}>
           <QuickViewButton fic={fic} />
-          <MatchScore score={fic.match_score} />
+          <MatchScore score={fic.match_score} size="md" animate={animate} />
         </span>
       </div>
 
-      {author && (
-        <p className="muted" style={{ margin: 0 }}>
-          by {author}
-        </p>
-      )}
+      {author && <p className="fic-byline" style={{ margin: 0 }}>by {author}</p>}
 
-      <div className="row muted" style={{ gap: "1rem", flexWrap: "wrap" }}>
-        <span>{fic.platform}</span>
-        {fic.fandom && <span>{fic.fandom}</span>}
-        {rating && <span>rated {rating}</span>}
-        {complete != null && <span>{complete ? "Complete" : "In progress"}</span>}
-        {chapters && <span>{chapters}</span>}
-        <span>words: {fmt(fic.word_count)}</span>
-        <span>kudos: {fmt(fic.kudos)}</span>
-        <span>hits: {fmt(fic.hits)}</span>
-        {updated && <span>updated {updated}</span>}
-      </div>
+      {/* Identity facts on one line; the stat numbers on a quieter second line
+          — never nine dot-joined facts in a single strip. */}
+      <ul className="meta-list">
+        <li>
+          <span className="badge" data-tone={tone}>
+            {fic.platform}
+          </span>
+        </li>
+        {fic.fandom && <li>{fic.fandom}</li>}
+        {rating && (
+          <li>
+            <span className="badge badge-rating" data-rating={rating}>
+              {rating}
+            </span>
+          </li>
+        )}
+        {complete != null && (
+          <li>
+            <span className="badge badge-status" data-state={complete ? "complete" : "wip"}>
+              {complete ? "Complete" : "In progress"}
+            </span>
+          </li>
+        )}
+        {chapters && <li>{chapters}</li>}
+      </ul>
+      <ul className="meta-list meta-list--stats">
+        <li>
+          <span className="num">{fmt(fic.word_count)}</span>{" "}
+          <span className="muted">words</span>
+        </li>
+        <li>
+          <span className="num">{fmt(fic.kudos)}</span> <span className="muted">kudos</span>
+        </li>
+        <li>
+          <span className="num">{fmt(fic.hits)}</span> <span className="muted">hits</span>
+        </li>
+        {updated && <li>updated {updated}</li>}
+      </ul>
 
       {fic.summary && (
-        <p style={{ margin: 0 }}>
+        <p className="fic-summary">
           <Highlight text={fic.summary} />
         </p>
       )}
 
-      {fic.match_reason && (
-        <p className="muted" style={{ margin: 0, fontStyle: "italic" }}>
-          Why: {fic.match_reason}
-        </p>
-      )}
-
-      {fic.tags.length > 0 && (
-        <div>
-          {fic.tags.map((t) => (
-            <span key={t} className="tag">
-              <Highlight text={t} />
-            </span>
-          ))}
-        </div>
-      )}
+      <TagList tags={fic.tags} />
     </article>
   );
 }

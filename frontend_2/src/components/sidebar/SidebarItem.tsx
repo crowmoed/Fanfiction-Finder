@@ -9,7 +9,8 @@
  */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+
+import { Icon, type IconName } from "@/components/Icon";
 
 type Variant = "cta" | "link" | "dev";
 
@@ -27,7 +28,7 @@ export function SidebarItem({
   variant = "link",
   active,
 }: {
-  icon: ReactNode;
+  icon: IconName;
   label: string;
   href?: string;
   onClick?: () => void;
@@ -41,7 +42,7 @@ export function SidebarItem({
   const body = (
     <>
       <span className="sidebar-ic" aria-hidden>
-        {icon}
+        <Icon name={icon} size={16} />
       </span>
       <span className="sidebar-label truncate">{label}</span>
     </>

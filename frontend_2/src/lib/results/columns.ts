@@ -81,11 +81,8 @@ export const COLUMNS: ColumnDef[] = [
     label: "Summary",
     exportValue: (f) => f.summary ?? "",
   },
-  {
-    id: "match_reason",
-    label: "Why",
-    exportValue: (f) => f.match_reason ?? "",
-  },
+  // No "Why" column: the live ranker returns a score only (match_reason is
+  // never populated), and Ficwell doesn't fabricate reasoning it doesn't have.
   {
     id: "url",
     label: "Link",

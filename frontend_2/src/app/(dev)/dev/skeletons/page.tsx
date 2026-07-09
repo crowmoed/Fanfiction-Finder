@@ -14,8 +14,8 @@ import { FicDetailSkeleton } from "@/components/FicDetailSkeleton";
 export default function SkeletonsDemo() {
   return (
     <div className="stack" style={{ gap: "2rem" }}>
-      <header className="stack" style={{ gap: "0.25rem" }}>
-        <h1 style={{ margin: 0 }}>Skeleton loaders</h1>
+      <header className="page-head">
+        <h1>Skeleton loaders</h1>
         <p className="muted" style={{ margin: 0 }}>
           Content-shaped placeholders shown while data loads. Same components used
           on the results, story, account, and search surfaces.
@@ -23,7 +23,7 @@ export default function SkeletonsDemo() {
       </header>
 
       <section className="stack">
-        <h2 style={{ fontSize: "1rem", margin: 0 }}>Primitive</h2>
+        <h3>Primitive</h3>
         <div className="stack" style={{ gap: "0.5rem", maxWidth: "20rem" }}>
           <Skeleton width="100%" height="1em" />
           <Skeleton width="80%" height="1em" />
@@ -33,22 +33,22 @@ export default function SkeletonsDemo() {
       </section>
 
       <section className="stack">
-        <h2 style={{ fontSize: "1rem", margin: 0 }}>Results — table</h2>
+        <h3>Results table</h3>
         <ResultsTableSkeleton rows={5} />
       </section>
 
       <section className="stack">
-        <h2 style={{ fontSize: "1rem", margin: 0 }}>Results — cards</h2>
+        <h3>Results cards</h3>
         <ResultsCardsSkeleton count={3} />
       </section>
 
       <section className="stack">
-        <h2 style={{ fontSize: "1rem", margin: 0 }}>History / reading log</h2>
+        <h3>History / reading log</h3>
         <HistoryListSkeleton rows={3} />
       </section>
 
       <section className="stack">
-        <h2 style={{ fontSize: "1rem", margin: 0 }}>Story detail</h2>
+        <h3>Story detail</h3>
         <FicDetailSkeleton />
       </section>
     </div>

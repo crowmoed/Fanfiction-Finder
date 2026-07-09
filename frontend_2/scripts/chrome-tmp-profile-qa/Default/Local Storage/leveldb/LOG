@@ -1,0 +1,14 @@
+2026/07/07-19:26:37.183 dc30 Reusing MANIFEST D:\Fanfiction-Finder\frontend_2\scripts\chrome-tmp-profile-qa\Default\Local Storage\leveldb/MANIFEST-000001
+2026/07/07-19:26:37.209 dc30 Recovering log #139
+2026/07/07-19:26:37.215 dc30 Level-0 table #141: started
+2026/07/07-19:26:37.243 dc30 Level-0 table #141: 23539 bytes OK
+2026/07/07-19:26:37.257 dc30 Delete type=0 #139
+2026/07/07-19:26:37.260 d3a4 Compacting 4@0 + 1@1 files
+2026/07/07-19:26:37.307 d3a4 Generated table #143@0: 8 keys, 7119 bytes
+2026/07/07-19:26:37.307 d3a4 Compacted 4@0 + 1@1 files => 7119 bytes
+2026/07/07-19:26:37.309 d3a4 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/07/07-19:26:37.310 d3a4 Delete type=2 #131
+2026/07/07-19:26:37.310 d3a4 Delete type=2 #133
+2026/07/07-19:26:37.310 d3a4 Delete type=2 #136
+2026/07/07-19:26:37.310 d3a4 Delete type=2 #138
+2026/07/07-19:26:37.310 d3a4 Delete type=2 #141

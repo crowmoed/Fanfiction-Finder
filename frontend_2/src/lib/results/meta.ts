@@ -59,13 +59,15 @@ export function ficComplete(fic: Fic): boolean | null {
 
 /**
  * Human-readable chapter count. AO3 stores "5/12" (posted/total), FFN/Wattpad a
- * bare integer (chapters / parts). Returns null when not indexed.
+ * bare integer (chapters / parts). Always carries its unit — a naked "14"
+ * sitting between a rating badge and a word count reads as nothing. Returns
+ * null when not indexed.
  */
 export function ficChapters(fic: Fic): string | null {
   const m = fic.meta;
   if (!m) return null;
-  if (m.type === "ao3") return m.chapters ?? null;
-  if (m.type === "ffn") return m.chapters == null ? null : String(m.chapters);
+  if (m.type === "ao3") return m.chapters == null ? null : `${m.chapters} chapters`;
+  if (m.type === "ffn") return m.chapters == null ? null : `${m.chapters} chapters`;
   if (m.type === "wattpad") return m.parts == null ? null : `${m.parts} parts`;
   return null;
 }
@@ -75,11 +77,9 @@ export function ficUpdated(fic: Fic): string | null {
   return fic.meta?.updated ?? null;
 }
 
-/** The language, where the platform reports it (AO3/FFN only). */
+/** The language, where the platform reports it (all three carry `language`). */
 export function ficLanguage(fic: Fic): string | null {
-  const m = fic.meta;
-  if (m && (m.type === "ao3" || m.type === "ffn")) return m.language ?? null;
-  return null;
+  return fic.meta?.language ?? null;
 }
 
 /** One labeled platform-native stat, for the "native stats" strip. */

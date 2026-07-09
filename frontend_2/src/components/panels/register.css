@@ -1,0 +1,194 @@
+/*
+ * register.css — the Saved/History "register" layout (REDESIGN-SPEC §6.3).
+ *
+ * A register is a page-wide ledger: kicker + display-title h1 + folio count +
+ * .rule-strong, then rows separated by hairlines only (no per-row cards/shadows
+ * — that was the old `.list-row` treatment this replaces). Columns align on a
+ * shared grid so query / fandom / results / when read as a table even though
+ * the row itself has no cell borders.
+ */
+
+.register-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+/* The .eyebrow inside is this page's ONE kicker (REDESIGN-SPEC §1.3 budget). */
+.register-folio {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--ink-mute);
+  font-variant-numeric: tabular-nums;
+}
+.register-head .rule-strong {
+  margin-top: 0.35rem;
+}
+
+/* An action inline with the folio count (e.g. History's "Clear log") — a
+   button reset styled like `.link` (globals.css) since it lives in the
+   data-density folio line, not body prose. */
+.folio-action {
+  font: inherit;
+  color: var(--ink-mute);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+.folio-action:hover,
+.folio-action:focus-visible {
+  color: var(--danger);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* The ledger: rows are grid lines, not cards. Divider is a hairline BETWEEN
+   rows (border-top on all but the first), never a border around each row. */
+.ledger {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ledger-row {
+  display: grid;
+  /* History: query / fandom / results / when / actions. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 11rem) minmax(0, 6rem) minmax(0, 6.5rem) auto;
+  align-items: center;
+  column-gap: var(--sp-4);
+  padding: 0.85rem 0.25rem;
+  border-top: 1px solid var(--line);
+  transition: background var(--t-fast) ease;
+}
+/* Saved has no results-count column — a dedicated 4-column template instead of
+   a wasted empty spacer cell in the 5-column one. */
+.ledger-row--4col {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 11rem) minmax(0, 6.5rem) auto;
+}
+.ledger-row:first-child {
+  border-top: none;
+}
+.ledger-row:hover {
+  background: var(--paper-2);
+}
+/* Remove/Unfollow plays this exit before the row actually leaves the store
+   (see useLeave in History/SavedPanel), reusing the toast exit keyframe. No
+   reduced-motion guard needed: useLeave removes instantly under reduced motion,
+   so this class is never applied there. */
+.ledger-row--leaving {
+  animation: toast-out 160ms var(--ease-out) both;
+}
+.ledger-cell {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ledger-cell--query {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  white-space: normal;
+}
+.ledger-query-link {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: var(--text-body);
+  color: var(--ink-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.ledger-query-link:hover,
+.ledger-query-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.ledger-cell--fandom {
+  color: var(--ink-mute);
+  font-size: var(--text-sm);
+}
+.ledger-cell--meta {
+  color: var(--ink-faint);
+  font-size: var(--text-sm);
+}
+.ledger-cell--when {
+  color: var(--ink-faint);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.ledger-cell--actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+/* Saved-specific: the "N new" badge sits with the query, not off in a meta
+   column, since it's the reason the row exists (REDESIGN-SPEC · badge stays
+   vermilion). */
+.ledger-row .badge-new {
+  margin-left: 0.1rem;
+}
+
+/* .ledger-meta-line: a DOM wrapper (JSX) around the meta cells (fandom,
+   results, when) that need to sit as separate aligned columns on desktop but
+   collapse into one inline-flowing line at narrow widths. `display: contents`
+   erases the wrapper's own box at desktop widths so its children are placed
+   directly by the row's grid-template-columns, each in its own column, same
+   as if there were no wrapper; the media query below turns it into a real flex
+   box instead once there's no column grid left to participate in. */
+.ledger-meta-line {
+  display: contents;
+}
+
+/* Below ~860px the grid collapses to a stacked card-free row: query on its own
+   line, everything else wraps into one inline meta line beneath it. Still
+   hairline-divided, never boxed. */
+@media (max-width: 860px) {
+  .ledger-row {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "query actions"
+      "meta meta";
+    row-gap: 0.35rem;
+  }
+  .ledger-cell--query {
+    grid-area: query;
+  }
+  .ledger-cell--actions {
+    grid-area: actions;
+  }
+  /* No longer `contents`: the wrapper becomes a real flex box, so its fandom /
+     results / when children merge into one inline-flowing line instead of
+     each claiming its own grid column. */
+  .ledger-meta-line {
+    grid-area: meta;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.3rem;
+    color: var(--ink-faint);
+    font-size: var(--text-sm);
+  }
+  .ledger-meta-line .ledger-cell--fandom,
+  .ledger-meta-line .ledger-cell--meta,
+  .ledger-meta-line .ledger-cell--when {
+    color: inherit;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .ledger-meta-line > * + *::before {
+    content: "· ";
+    color: var(--ink-faint);
+  }
+}

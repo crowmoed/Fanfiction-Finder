@@ -31,28 +31,29 @@ function persist(store: PendingStore) {
   }
 }
 
+/**
+ * Read the live (stale-markers-excluded) view. Pure: never writes, so it's safe
+ * to call from render as well as effects. Stale markers are physically purged on
+ * the next write (markPending / clearPending), not as a side effect of reading.
+ */
 function read(): PendingStore {
   if (typeof window === "undefined") return {};
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     const store = raw ? (JSON.parse(raw) as PendingStore) : {};
-    // Purge stale markers on every read so they never accumulate.
     const now = Date.now();
-    let changed = false;
+    const live: PendingStore = {};
     for (const [k, at] of Object.entries(store)) {
-      if (now - at >= TTL_MS) {
-        delete store[k];
-        changed = true;
-      }
+      if (typeof at === "number" && now - at < TTL_MS) live[k] = at;
     }
-    if (changed) persist(store);
-    return store;
+    return live;
   } catch {
     return {};
   }
 }
 
 export function markPending(params: SearchParams): void {
+  // read() already drops stale markers, so persisting it here purges them.
   const store = read();
   store[searchKey(params)] = Date.now();
   persist(store);
@@ -62,6 +63,9 @@ export function clearPending(key: string): void {
   const store = read();
   if (key in store) {
     delete store[key];
+    persist(store);
+  } else {
+    // Purge any stale markers even when the target was already gone.
     persist(store);
   }
 }

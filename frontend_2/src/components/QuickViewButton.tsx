@@ -10,18 +10,20 @@ import { useState } from "react";
 
 import type { Fic } from "@/lib/contracts";
 import { FicModal } from "@/components/FicModal";
+import { Icon } from "@/components/Icon";
 
 export function QuickViewButton({ fic }: { fic: Fic }) {
   const [open, setOpen] = useState(false);
   return (
     <>
       <button
+        type="button"
+        className="icon-btn qv-btn"
         onClick={() => setOpen(true)}
         title="Quick view"
         aria-label={`Quick view: ${fic.title}`}
-        style={{ padding: "0.15rem 0.45rem", fontSize: "0.85em" }}
       >
-        ⤢
+        <Icon name="expand" size={14} />
       </button>
       {open && <FicModal fic={fic} open={open} onClose={() => setOpen(false)} />}
     </>

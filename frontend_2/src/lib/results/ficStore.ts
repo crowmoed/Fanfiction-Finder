@@ -15,43 +15,69 @@
  */
 import type { Fic } from "@/lib/contracts";
 import { ficId } from "@/lib/results/ficId";
+import {
+  readJSON,
+  isQuotaError,
+  subscribeToStorageKey,
+} from "@/lib/client/localStore";
 
 const STORAGE_KEY = "ficfinder.fics";
 const MAX_ENTRIES = 200;
 
-type Store = Record<string, { fic: Fic; at: number }>;
+type Entry = { fic: Fic; at: number };
+type Store = Record<string, Entry>;
 
 // In-memory mirror of the persisted store. `null` = not yet hydrated this session.
 let cache: Store | null = null;
 
+function isStore(value: unknown): value is Store {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  return Object.values(value as Record<string, unknown>).every(
+    (e) =>
+      !!e &&
+      typeof e === "object" &&
+      typeof (e as Entry).at === "number" &&
+      !!(e as Entry).fic &&
+      typeof (e as Entry).fic === "object"
+  );
+}
+
+// Invalidate our mirror when another tab opens a fic (writes this key).
+let storageBound = false;
+function ensureStorageSync() {
+  if (storageBound || typeof window === "undefined") return;
+  storageBound = true;
+  subscribeToStorageKey(STORAGE_KEY, () => {
+    cache = null;
+  });
+}
+
 /** Hydrate the in-memory mirror from localStorage once, then reuse it. */
 function load(): Store {
   if (cache) return cache;
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    cache = raw ? (JSON.parse(raw) as Store) : {};
-  } catch {
-    cache = {};
-  }
+  ensureStorageSync();
+  cache = readJSON(STORAGE_KEY, isStore, {});
   return cache;
 }
 
 /** Persist the in-memory mirror (after enforcing the cap), keeping both in sync. */
 function persist(store: Store) {
   // Enforce the cap: keep the most-recently-saved entries.
-  let next = store;
-  const entries = Object.entries(store);
-  if (entries.length > MAX_ENTRIES) {
-    entries.sort((a, b) => b[1].at - a[1].at);
-    next = Object.fromEntries(entries.slice(0, MAX_ENTRIES));
-  }
-  cache = next;
+  let entries = Object.entries(store).sort((a, b) => b[1].at - a[1].at);
+  if (entries.length > MAX_ENTRIES) entries = entries.slice(0, MAX_ENTRIES);
+  cache = Object.fromEntries(entries);
   if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  } catch {
-    /* storage full/disabled — the in-memory mirror still holds this session. */
+
+  // On quota failure, halve the retained set and retry (opened fics are large).
+  while (entries.length > 0) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
+      return;
+    } catch (err) {
+      if (!isQuotaError(err)) return;
+      entries = entries.slice(0, Math.floor(entries.length / 2));
+      cache = Object.fromEntries(entries);
+    }
   }
 }
 

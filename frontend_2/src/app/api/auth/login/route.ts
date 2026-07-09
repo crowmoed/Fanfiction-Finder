@@ -27,7 +27,9 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(data);
   } catch (err) {
-    const { status, body } = errorToResponse(err);
+    // Sanitize: the backend interpolates raw Google/JWT library exception text
+    // into `detail` on auth failures — don't relay that to the browser.
+    const { status, body } = errorToResponse(err, { sanitize: true });
     return NextResponse.json(body, { status });
   }
 }

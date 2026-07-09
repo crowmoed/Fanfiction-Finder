@@ -1,17 +1,24 @@
 "use client";
 
 /**
- * FicModal — a small "quick view" button that pops the fic detail in a modal
- * overlay, without navigating away. Reuses FicDetail, so the popup and the full
- * /fic/[id] page render identical content.
+ * FicModal — "quick view" of a fic's detail in a modal overlay, without
+ * navigating away. Renders FicDetail through the shared Modal component, so the
+ * popup and the full /fic/[id] page show identical content and the modal gets
+ * focus-trap, Esc, backdrop scrim, enter/exit animation, and — importantly —
+ * focus-restore-to-trigger for free (rather than re-implementing the <dialog>
+ * wiring and dropping focus to <body> on close, as it used to).
  *
- * Built on the native <dialog> element via showModal(): accessible by default —
- * focus is trapped, Esc closes, the backdrop is inert. Skeleton styling only.
+ * The header carries the fic's own title + seal (data-variant="fic" gives it
+ * the heavier head rule and 1.5rem serif size, REDESIGN-SPEC §5.5) instead of
+ * Modal's plain <strong>, and FicDetail's `hideTitle` skips its own masthead
+ * title row so the two don't announce the title twice.
  */
-import { useEffect, useRef } from "react";
-
 import type { Fic } from "@/lib/contracts";
+import { Modal } from "@/components/Modal";
 import { FicDetail } from "@/components/FicDetail";
+import { MatchScore } from "@/components/MatchScore";
+import { Highlight } from "@/components/Highlight";
+import "./fic-detail.css";
 
 export function FicModal({
   fic,
@@ -22,42 +29,27 @@ export function FicModal({
   open: boolean;
   onClose: () => void;
 }) {
-  const ref = useRef<HTMLDialogElement>(null);
-
-  // Sync the dialog's open state with React. showModal() (not the `open`
-  // attribute) is what gives us the backdrop + focus trap + Esc handling.
-  useEffect(() => {
-    const dialog = ref.current;
-    if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
-  }, [open]);
-
   return (
-    <dialog
-      ref={ref}
+    <Modal
+      open={open}
       onClose={onClose}
-      // Close when the backdrop (the dialog element itself, outside the inner
-      // content box) is clicked.
-      onClick={(e) => {
-        if (e.target === ref.current) onClose();
-      }}
-      style={{
-        maxWidth: "640px",
-        width: "calc(100% - 2rem)",
-        border: "1px solid var(--border)",
-        borderRadius: "8px",
-        padding: 0,
-      }}
-    >
-      <div style={{ padding: "1.25rem 1.5rem" }}>
-        <div className="row" style={{ justifyContent: "flex-end", marginBottom: "0.5rem" }}>
-          <button onClick={onClose} aria-label="Close">
-            ✕ Close
-          </button>
+      title={fic.title}
+      variant="fic"
+      width="640px"
+      titleContent={
+        <div className="fic-modal-titlerow">
+          <strong className="modal-title">
+            <Highlight text={fic.title} />
+          </strong>
+          <MatchScore
+            score={fic.match_score}
+            size="lg"
+            animate={(fic.match_score ?? 0) >= 60}
+          />
         </div>
-        <FicDetail fic={fic} />
-      </div>
-    </dialog>
+      }
+    >
+      <FicDetail fic={fic} hideTitle />
+    </Modal>
   );
 }

@@ -1,0 +1,119 @@
+/*
+ * sidebar.css — sidecar for the sidebar surface (Sidebar / RecentsList / SidebarRow).
+ *
+ * Everything reusable (rows, brand, hanko, nav, menu, skeleton) lives in
+ * globals.css already; this file holds the shell-specific additions globals.css
+ * has no primitive for.
+ */
+
+.sidebar-section-label-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* Brand hairline (REDESIGN-SPEC §6.1): a mini masthead rule under the brand
+   lockup, echoing .rule-strong's "rule closes a header block" logic at sidebar
+   scale — quiet (--line, not --ink-strong) since this is chrome, not a page
+   head. Collapsed rail: no room for it, and .sidebar-brand is hidden anyway. */
+.sidebar-top {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.55rem;
+  margin-bottom: 0.15rem;
+}
+.is-collapsed .sidebar-top {
+  border-bottom-color: transparent;
+}
+
+/* Recents ledger (REDESIGN-SPEC §6.1): a continuous 1px rule runs the height of
+   the search list, and each row hangs off it with a small left indent — the
+   same "spine + hanging entries" logic as a paper ledger, not a flat list. The
+   rule lives on the list, not each row, so it reads as one strip even across
+   group boundaries (Today / This week / Earlier). */
+.sidebar-search-list {
+  position: relative;
+  margin-left: 0.55rem;
+  padding-left: 0.6rem;
+}
+.sidebar-search-list::before {
+  content: "";
+  position: absolute;
+  top: 0.15rem;
+  bottom: 0.15rem;
+  left: 0;
+  width: 1px;
+  background: var(--line);
+}
+
+/* Account avatar accent-wash ring (REDESIGN-SPEC §6.4): identity is a moment
+   worth the seal's whisper (--accent-wash), not the plain neutral border every
+   other chip uses — a thin outset ring, not a fill, so the mark still reads at
+   collapsed-rail size. */
+.sidebar-avatar {
+  box-shadow: 0 0 0 2px var(--accent-wash);
+}
+
+/* Account-menu caret: a first-class disclosure icon, not muted text (F092) —
+   flips to point down while the menu is open, mirroring the baseline-fandom
+   caret's rotate-on-expand pattern in globals.css. */
+.sidebar-account-caret .icon {
+  transition: transform var(--t-fast) var(--ease-out);
+}
+.sidebar-account[aria-expanded="true"] .sidebar-account-caret .icon {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-account-caret .icon {
+    transition: none;
+  }
+}
+
+/* Mobile top bar (REDESIGN-SPEC §6.6): at icon-only scale the active-route fill
+   (globals.css `.sidebar-link[aria-current="page"]`) reads too quietly against
+   its neighbours, so the active icon also gets a 2px vermilion underline tick
+   — the same "accent marks the active/committed thing" language the seal and
+   selection already use, just at nav scale. */
+@media (max-width: 720px) {
+  .sidebar-link {
+    position: relative;
+  }
+  .sidebar-link[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    left: 0.6rem;
+    right: 0.6rem;
+    bottom: 0.25rem;
+    height: 2px;
+    background: var(--accent);
+    border-radius: var(--r-pill);
+  }
+  /* Top-bar mode: the brand hairline is a masthead device for the vertical
+     rail; on the single-row bar it renders as a stray dash under the hanko. */
+  .sidebar-top {
+    border-bottom-color: transparent;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+}
+
+/* Recent-search row Remove exit (played by useLeave before the row leaves the
+   store; useLeave removes instantly under reduced motion, so no guard needed). */
+.sidebar-row--leaving {
+  animation: toast-out 160ms var(--ease-out) both;
+}
+
+/* Press feedback parity: the recent-row link and its kebab were the only
+   pressables in the rail without a press-scale. */
+.sidebar-search-item:active {
+  transform: scale(0.98);
+}
+.sidebar-row-kebab:active {
+  transform: scale(0.9);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-search-item:active,
+  .sidebar-row-kebab:active {
+    transform: none;
+  }
+}

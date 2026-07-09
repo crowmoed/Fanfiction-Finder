@@ -1,9 +1,13 @@
 /**
  * timeGroups.ts — bucket recent searches into relative-time sections
- * (Today / Yesterday / Previous 7 days / …), the claude.ai "recent chats"
- * grouping. Pure and dependency-free; `now` is passed in so it's testable and
- * has no hidden clock dependency. Entries are assumed newest-first (history is),
- * and that order is preserved within each group.
+ * (Today / This week / Earlier), the claude.ai "recent chats" grouping. Pure and
+ * dependency-free; `now` is passed in so it's testable and has no hidden clock
+ * dependency. Entries are assumed newest-first (history is), and that order is
+ * preserved within each group.
+ *
+ * Three buckets, not five (REDESIGN-SPEC §6.1) — the ledger left-rule already
+ * carries the register's continuity, so the ledger only needs coarse recency,
+ * not a five-way calendar breakdown.
  */
 import type { HistoryEntry } from "@/lib/client/history";
 
@@ -22,10 +26,8 @@ export function groupByTime(entries: HistoryEntry[], now: number): TimeGroup[] {
   // Ordered high→low threshold: an entry lands in the first bucket it clears.
   const buckets = [
     { label: "Today", min: t0 },
-    { label: "Yesterday", min: t0 - DAY_MS },
-    { label: "Previous 7 days", min: t0 - 7 * DAY_MS },
-    { label: "Previous 30 days", min: t0 - 30 * DAY_MS },
-    { label: "Older", min: -Infinity },
+    { label: "This week", min: t0 - 7 * DAY_MS },
+    { label: "Earlier", min: -Infinity },
   ];
 
   const groups: TimeGroup[] = buckets.map((b) => ({ label: b.label, entries: [] }));

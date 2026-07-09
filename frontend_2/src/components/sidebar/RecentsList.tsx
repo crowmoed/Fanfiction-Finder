@@ -8,12 +8,13 @@
  * client-only) and a teaching empty state before any searches exist.
  */
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { useSearchHistory, type HistoryEntry } from "@/lib/client/history";
 import { pinKey, usePins } from "@/lib/client/sidebarPins";
 import { groupByTime } from "@/lib/results/timeGroups";
 import { resultsHref } from "@/lib/results/searchUrl";
+import { Icon } from "@/components/Icon";
 import { SidebarRow } from "./SidebarRow";
 
 // Show the filter box only once the list is long enough to warrant scanning.
@@ -41,7 +42,19 @@ export function RecentsList() {
   const params = useSearchParams();
   const [mounted, setMounted] = useState(false);
   const [filter, setFilter] = useState("");
+  // One-shot entrance: the recents block rises in ONCE, on the skeleton ->
+  // populated swap. Deliberately a single container fade+rise, not a per-row
+  // stagger — a per-row entrance would replay on every filter keystroke, pin
+  // toggle, or route-highlight re-render (rows reconcile through changing
+  // Section wrappers). animatedOnce flips true right after the first populated
+  // render, so later updates never re-animate. Reduced motion -> plain fade
+  // (globals.css §18).
+  const animatedOnce = useRef(false);
   useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    if (mounted) animatedOnce.current = true;
+  }, [mounted]);
+  const animateIn = mounted && !animatedOnce.current;
 
   const activeKey =
     pathname === "/results"
@@ -119,10 +132,16 @@ export function RecentsList() {
   const groups = groupByTime(rest, Date.now());
 
   return (
-    <div className="sidebar-searches">
+    <div className={`sidebar-searches${animateIn ? " rise-in" : ""}`}>
       {showFilter && <FilterBox value={filter} onChange={setFilter} />}
       {pinned.length > 0 && (
-        <Section label={<><span aria-hidden>★ </span>Pinned</>}>
+        <Section
+          label={
+            <span className="sidebar-section-label-icon">
+              <Icon name="pin" size={11} /> Pinned
+            </span>
+          }
+        >
           {pinned.map(row)}
         </Section>
       )}

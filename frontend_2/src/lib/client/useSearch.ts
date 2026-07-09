@@ -17,7 +17,7 @@
 
 import { useCallback, useState, useSyncExternalStore } from "react";
 
-import type { Fic, SearchParams } from "@/lib/contracts";
+import type { Fic, SearchParams, SearchVariant } from "@/lib/contracts";
 import {
   INITIAL,
   cancelOp,
@@ -52,8 +52,14 @@ export function useSearch() {
   }, []);
 
   const hydrate = useCallback(
-    (params: SearchParams, fics: Fic[], count: number, elapsedMs: number | null) => {
-      setKey(hydrateOp(params, fics, count, elapsedMs));
+    (
+      params: SearchParams,
+      fics: Fic[],
+      count: number,
+      elapsedMs: number | null,
+      variants?: SearchVariant[] | null
+    ) => {
+      setKey(hydrateOp(params, fics, count, elapsedMs, variants));
     },
     []
   );

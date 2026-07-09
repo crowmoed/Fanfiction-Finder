@@ -205,19 +205,42 @@ export async function backendJson<T>(
   return (await res.json()) as T;
 }
 
-/** Translate a thrown BackendCallError into a Next Response body + status. */
-export function errorToResponse(err: unknown): {
-  status: number;
-  body: BackendError;
-} {
+/** A generic, non-leaky client message for a status class. */
+function genericDetail(status: number): string {
+  if (status === 401 || status === 403) return "Authentication failed";
+  if (status === 400) return "The request was invalid";
+  if (status >= 500 || status === 0) return "The service is temporarily unavailable";
+  return "The request could not be completed";
+}
+
+/**
+ * Translate a thrown BackendCallError into a Next Response body + status.
+ *
+ * Pass `{ sanitize: true }` for sensitive routes (auth, billing, admin): the
+ * backend can interpolate raw library/exception text into `detail`
+ * (e.g. "Invalid Google token: <lib internals>"), which shouldn't reach the
+ * browser. Sanitized responses log the real upstream detail server-side and
+ * return a generic message instead.
+ */
+export function errorToResponse(
+  err: unknown,
+  opts: { sanitize?: boolean } = {}
+): { status: number; body: BackendError } {
   if (err instanceof BackendCallError) {
-    return {
-      status: err.status === 0 ? 502 : err.status,
-      body: { detail: err.detail, request_id: err.requestId },
-    };
+    const status = err.status === 0 ? 502 : err.status;
+    if (opts.sanitize) {
+      console.error(
+        `[backend ${err.status}] ${err.detail}${
+          err.requestId ? ` (req ${err.requestId})` : ""
+        }`
+      );
+      return {
+        status,
+        body: { detail: genericDetail(err.status), request_id: err.requestId },
+      };
+    }
+    return { status, body: { detail: err.detail, request_id: err.requestId } };
   }
-  return {
-    status: 500,
-    body: { detail: "Unexpected proxy error" },
-  };
+  if (opts.sanitize) console.error("[backend proxy] unexpected error", err);
+  return { status: 500, body: { detail: "Unexpected proxy error" } };
 }

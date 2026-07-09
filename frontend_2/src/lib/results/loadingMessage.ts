@@ -43,10 +43,10 @@ export function loadingMessage(
     return { text: hint + "…", tone: "normal" };
   }
   if (elapsedMs < 6000) {
-    return { text: `Still working — ${hint.toLowerCase()}…`, tone: "patient" };
+    return { text: `Still working: ${hint.toLowerCase()}…`, tone: "patient" };
   }
   return {
-    text: `Good matches are worth the wait — ${hint.toLowerCase()}. Hang tight.`,
+    text: `Good matches are worth the wait. ${hint}…`,
     tone: "reassure",
   };
 }

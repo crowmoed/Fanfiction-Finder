@@ -69,8 +69,8 @@ export default function SearchDemo() {
 
   return (
     <div className="stack" style={{ gap: "1.5rem" }}>
-      <header className="stack" style={{ gap: "0.25rem" }}>
-        <h1 style={{ margin: 0 }}>Search flow & loading</h1>
+      <header className="page-head">
+        <h1>Search flow &amp; loading</h1>
         <p className="muted" style={{ margin: 0 }}>
           These buttons emit the same SSE pipeline events the real backend stream
           produces. The loading scene below is the production component. A

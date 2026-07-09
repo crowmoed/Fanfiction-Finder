@@ -1,0 +1,14 @@
+/*
+ * google-signin.css — sidecar for GoogleSignIn.
+ *
+ * Google's Identity Services button renders its own brand-compliant widget
+ * (a different corner radius/height/border than this app's own buttons) — we
+ * don't restyle it (trademark/brand-compliance reasons), but the bare
+ * containing div it drops into deserves the same vertical rhythm as every
+ * other control on the panel so it doesn't read as an unstyled foreign
+ * element (F200).
+ */
+.google-signin-slot {
+  display: flex;
+  padding: 0.15rem 0;
+}

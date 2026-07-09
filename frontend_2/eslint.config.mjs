@@ -9,7 +9,7 @@ const compat = new FlatCompat({ baseDirectory: __dirname });
 
 const eslintConfig = [
   // Generated / build output + Node CommonJS tooling — not app code to lint.
-  { ignores: [".next/**", "node_modules/**", "next-env.d.ts", "scripts/**"] },
+  { ignores: [".next/**", "node_modules/**", "next-env.d.ts", "scripts/**", "design-explorations/**"] },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 

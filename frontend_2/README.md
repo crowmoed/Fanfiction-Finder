@@ -37,10 +37,12 @@ route in `src/app/api/*`.
 | Backend client | `src/lib/server/backend.ts`, `forward.ts` | The only code that knows `BACKEND_URL`. Typed fetch, error normalization, Bearer forwarding. `server-only`. |
 | Server routes | `src/app/api/*` | Same-origin proxies. `fandoms`, `auth/login`, `auth/me`, `billing/*`, `admin/stats` are plain proxies; `search` is an **SSE stream**. |
 | Client API | `src/lib/client/api.ts`, `token.ts` | Browser's typed client for our own `/api/*`. JWT persistence. |
-| Client state | `src/lib/client/auth.tsx`, `useSearch.ts`, `useFandoms.ts`, `history.ts` | Auth context, the SSE-consuming search state machine, fandom loading, local search history. |
-| Components | `src/components/*` | Presentational, restyle-ready: `SearchForm`, `FicCard`, `MatchScore`, `PipelineStatus`, `ResultsView`, `SiteNav`, `GoogleSignIn`. |
-| Surfaces | `src/app/(page|results|history|account)` | Real wired pages. |
-| Demos | `src/app/demos/*`, `src/lib/demo/*` | Every surface and state, backend-free — including the live loading scene. |
+| Client state | `src/lib/client/auth.tsx`, `useSearch.ts`, `searchRegistry.ts`, `useFandoms.ts`, `history.ts`, `localStore.ts` | Auth context, the tab-wide search op registry + its SSE consumer, fandom loading, local stores (all on the shared `localStore` helper: validated reads, quota-aware writes, cross-tab sync). |
+| Results domain | `src/lib/results/*` | Results cache (by URL), fic store, saved searches, facets, `meta.ts` accessors, highlight, export, columns, ids. |
+| Board | `src/app/board/`, `src/components/board/*`, `src/lib/board/*` | The `@xyflow/react` canvas of draggable result-table nodes (dynamic split strategies; localStorage-persisted). |
+| Components | `src/components/*` | Presentational, restyle-ready: `SearchForm`, `FicCard`, `MatchScore`, `PipelineStatus`, `ResultsView`, `AppShell` + `sidebar/*`, `Toast`, `GoogleSignIn`. |
+| Surfaces | `src/app/(app)/{page,results,history,saved,fic/[id]}` | Real wired pages inside the sidebar shell. Settings is a modal, not a route. |
+| Demos | `src/app/(dev)/dev/*`, `src/lib/demo/*` | Every surface and state, backend-free — including the live loading scene. Gated out of production unless `NEXT_PUBLIC_ENABLE_DEMOS=1`. |
 
 ### The search SSE protocol
 
@@ -60,12 +62,17 @@ tokens, no theme, no animation. Components carry semantic structure and the full
 data surface; the design pass replaces the markup/styles without touching the
 data layer, routes, or contracts.
 
-### Demos (`/demos`)
+### Demos (`/dev/*`)
 
-- **`/demos/search`** — drives the real loading + results components through
-  every phase via simulated SSE events: success, many results, empty, error, slow.
-- **`/demos/results`** — `FicCard` field permutations (high/mid/unranked score,
+Backend-free previews behind a loud "DEV / DEMOS" bar (noindex, and 404'd in
+production unless `NEXT_PUBLIC_ENABLE_DEMOS=1`):
+
+- **`/dev/search`** — drives the real loading + results components through every
+  phase via simulated SSE events: success, many results, empty, error, slow.
+- **`/dev/results`** — `FicCard` field permutations (high/mid/unranked score,
   missing fields, every platform).
-- **`/demos/components`** — atoms frozen at each state, incl. the pipeline at
-  every stage.
+- **`/dev/components`** / **`/dev/skeletons`** — atoms frozen at each state, incl.
+  the pipeline at every stage.
+- **`/dev/seed`** — writes fake searches + a fake account into the real local
+  stores to preview a populated app.
 ```

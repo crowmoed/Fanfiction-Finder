@@ -6,6 +6,7 @@
  * authenticated. Settings stays a modal (owned by AppShell); this just triggers
  * it. Anonymous users get Settings → the Account tab, where sign-in lives.
  */
+import { Icon } from "@/components/Icon";
 import { useAuth } from "@/lib/client/auth";
 import { Menu, MenuItem, MenuSeparator } from "./Menu";
 
@@ -19,7 +20,7 @@ export function AccountButton({ onOpenSettings }: { onOpenSettings: () => void }
       : status === "loading"
         ? "Loading…"
         : "Account";
-  const initial = authed ? (user?.email?.[0]?.toUpperCase() ?? "A") : "?";
+  const initial = authed ? (user?.email?.[0]?.toUpperCase() ?? "A") : null;
 
   return (
     <Menu
@@ -29,11 +30,11 @@ export function AccountButton({ onOpenSettings }: { onOpenSettings: () => void }
       trigger={
         <>
           <span className="sidebar-avatar" aria-hidden>
-            {initial}
+            {initial ?? <Icon name="user" size={13} />}
           </span>
           <span className="sidebar-label truncate">{label}</span>
           <span className="sidebar-account-caret sidebar-label" aria-hidden>
-            ⌃
+            <Icon name="chevron-up" size={12} />
           </span>
         </>
       }

@@ -24,9 +24,19 @@ import {
 
 import type { User } from "@/lib/contracts";
 import { api, ApiError } from "@/lib/client/api";
-import { clearToken, getToken, setToken } from "@/lib/client/token";
+import {
+  clearToken,
+  getToken,
+  setToken,
+  subscribeToken,
+} from "@/lib/client/token";
+import { isDemoMode } from "@/lib/demo/demoMode";
+import { DEMO_USER } from "@/lib/demo/fixtures";
 
-type AuthStatus = "loading" | "authenticated" | "anonymous";
+// "unreachable": we hold a token but couldn't verify it (network / server error,
+// not a rejection) — distinct from "anonymous" so the UI can offer a retry
+// instead of a misleading "you're signed out".
+type AuthStatus = "loading" | "authenticated" | "anonymous" | "unreachable";
 
 interface AuthContextValue {
   status: AuthStatus;
@@ -51,6 +61,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>("loading");
 
   const refresh = useCallback(async () => {
+    // Demo mode: a fake signed-in account, no token or backend. This runs on
+    // mount and on every token change, so the demo stays signed in across reloads.
+    if (isDemoMode()) {
+      setUser(DEMO_USER);
+      setStatus("authenticated");
+      return;
+    }
     if (!getToken()) {
       setUser(null);
       setStatus("anonymous");
@@ -61,12 +78,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(me);
       setStatus("authenticated");
     } catch (err) {
-      // Token rejected/expired — drop it and go anonymous.
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      const rejected =
+        err instanceof ApiError && (err.status === 401 || err.status === 403);
+      if (rejected) {
+        // Token genuinely rejected/expired — drop it and go anonymous.
         clearToken();
+        setUser(null);
+        setStatus("anonymous");
+      } else {
+        // Network / 5xx — the token may still be valid. Keep it and surface a
+        // recoverable "unreachable" state instead of a false sign-out.
+        setUser(null);
+        setStatus("unreachable");
       }
-      setUser(null);
-      setStatus("anonymous");
     }
   }, []);
 
@@ -90,6 +114,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     void refresh();
+    // Re-validate whenever the token changes from outside this context: a 401
+    // handler clearing a dead session (search proxy / billing), or a sign-out in
+    // another tab. refresh() with no token resolves cleanly to anonymous.
+    return subscribeToken(() => {
+      void refresh();
+    });
   }, [refresh]);
 
   const value = useMemo<AuthContextValue>(
