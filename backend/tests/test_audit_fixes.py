@@ -160,27 +160,28 @@ def test_pay1_handle_webhook_applies_once_then_noops(monkeypatch, fake_table):
     importlib.reload(SH)
     SH.user_store._table = fake_table
 
-    calls = {"set_tier": 0, "set_cust": 0}
-    SH.user_store.set_tier = lambda uid, t: calls.__setitem__("set_tier", calls["set_tier"] + 1)
-    SH.user_store.set_stripe_customer_id = lambda uid, c: calls.__setitem__("set_cust", calls["set_cust"] + 1)
+    calls = {"create": 0}
+    SH.user_store.create_fandom_request = lambda **kw: calls.__setitem__(
+        "create", calls["create"] + 1
+    )
 
     event = {
         "id": "evt_100",
         "type": "checkout.session.completed",
-        "data": {"object": {"client_reference_id": "u1", "customer": "cus_1"}},
+        "data": {"object": {"id": "cs_1", "metadata": {"kind": "fandom_sponsorship", "fandom": "Bleach"}}},
     }
     monkeypatch.setattr(stripe.Webhook, "construct_event", lambda payload, sig, secret: event)
 
     SH.handle_webhook(b"{}", "sig")
-    assert calls == {"set_tier": 1, "set_cust": 1}
+    assert calls == {"create": 1}
     SH.handle_webhook(b"{}", "sig")  # retry of same event.id
-    assert calls == {"set_tier": 1, "set_cust": 1}  # no double-fulfillment
+    assert calls == {"create": 1}  # no double-fulfillment
 
 
 def test_pay1_handle_webhook_failure_leaves_event_unmarked(monkeypatch, fake_table):
-    # A6: if processing fails mid-way, the event must NOT be marked processed — so
-    # Stripe's retry re-runs the (idempotent) side effects instead of silently
-    # dropping them. Guards against the old mark-before-process ordering.
+    # If processing fails mid-way, the event must NOT be marked processed — so
+    # Stripe's retry re-runs the side effect instead of silently dropping the
+    # order. Guards against a mark-before-process ordering.
     import stripe
     import auth.user_store as US
     import auth.stripe_handler as SH
@@ -189,20 +190,19 @@ def test_pay1_handle_webhook_failure_leaves_event_unmarked(monkeypatch, fake_tab
     importlib.reload(SH)
     SH.user_store._table = fake_table
 
-    calls = {"set_tier": 0}
+    calls = {"create": 0}
 
-    def boom_then_ok(uid, t):
-        calls["set_tier"] += 1
-        if calls["set_tier"] == 1:
+    def boom_then_ok(**kw):
+        calls["create"] += 1
+        if calls["create"] == 1:
             raise RuntimeError("transient DynamoDB error")
 
-    SH.user_store.set_tier = boom_then_ok
-    SH.user_store.set_stripe_customer_id = lambda uid, c: None
+    SH.user_store.create_fandom_request = boom_then_ok
 
     event = {
         "id": "evt_fail",
         "type": "checkout.session.completed",
-        "data": {"object": {"client_reference_id": "u1", "customer": "cus_1"}},
+        "data": {"object": {"id": "cs_1", "metadata": {"kind": "fandom_sponsorship", "fandom": "Bleach"}}},
     }
     monkeypatch.setattr(stripe.Webhook, "construct_event", lambda payload, sig, secret: event)
 
@@ -213,7 +213,7 @@ def test_pay1_handle_webhook_failure_leaves_event_unmarked(monkeypatch, fake_tab
 
     # Stripe's retry re-runs the side effect (not skipped) and then marks it done.
     SH.handle_webhook(b"{}", "sig")
-    assert calls["set_tier"] == 2
+    assert calls["create"] == 2
     assert SH.user_store.is_event_processed("evt_fail") is True
 
 
@@ -380,7 +380,9 @@ def test_ops2_client_request_id_propagated(client):
 
 
 def test_ops2_auth_failure_returns_request_id(client):
-    r = client.get("/search?q=hi")  # no auth -> 401 from get_current_user
+    # Anonymous search is allowed, so no auth is fine; with no `fandom` this is a
+    # 400 param error. Either way an error response must still carry a request_id.
+    r = client.get("/search?q=hi")
     assert r.status_code in (400, 401, 422)
     if r.headers.get("content-type", "").startswith("application/json"):
         assert "request_id" in r.json()
@@ -388,8 +390,10 @@ def test_ops2_auth_failure_returns_request_id(client):
 
 # ──────────────────────────────────────────────────────────────────────────────
 # CONCURRENCY — heavy routes must not block the event loop
-#   (/search does blocking Bedrock/Gemini/DB calls; if it were `async def` a single
-#    in-flight search would freeze the worker and serialize all other requests.)
+#   (/search does blocking Bedrock/Gemini/DB calls; it is `async def` so it can
+#    check request.is_disconnected() between stages, which means every blocking
+#    call must be offloaded via run_in_threadpool — one bare call would freeze
+#    the worker and serialize all other requests.)
 # ──────────────────────────────────────────────────────────────────────────────
 
 
@@ -400,17 +404,39 @@ def _endpoint_for(app, path):
     raise AssertionError(f"route {path} not found")
 
 
-def test_concurrency_search_route_is_sync_def():
-    """A sync route is run in FastAPI's threadpool; an async route with blocking
-    calls would freeze the event loop. /search must stay sync."""
+def test_concurrency_search_route_offloads_blocking_work():
+    """/search must be async (so client cancellation can stop the pipeline via
+    request.is_disconnected() checkpoints) AND must offload every blocking
+    pipeline call via run_in_threadpool — a bare call would block the loop."""
     import asyncio
+    import inspect
     import api
 
     importlib.reload(api)
     fn = _endpoint_for(api.app, "/search")
-    assert not asyncio.iscoroutinefunction(fn), (
-        "/search must be a plain `def` so its blocking calls run in a threadpool"
+    assert asyncio.iscoroutinefunction(fn), (
+        "/search must be async so it can await request.is_disconnected() between stages"
     )
+    src = inspect.getsource(fn)
+    assert "request.is_disconnected" in src, (
+        "/search must checkpoint client disconnects between pipeline stages"
+    )
+    # Offloaded calls look like `run_in_threadpool(name, ...)` — the name is
+    # never directly followed by `(`. A bare `name(` is a blocking call on the
+    # event loop.
+    for blocking in (
+        "get_fic_count(",
+        "enhance_query(",
+        "embed_query(",
+        "search_rrf(",
+        "search_rrf_with_variants(",
+        "rank(",
+        "increment_searches(",
+        "record_search_event(",
+    ):
+        assert blocking not in src, (
+            f"blocking call {blocking}...) must go through run_in_threadpool"
+        )
 
 
 def test_concurrency_webhook_offloads_blocking_work():

@@ -16,6 +16,7 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 import boto3
+from boto3.dynamodb.conditions import Attr
 from botocore.config import Config
 from botocore.exceptions import ClientError
 
@@ -234,6 +235,87 @@ class UserStore:
         except Exception:
             # Swallow everything — a failed analytics write must not affect the user.
             pass
+
+    # ── Fandom-sponsorship requests ─────────────────────────────────────────────
+    # One-time "pay $20 to vectorize a fandom" orders. Stored in this same table
+    # keyed `fandom_request:<uuid>` — the same item-type-by-prefix trick used for
+    # `stripe_event:` / `search_event:`. Volume is tiny (a handful of paid orders),
+    # so listing is a scan and status changes are get-then-put (no update
+    # expression) — simple and fulfilled by hand via `fandom_orders.py`.
+
+    REQUEST_PREFIX = "fandom_request:"
+    VALID_REQUEST_STATUSES = (
+        "paid", "confirmed", "indexing", "fulfilled", "refunded", "rejected",
+    )
+
+    def _request_key(self, request_id: str) -> str:
+        """Accept either the full `fandom_request:<uuid>` id or the bare uuid."""
+        if request_id.startswith(self.REQUEST_PREFIX):
+            return request_id
+        return f"{self.REQUEST_PREFIX}{request_id}"
+
+    def create_fandom_request(
+        self,
+        *,
+        fandom: str,
+        email: str = "",
+        notes: str = "",
+        stripe_session_id: str = "",
+        stripe_payment_intent: str | None = None,
+        amount: int | None = None,
+    ) -> dict:
+        """Record a paid sponsorship order awaiting operator fulfillment."""
+        now = datetime.now(timezone.utc).isoformat()
+        item = {
+            "id": f"{self.REQUEST_PREFIX}{uuid.uuid4().hex}",
+            "kind": "fandom_request",
+            "fandom": fandom,
+            "email": email or "",
+            "notes": notes or "",
+            "status": "paid",
+            "stripe_session_id": stripe_session_id or "",
+            "created_at": now,
+            "updated_at": now,
+        }
+        if stripe_payment_intent:
+            item["stripe_payment_intent"] = stripe_payment_intent
+        if amount is not None:
+            item["amount"] = int(amount)
+        self._table.put_item(Item=item)
+        return _item_to_dict(item)
+
+    def list_fandom_requests(self, status: str | None = None) -> list[dict]:
+        """All sponsorship requests (optionally filtered by status), oldest first."""
+        resp = self._table.scan(
+            FilterExpression=Attr("id").begins_with(self.REQUEST_PREFIX)
+        )
+        items = [
+            _item_to_dict(i)
+            for i in resp.get("Items", [])
+            if str(i.get("id", "")).startswith(self.REQUEST_PREFIX)
+        ]
+        if status:
+            items = [i for i in items if i.get("status") == status]
+        return sorted(items, key=lambda i: i.get("created_at", ""))
+
+    def get_fandom_request(self, request_id: str) -> dict | None:
+        resp = self._table.get_item(Key={"id": self._request_key(request_id)})
+        item = resp.get("Item")
+        return _item_to_dict(item) if item else None
+
+    def update_fandom_request(
+        self, request_id: str, status: str, note: str | None = None
+    ) -> dict | None:
+        """Advance a request's status (get-then-put). Returns None if not found."""
+        item = self.get_fandom_request(request_id)
+        if item is None:
+            return None
+        item["status"] = status
+        item["updated_at"] = datetime.now(timezone.utc).isoformat()
+        if note:
+            item["operator_note"] = note
+        self._table.put_item(Item=item)
+        return item
 
 
 user_store = UserStore()

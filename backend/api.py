@@ -23,7 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Union
 import numpy as np
 
 from data.schema import Fic
@@ -31,12 +31,18 @@ from data.fandoms import FANDOMS
 from ai.embedder import embed_query
 from ai.query_enhancer import enhance_query
 from ai.ranker import rank
-from db.postgres import search_rrf, get_fic_count, get_indexed_fandoms, get_admin_stats
+from db.postgres import (
+    search_rrf,
+    search_rrf_with_variants,
+    get_fic_count,
+    get_indexed_fandoms,
+    get_admin_stats,
+)
 
 from auth.auth import verify_google_token, create_jwt
 from auth.user_store import user_store
-from auth.dependencies import get_current_user, check_search_limit
-from auth.stripe_handler import create_checkout_session, create_portal_session, handle_webhook
+from auth.dependencies import get_current_user, get_optional_user
+from auth.stripe_handler import create_sponsorship_checkout, handle_webhook
 import stripe
 
 
@@ -198,6 +204,11 @@ class LoginRequest(BaseModel):
     id_token: str
 
 
+class SponsorRequest(BaseModel):
+    fandom_name: str
+    notes: str = ""
+
+
 # ── Auth endpoints ────────────────────────────────────────────────
 
 @app.post("/auth/login")
@@ -240,19 +251,17 @@ def _stripe_url(fn, *args) -> str:
         raise HTTPException(status_code=502, detail=f"Stripe error: {msg}")
 
 
-@app.post("/auth/checkout")
-def checkout(user: dict = Depends(get_current_user)):
-    """Create a Stripe Checkout Session and return the URL."""
-    return {"url": _stripe_url(create_checkout_session, user["id"], user["email"])}
+@app.post("/checkout")
+def sponsor_checkout(body: SponsorRequest):
+    """Create a one-time Stripe Checkout to sponsor vectorizing a fandom.
 
-
-@app.post("/auth/billing-portal")
-def billing_portal(user: dict = Depends(get_current_user)):
-    """Create a Stripe Billing Portal session so the user can cancel or manage billing."""
-    customer_id = user.get("stripe_customer_id")
-    if not customer_id:
-        raise HTTPException(status_code=400, detail="No Stripe customer on file")
-    return {"url": _stripe_url(create_portal_session, customer_id)}
+    Anonymous — no login required; Stripe collects the buyer's email. Returns the
+    hosted-checkout URL the frontend redirects to.
+    """
+    fandom = body.fandom_name.strip()
+    if not fandom:
+        raise HTTPException(status_code=400, detail="Fandom name is required.")
+    return {"url": _stripe_url(create_sponsorship_checkout, fandom, body.notes.strip())}
 
 
 @app.post("/webhooks/stripe")
@@ -325,35 +334,80 @@ def get_fandoms(request: Request):
     return JSONResponse(content=body, headers=cache_headers)
 
 
-@app.get("/search", response_model=list[Fic])
-def search(
-    # NOTE: intentionally a plain `def`, not `async def`. Every step below
-    # (enhance_query, embed_query, search_rrf, rank, increment_searches) is a
-    # *blocking* call. In an async route those would freeze the event loop, so a
-    # single in-flight search would block every other request on the worker
-    # (even /health). As a sync route, FastAPI runs it in a threadpool, so
-    # searches from different clients run concurrently.
+class SearchVariant(BaseModel):
+    """One pre-fusion retrieval list: how a single query variant (the raw query or
+    one HyDE rewrite) ranks the corpus before RRF fusion + LLM re-ranking."""
+    key: str  # "raw" | "hyde-1" | "hyde-2" | "hyde-3"
+    label: str  # the exact prompt text this list was retrieved with
+    fics: list[Fic]
+
+
+class SearchWithVariantsResponse(BaseModel):
+    """Shape of GET /search?include_variants=true (plain list[Fic] otherwise)."""
+    results: list[Fic]
+    variants: list[SearchVariant]
+
+
+@app.get("/search", response_model=Union[SearchWithVariantsResponse, list[Fic]])
+async def search(
+    # NOTE: async, but every pipeline step (enhance_query, embed_query,
+    # search_rrf, rank, increment_searches) is a *blocking* call, so each one is
+    # offloaded via run_in_threadpool — searches from different clients still
+    # run concurrently and the event loop stays free (even /health), same as the
+    # old sync-def-in-threadpool route. Being async is what lets us await
+    # request.is_disconnected() between stages: when the client cancels (the
+    # Next proxy aborts its upstream request on the browser's AbortSignal), we
+    # bail before the next Bedrock/Gemini/Postgres call instead of running the
+    # whole pipeline for a socket that's already closed.
+    request: Request,
     q: str = Query(..., max_length=1000, description="Natural language search query"),
     fandom: Optional[str] = Query(None, description="Fandom name from /fandoms"),
     limit: int = Query(20, ge=1, le=100, description="Number of results to return"),
     strict: bool = Query(False, description="Apply enhancer-extracted filters as hard SQL WHERE clauses (debug toggle)"),
-    user: dict = Depends(check_search_limit),
+    include_variants: bool = Query(
+        False,
+        description="Also return the pre-fusion retrieval list per query variant (raw + HyDE rewrites)",
+    ),
+    user: Optional[dict] = Depends(get_optional_user),
 ):
     _t0 = time.perf_counter()
+
+    # Search is open to everyone — nothing is paywalled — so `user` is None for an
+    # anonymous request. Derive stable analytics fields that work either way.
+    user_id = user["id"] if user else "anonymous"
+    tier = user.get("tier") if user else "anonymous"
+
+    async def client_gone(stage: str) -> bool:
+        """Cancellation checkpoint. True means the client already hung up, so
+        nothing we compute can be delivered — callers bail with a 499 (which
+        the server discards; there's no socket left to write it to)."""
+        if not await request.is_disconnected():
+            return False
+        _log(
+            "search_cancelled",
+            user_id=user_id,
+            fandom=fandom,
+            stage=stage,
+            latency_ms=round((time.perf_counter() - _t0) * 1000, 1),
+        )
+        return True
+
     if not fandom:
         raise HTTPException(status_code=400, detail="Fandom is required.")
     is_all_fandoms = fandom == ALL_FANDOMS
     if not is_all_fandoms and fandom not in FANDOMS:
         raise HTTPException(status_code=400, detail=f"Unknown fandom '{fandom}'. See /fandoms.")
     count_filter = None if is_all_fandoms else fandom
-    if get_fic_count(count_filter) == 0:
+    if await run_in_threadpool(get_fic_count, count_filter) == 0:
         label = "any fandom" if is_all_fandoms else f"'{fandom}'"
         raise HTTPException(status_code=404, detail=f"No fics indexed for {label}. Run the indexer first.")
 
     search_fandom = None if is_all_fandoms else fandom
 
     # Step 1: Enhance the query (HyDE — generate 3 hypothetical fic descriptions at different angles)
-    enriched = enhance_query(q, fandom=search_fandom)
+    if await client_gone("before_enhance"):
+        return Response(status_code=499)
+    enriched = await run_in_threadpool(enhance_query, q, fandom=search_fandom)
 
     # Build hard-filter dict from enhancer output (only when strict=True).
     # Schema-supported filters: min_word_count, max_word_count, excluded_tags.
@@ -372,7 +426,9 @@ def search(
             filters["excluded_tags"] = enriched.excluded_tags
 
     # Step 2: Embed raw query once (shared across all angles)
-    raw_embedding = embed_query(q)
+    if await client_gone("before_embed"):
+        return Response(status_code=499)
+    raw_embedding = await run_in_threadpool(embed_query, q)
 
     # Step 3: Build query embeddings — 3 HyDE blends at varying ratios + 1 pure raw.
     # All embeddings fuse via Reciprocal Rank Fusion in one SQL round trip with
@@ -383,25 +439,48 @@ def search(
 
     query_embeddings = [raw_embedding]
     for description, hyde_weight in zip(descriptions, blend_ratios):
-        hyde_embedding = embed_query(description)
+        hyde_embedding = await run_in_threadpool(embed_query, description)
         blended = _blend_embeddings(hyde_embedding, raw_embedding, hyde_weight=hyde_weight)
         query_embeddings.append(blended)
 
-    candidates = search_rrf(
-        embeddings=query_embeddings,
-        fandom=search_fandom,
-        per_platform_limit=40,
-        total_limit=None,
-        filters=filters or None,
-    )
+    # In variant mode, also capture each embedding's pre-fusion retrieval list.
+    # The variant lists share Fic objects with `candidates`, so the ranker's
+    # in-place match_score writes below flow into them for free; sorting
+    # `candidates` doesn't reorder the variant lists (separate list objects).
+    variant_lists: Optional[list[list[Fic]]] = None
+    if await client_gone("before_retrieve"):
+        return Response(status_code=499)
+    if include_variants:
+        candidates, variant_lists = await run_in_threadpool(
+            search_rrf_with_variants,
+            embeddings=query_embeddings,
+            fandom=search_fandom,
+            per_platform_limit=40,
+            total_limit=None,
+            filters=filters or None,
+        )
+    else:
+        candidates = await run_in_threadpool(
+            search_rrf,
+            embeddings=query_embeddings,
+            fandom=search_fandom,
+            per_platform_limit=40,
+            total_limit=None,
+            filters=filters or None,
+        )
 
-    # Step 4: AI rank the candidates against the original user query
-    ranked = rank(fics=candidates, query=q)
+    # Step 4: AI rank the candidates against the original user query — the
+    # single most expensive stage, so this checkpoint saves the most.
+    if await client_gone("before_rank"):
+        return Response(status_code=499)
+    ranked = await run_in_threadpool(rank, fics=candidates, query=q)
 
     results = ranked[:limit]
 
-    # Increment search count only after a successful search
-    user_store.increment_searches(user["id"])
+    # Increment the per-user weekly counter only for signed-in users — an
+    # anonymous search has no account to count against.
+    if user is not None:
+        await run_in_threadpool(user_store.increment_searches, user["id"])
 
     # ── Analytics ──────────────────────────────────────────────────
     # Two sinks, both best-effort: (1) a structured log line → CloudWatch (free,
@@ -411,8 +490,8 @@ def search(
     latency_ms = round((time.perf_counter() - _t0) * 1000, 1)
     _log(
         "search",
-        user_id=user["id"],
-        tier=user.get("tier"),
+        user_id=user_id,
+        tier=tier,
         fandom=fandom,
         all_fandoms=is_all_fandoms,
         strict=strict,
@@ -420,16 +499,31 @@ def search(
         returned=len(results),
         latency_ms=latency_ms,
     )
-    user_store.record_search_event(
-        user["id"],
+    await run_in_threadpool(
+        user_store.record_search_event,
+        user_id,
         fandom=search_fandom,
-        tier=user.get("tier"),
+        tier=tier,
         strict=strict,
         candidates=len(candidates),
         returned=len(results),
         latency_ms=latency_ms,
     )
 
+    if variant_lists is not None:
+        # query_embeddings = [raw] + one HyDE blend per description, so
+        # variant_lists[0] belongs to the raw query and variant_lists[i] to
+        # descriptions[i-1]. Each list is capped like the merged results.
+        return SearchWithVariantsResponse(
+            results=results,
+            variants=[
+                SearchVariant(key="raw", label=q, fics=variant_lists[0][:limit]),
+                *[
+                    SearchVariant(key=f"hyde-{i}", label=desc, fics=v[:limit])
+                    for i, (desc, v) in enumerate(zip(descriptions, variant_lists[1:]), start=1)
+                ],
+            ],
+        )
     return results
 
 
@@ -464,3 +558,12 @@ def admin_stats(_: None = Depends(require_admin)):
     stats = get_admin_stats()
     stats["supported_fandoms"] = list(FANDOMS.keys())
     return stats
+
+
+@app.get("/admin/requests")
+def admin_requests(
+    status: Optional[str] = Query(None, description="Filter by request status"),
+    _: None = Depends(require_admin),
+):
+    """Internal endpoint — fandom-sponsorship orders for the operator to fulfill."""
+    return {"requests": user_store.list_fandom_requests(status)}

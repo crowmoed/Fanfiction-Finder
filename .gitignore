@@ -3,7 +3,10 @@ frontend/.next/
 frontend/out/
 .env
 .env.*
-fandoms/
+# The devtool's local parquet/numpy fandom store. Anchored to that path — a bare
+# `fandoms/` also matched (and silently un-tracked) every frontend's
+# src/app/api/fandoms/ route, which is why /api/fandoms 404'd once deployed.
+fanfic-devtool/fandoms/
 **/constructed/
 __pycache__/
 *.pyc

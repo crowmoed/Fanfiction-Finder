@@ -60,6 +60,15 @@ class FakeDynamoTable:
     def get_item(self, Key):
         return {"Item": self.items.get(Key["id"])}
 
+    def scan(self, **kw):
+        # The real table applies a server-side FilterExpression; the fake returns
+        # everything and lets the caller's Python-side prefix filter narrow it.
+        return {"Items": list(self.items.values())}
+
+    def delete_item(self, Key):
+        self.items.pop(Key["id"], None)
+        return {}
+
 
 @pytest.fixture
 def fake_table():
