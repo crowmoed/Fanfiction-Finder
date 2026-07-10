@@ -32,7 +32,8 @@ function contentSecurityPolicy(): string {
   return [
     "default-src 'self'",
     `script-src ${scriptSrc}`,
-    "style-src 'self' 'unsafe-inline'",
+    // GIS injects its Sign-in button stylesheet from accounts.google.com/gsi/style.
+    "style-src 'self' 'unsafe-inline' https://accounts.google.com",
     "img-src 'self' data: https://www.google.com https://*.gstatic.com https://accounts.google.com",
     "font-src 'self' data:",
     "connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com",

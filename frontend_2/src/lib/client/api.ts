@@ -66,7 +66,13 @@ export const api = {
       body: JSON.stringify({ id_token: idToken }),
     }),
   me: () => call<User>("/api/auth/me"),
-  checkout: () => call<{ url: string }>("/api/billing/checkout", { method: "POST" }),
-  billingPortal: () =>
-    call<{ url: string }>("/api/billing/portal", { method: "POST" }),
+  /**
+   * Start a one-time "sponsor a fandom" checkout. Anonymous — no login needed;
+   * Stripe collects the buyer's email. Returns the hosted-checkout URL.
+   */
+  sponsorFandom: (body: { fandom_name: string; notes?: string }) =>
+    call<{ url: string }>("/api/sponsor", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 };

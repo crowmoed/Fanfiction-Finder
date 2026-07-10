@@ -1,0 +1,107 @@
+/* Sponsor-a-fandom surface. Reuses the app's structural classes (.card, .stack,
+   .row, .btn-primary, .alert, .eyebrow, .muted); this file only styles the form
+   fields + the how-it-works list. Colors/radii map to tokens (globals.css). */
+
+.sponsor-page {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  gap: 1.5rem;
+}
+
+.sponsor-head {
+  gap: 0.5rem;
+}
+
+.sponsor-title {
+  margin: 0;
+}
+
+.sponsor-lede {
+  max-width: 40rem;
+  line-height: 1.55;
+}
+
+.sponsor-card {
+  gap: 1.1rem;
+  padding: 1.5rem;
+}
+
+.sponsor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sponsor-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink-strong);
+}
+
+.sponsor-input,
+.sponsor-textarea {
+  font: inherit;
+  font-size: var(--text-md);
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line-mid);
+  border-radius: var(--r-sm);
+  padding: 0.6rem 0.7rem;
+  width: 100%;
+}
+
+.sponsor-textarea {
+  resize: vertical;
+  min-height: 4.5rem;
+  line-height: 1.5;
+}
+
+.sponsor-input:focus-visible,
+.sponsor-textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.sponsor-input:disabled,
+.sponsor-textarea:disabled {
+  opacity: 0.6;
+}
+
+.sponsor-actions {
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.sponsor-price-note {
+  font-size: var(--text-sm);
+}
+
+.sponsor-link {
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.sponsor-how {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--ink-mute);
+  font-size: var(--text-sm);
+}
+
+.sponsor-how li {
+  line-height: 1.55;
+  margin-bottom: 0.35rem;
+}
+
+.sponsor-how strong {
+  color: var(--ink-strong);
+  font-weight: 600;
+}

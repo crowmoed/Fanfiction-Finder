@@ -75,6 +75,7 @@ export function Sidebar({ onOpenSettings }: { onOpenSettings: () => void }) {
       >
         <SidebarItem href="/saved" icon="star" label="Saved" />
         <SidebarItem href="/history" icon="clock" label="History" />
+        <SidebarItem href="/sponsor" icon="sparkle" label="Sponsor a fandom" />
       </nav>
 
       <div className="sidebar-scroll">
