@@ -4,6 +4,10 @@
  * Everything reusable (rows, brand, hanko, nav, menu, skeleton) lives in
  * globals.css already; this file holds the shell-specific additions globals.css
  * has no primitive for.
+ *
+ * ORDER MATTERS: base rules first, then the collapsed-rail overrides, then the
+ * ≤720px top-bar overrides — the media blocks rely on winning the cascade at
+ * equal specificity, so nothing they override may be declared after them.
  */
 
 .sidebar-section-label-icon {
@@ -63,38 +67,110 @@
   transform: rotate(180deg);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .sidebar-account-caret .icon {
-    transition: none;
-  }
+/* ── Foot utility register ──────────────────────────────────────────────
+   Request a fandom / Vote are utilities, not destinations — they run a step
+   smaller and quieter than nav (13px, muted, 14px icons), and hover answers
+   with ink + the shared 2px lean instead of a filled block. The fill stays
+   reserved for real navigation. */
+.sidebar-util {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  text-align: left;
+  justify-content: flex-start;
+  border: none;
+  background: transparent;
+  color: var(--ink-mute);
+  text-decoration: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  transition: color var(--t-fast) ease, transform 140ms var(--ease-out-strong);
+}
+.sidebar-util .sidebar-ic {
+  color: var(--ink-faint);
+}
+.sidebar-util:hover {
+  color: var(--ink-strong);
+  transform: translateX(2px);
+}
+.sidebar-util:hover .sidebar-ic {
+  color: var(--ink-mute);
+}
+.sidebar-util:active {
+  transform: scale(0.97);
+}
+/* Active route: weight + ink + the seal on the icon — same language as
+   .sidebar-link[aria-current="page"], minus the fill (utility register). */
+.sidebar-util[aria-current="page"] {
+  color: var(--ink-strong);
+  font-weight: 600;
+}
+.sidebar-util[aria-current="page"] .sidebar-ic {
+  color: var(--accent);
 }
 
-/* Mobile top bar (REDESIGN-SPEC §6.6): at icon-only scale the active-route fill
-   (globals.css `.sidebar-link[aria-current="page"]`) reads too quietly against
-   its neighbours, so the active icon also gets a 2px vermilion underline tick
-   — the same "accent marks the active/committed thing" language the seal and
-   selection already use, just at nav scale. */
-@media (max-width: 720px) {
-  .sidebar-link {
-    position: relative;
-  }
-  .sidebar-link[aria-current="page"]::after {
-    content: "";
-    position: absolute;
-    left: 0.6rem;
-    right: 0.6rem;
-    bottom: 0.25rem;
-    height: 2px;
-    background: var(--accent);
-    border-radius: var(--r-pill);
-  }
-  /* Top-bar mode: the brand hairline is a masthead device for the vertical
-     rail; on the single-row bar it renders as a stray dash under the hanko. */
-  .sidebar-top {
-    border-bottom-color: transparent;
-    padding-bottom: 0;
-    margin-bottom: 0;
-  }
+/* Dev row joins the utility register's scale so the foot reads as one strip. */
+.sidebar-dev {
+  padding: 0.3rem 0.6rem;
+}
+
+/* Account shares its line with the "?" — the row is the unit, account grows,
+   help stays a compact square. */
+.sidebar-foot-row {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.sidebar-foot-row .sidebar-account {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* Trim the account row a step — the foot is chrome, not a destination. */
+.sidebar-account {
+  padding: 0.42rem 0.55rem;
+  font-size: 0.875rem;
+}
+.sidebar-help {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  border-radius: var(--r-sm);
+  color: var(--ink-faint);
+  transition: background var(--t-fast) ease, color var(--t-fast) ease,
+    transform 140ms var(--ease-out-strong);
+}
+.sidebar-help:hover {
+  background: var(--sidebar-hover);
+  color: var(--ink-strong);
+}
+.sidebar-help:active {
+  transform: scale(0.9);
+}
+
+/* Collapsed rail: utilities center like every other row; the account/help
+   pair stacks back into the icon column. */
+.is-collapsed .sidebar-util {
+  justify-content: center;
+  gap: 0;
+}
+.is-collapsed .sidebar-foot-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.1rem;
+}
+.is-collapsed .sidebar-help {
+  width: auto;
+  align-self: stretch;
 }
 
 /* Recent-search row Remove exit (played by useLeave before the row leaves the
@@ -111,9 +187,42 @@
 .sidebar-row-kebab:active {
   transform: scale(0.9);
 }
+
 @media (prefers-reduced-motion: reduce) {
+  .sidebar-account-caret .icon,
+  .sidebar-util,
+  .sidebar-help {
+    transition: none;
+  }
+  .sidebar-util:hover,
+  .sidebar-util:active,
+  .sidebar-help:active,
   .sidebar-search-item:active,
   .sidebar-row-kebab:active {
     transform: none;
+  }
+}
+
+/* ≤720px drawer mode (globals.css §17): the drawer always shows the FULL
+   expanded rail, so desktop-collapse styling is neutralized for the pieces
+   this file owns (globals.css neutralizes the rest). These live here, after
+   this file's own base .is-collapsed rules, to win the cascade. */
+@media (max-width: 720px) {
+  .is-collapsed .sidebar-util {
+    justify-content: flex-start;
+    gap: 0.55rem;
+  }
+  .is-collapsed .sidebar-foot-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.15rem;
+  }
+  .is-collapsed .sidebar-help {
+    width: 2rem;
+    align-self: auto;
+  }
+  /* The drawer is a vertical rail again — the brand hairline returns. */
+  .is-collapsed .sidebar-top {
+    border-bottom-color: var(--line);
   }
 }

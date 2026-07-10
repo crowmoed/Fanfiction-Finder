@@ -140,6 +140,17 @@ export interface FandomsResponse {
   fandoms: FandomOption[];
 }
 
+/** State of the free community fandom vote (GET/POST /api/vote). */
+export interface VoteState {
+  /** The 4 candidate fandoms on the current ballot. */
+  fandoms: string[];
+  /** fandom → vote count, 0-filled for all 4 ballot fandoms. */
+  tallies: Record<string, number>;
+  total: number;
+  /** The signed-in caller's current pick, or null (anonymous or not yet voted). */
+  your_vote: string | null;
+}
+
 /** The sentinel fandom name the backend uses for a cross-fandom search. */
 export const ALL_FANDOMS = "All Fandoms" as const;
 

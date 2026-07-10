@@ -1,12 +1,39 @@
-/* Sponsor-a-fandom surface. Reuses the app's structural classes (.card, .stack,
-   .row, .btn-primary, .alert, .eyebrow, .muted); this file only styles the form
-   fields + the how-it-works list. Colors/radii map to tokens (globals.css). */
+/* Add-your-fandom surface (vote board + request form). Reuses the app's
+   structural classes (.card, .stack, .row, .btn-primary, .alert, .eyebrow,
+   .muted); this file styles the page sections, form fields, and the
+   how-it-works list. The ballot itself is styled in components/vote.css.
+   Colors/radii map to tokens (globals.css). */
 
 .sponsor-page {
   max-width: 44rem;
   margin: 0 auto;
   padding: 2rem 1.25rem 4rem;
-  gap: 1.5rem;
+  gap: 2rem;
+}
+
+/* Two sections under one masthead: each opens with a hairline + a plain sans
+   header (NOT an eyebrow — the page's one kicker is in the head). */
+.sponsor-section {
+  gap: 1rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1.25rem;
+}
+.sponsor-section-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.sponsor-section-h {
+  margin: 0;
+  font-family: var(--font-sans); /* tool voice — the base h2 is serif */
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--ink-strong);
+  line-height: 1.25;
+}
+.sponsor-section-lede {
+  font-size: var(--text-md);
+  line-height: 1.5;
 }
 
 .sponsor-head {

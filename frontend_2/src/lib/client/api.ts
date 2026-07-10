@@ -12,6 +12,7 @@ import type {
   FandomsResponse,
   LoginResponse,
   User,
+  VoteState,
 } from "@/lib/contracts";
 import { getToken } from "@/lib/client/token";
 
@@ -67,12 +68,20 @@ export const api = {
     }),
   me: () => call<User>("/api/auth/me"),
   /**
-   * Start a one-time "sponsor a fandom" checkout. Anonymous — no login needed;
-   * Stripe collects the buyer's email. Returns the hosted-checkout URL.
+   * Free "request a fandom" — records the request and emails the operator.
+   * Anonymous; no payment.
    */
-  sponsorFandom: (body: { fandom_name: string; notes?: string }) =>
-    call<{ url: string }>("/api/sponsor", {
+  requestFandom: (body: { fandom_name: string; notes?: string; email?: string }) =>
+    call<{ ok: boolean }>("/api/sponsor", {
       method: "POST",
       body: JSON.stringify(body),
+    }),
+  /** The free community vote: current ballot + tallies (+ your pick if signed in). */
+  getVote: () => call<VoteState>("/api/vote"),
+  /** Cast/change your one vote. Requires sign-in (401 otherwise). */
+  castVote: (fandom: string) =>
+    call<VoteState>("/api/vote", {
+      method: "POST",
+      body: JSON.stringify({ fandom }),
     }),
 };

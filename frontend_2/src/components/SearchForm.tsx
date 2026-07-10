@@ -11,10 +11,12 @@ import { Icon } from "@/components/Icon";
  *
  * - `variant="hero"` (home): the "Baseline" structure from the search-bar
  *   exploration (design-explorations/search-bar, variant 04). No box at all —
- *   an oversized single-line input resting on a baseline rule. The rule is the
- *   whole state language: it breathes at rest, sweeps near-black on focus, and
- *   becomes an indeterminate progress sweep while busy. Controls (fandom,
- *   strict, search) are typographic, revealed on focus/text.
+ *   an auto-growing serif textarea resting on a baseline rule, so long
+ *   cravings wrap onto new lines instead of scrolling off the side (Enter
+ *   submits, Shift+Enter breaks the line). The rule is the whole state
+ *   language: it breathes at rest, sweeps near-black on focus, and becomes an
+ *   indeterminate progress sweep while busy. Controls (fandom, strict, search)
+ *   are typographic, revealed on focus/text.
  * - `variant="boxed"` (default, results page): the plain chat-style box —
  *   auto-growing textarea over a control rail behind a visible seam.
  *
@@ -23,12 +25,18 @@ import { Icon } from "@/components/Icon";
  */
 
 const MAX_INPUT_HEIGHT = 168; // boxed: ~6 lines before the textarea scrolls
+const MAX_HERO_INPUT_HEIGHT = 176; // hero: ~5 lines before the textarea scrolls
+
+/** External fill request (home's suggestion chips): loads `q` into the input
+ *  for editing without submitting. `nonce` must change per request so the same
+ *  chip can re-fill after the user edited or cleared the text. */
+export type SearchPrefill = { q: string; nonce: number };
 
 /**
  * Idle placeholder rotation (hero): feature discovery for semantic search.
  * Deliberately short (they must fit a 24px serif line on a 390px phone without
- * clipping mid-word) and DISJOINT from the home page's "Try a craving" chips —
- * the ghost text and a chip sitting under it must never echo each other.
+ * clipping mid-word) and DISJOINT from the home page's suggestion chips — the
+ * ghost text and a chip sitting under it must never echo each other.
  */
 export const PLACEHOLDERS = [
   "Describe the fic you're looking for…",
@@ -45,11 +53,15 @@ export function SearchForm({
   variant = "boxed",
   autoFocus,
   onCancel,
+  prefill,
 }: {
   initial?: Partial<SearchParams>;
   onSubmit: (params: SearchParams) => void;
   busy?: boolean;
   variant?: "hero" | "boxed";
+  /** Hero only: fill the input with a suggested query (editable, focused,
+   *  caret at the end) without submitting. See SearchPrefill. */
+  prefill?: SearchPrefill | null;
   /** Boxed only: autofocus the textarea on mount. Used when the composer was
    *  opened via /results' "Edit search" (REDESIGN-SPEC §3.1) — a bare empty
    *  /results visit stays quiet, so this is opt-in, not the hero's always-on
@@ -89,7 +101,7 @@ export function SearchForm({
   };
 
   return variant === "hero" ? (
-    <HeroForm {...shared} />
+    <HeroForm {...shared} prefill={prefill} />
   ) : (
     <BoxedForm {...shared} autoFocus={autoFocus} onCancel={onCancel} />
   );
@@ -118,11 +130,21 @@ type InnerProps = {
 function HeroForm({
   q, setQ, fandom, setFandom, strict, setStrict,
   busy, canSubmit, submit, fandoms, loading, fandomsError, retryFandoms,
-}: InnerProps) {
+  prefill,
+}: InnerProps & { prefill?: SearchPrefill | null }) {
   const [placeholder, setPlaceholder] = useState(PLACEHOLDERS[0]);
   const [focused, setFocused] = useState(false);
   const rootRef = useRef<HTMLFormElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Grow with the content, same chatbox behavior as the boxed composer: reset,
+  // then take scrollHeight up to the cap. Runs on every q change (incl. prefill).
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, MAX_HERO_INPUT_HEIGHT)}px`;
+  }, [q]);
 
   // The hero input owns the room, so it takes focus on a fresh mount — but
   // only when it opens empty (REDESIGN-SPEC §2). A back-navigation that lands
@@ -131,6 +153,23 @@ function HeroForm({
   useEffect(() => {
     if (inputRef.current && !inputRef.current.value) inputRef.current.focus();
   }, []);
+
+  // Suggestion-chip prefill: load the text, then hand the caret to the user at
+  // the end of the line — an editable draft, not a fired search. Keyed on the
+  // nonce so re-clicking a chip after edits re-fills.
+  useEffect(() => {
+    if (!prefill?.q) return;
+    setQ(prefill.q);
+    const el = inputRef.current;
+    if (!el) return;
+    // Focus after the new value has rendered so the caret lands at the end.
+    const raf = requestAnimationFrame(() => {
+      el.focus();
+      const end = prefill.q.length;
+      el.setSelectionRange(end, end);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [prefill, setQ]);
 
   // Quiet idle life: rotate example placeholders while empty and unfocused.
   useEffect(() => {
@@ -162,66 +201,78 @@ function HeroForm({
         submit();
       }}
     >
-      <div className="baseline-field">
-        <input
-          ref={inputRef}
-          className="baseline-input"
-          type="text"
-          /* The visible placeholder is the crossfading ghost below (a native
-             ::placeholder can't be transitioned); aria-label carries the
-             accessible name, so blanking the native placeholder is a11y-safe. */
-          placeholder=""
-          value={q}
-          disabled={busy}
-          onChange={(e) => setQ(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          aria-label="Search query"
-          autoComplete="off"
-          spellCheck={false}
-        />
-        {/* Ghost placeholder: keyed by text so each rotation tick fades the new
-            phrase in (reduced motion pins the phrase, so it mounts once). */}
-        {!q && (
-          <span className="baseline-ghost" aria-hidden="true" key={placeholder}>
-            {placeholder}
-          </span>
-        )}
+      <div className="baseline-box">
+        <div className="baseline-field">
+          <textarea
+            ref={inputRef}
+            className="baseline-input"
+            rows={1}
+            /* The visible placeholder is the crossfading ghost below (a native
+               ::placeholder can't be transitioned); aria-label carries the
+               accessible name, so blanking the native placeholder is a11y-safe. */
+            placeholder=""
+            value={q}
+            disabled={busy}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                submit();
+              }
+            }}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            aria-label="Search query"
+            autoComplete="off"
+            spellCheck={false}
+          />
+          {/* Ghost placeholder: keyed by text so each rotation tick fades the new
+              phrase in (reduced motion pins the phrase, so it mounts once). */}
+          {!q && (
+            <span className="baseline-ghost" aria-hidden="true" key={placeholder}>
+              {placeholder}
+            </span>
+          )}
+        </div>
+
+        <div className="baseline-controls">
+          <FandomListbox
+            fandoms={fandoms}
+            loading={loading}
+            value={fandom}
+            disabled={busy}
+            onChange={setFandom}
+          />
+          <button
+            type="button"
+            className="baseline-control baseline-strict"
+            role="switch"
+            aria-checked={strict}
+            disabled={busy}
+            onClick={() => setStrict(!strict)}
+          >
+            Strict: <span className="baseline-strict-state">{strict ? "on" : "off"}</span>
+          </button>
+          <span className="baseline-spacer" aria-hidden="true" />
+          {/* Busy state: the rule's vermilion sweep is the working indicator —
+              no second spinner next to it (one busy motif per view). */}
+          <button type="submit" className="baseline-control baseline-submit" disabled={!canSubmit}>
+            {busy ? "Searching…" : "Search"}
+            {!busy && (
+              <span className="baseline-submit-arrow" aria-hidden="true">
+                <Icon name="arrow-right" size={14} />
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* The slip's bottom edge IS the baseline rule — it closes the card and
+            keeps both of its jobs: ink focus sweep, vermilion working line
+            (picked from /dev/baseline-backgrounds.html, 08 "Slip"). */}
         <div className="baseline-rule" aria-hidden="true">
           <span className="baseline-rule-focus" />
           <span className="baseline-rule-sweep" />
         </div>
-      </div>
-
-      <div className="baseline-controls">
-        <FandomListbox
-          fandoms={fandoms}
-          loading={loading}
-          value={fandom}
-          disabled={busy}
-          onChange={setFandom}
-        />
-        <button
-          type="button"
-          className="baseline-control baseline-strict"
-          role="switch"
-          aria-checked={strict}
-          disabled={busy}
-          onClick={() => setStrict(!strict)}
-        >
-          Strict: <span className="baseline-strict-state">{strict ? "on" : "off"}</span>
-        </button>
-        <span className="baseline-spacer" aria-hidden="true" />
-        {/* Busy state: the rule's vermilion sweep is the working indicator —
-            no second spinner next to it (one busy motif per view). */}
-        <button type="submit" className="baseline-control baseline-submit" disabled={!canSubmit}>
-          {busy ? "Searching…" : "Search"}
-          {!busy && (
-            <span className="baseline-submit-arrow" aria-hidden="true">
-              <Icon name="arrow-right" size={14} />
-            </span>
-          )}
-        </button>
       </div>
 
       {fandomsError && (

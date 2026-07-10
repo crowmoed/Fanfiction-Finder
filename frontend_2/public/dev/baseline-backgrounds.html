@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Baseline × Backgrounds — Ficwell dev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,100..900,0..100,0..1&family=Source+Sans+3:ital,wght@0,400..700;1,400..700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,300..700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+/* ════════════════════════════════════════════════════════════════════
+   Baseline × Backgrounds — dev exploration.
+   The shipped hero "Baseline" structure (globals.css §9), unchanged,
+   with ONE axis varied: the background/container that says "type here".
+   Tokens copied from src/app/globals.css (Ficwell Ink, Second Impression).
+   ════════════════════════════════════════════════════════════════════ */
+:root {
+  --font-sans: "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-display: "Fraunces", var(--font-serif);
+
+  --paper: oklch(0.985 0.003 85);
+  --paper-2: oklch(0.958 0.006 85);
+  --paper-3: oklch(0.93 0.007 85);
+  --surface: #ffffff;
+  --ink-strong: oklch(0.235 0.01 80);
+  --ink: oklch(0.28 0.01 80);
+  --ink-mute: oklch(0.455 0.012 80);
+  --ink-faint: oklch(0.52 0.01 80);
+  --line: oklch(0.905 0.007 85);
+  --line-mid: oklch(0.845 0.008 85);
+  --line-strong: oklch(0.63 0.01 85);
+
+  --accent: oklch(0.545 0.185 29);
+  --accent-strong: oklch(0.47 0.17 29);
+  --accent-wash: color-mix(in oklab, oklch(0.545 0.185 29) 10%, #fff);
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-md: 0.875rem;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-pill: 999px;
+
+  --shadow-1: 0 1px 2px rgba(32, 29, 25, 0.06);
+  --shadow-2: 0 1px 2px rgba(32, 29, 25, 0.05), 0 4px 14px -6px rgba(32, 29, 25, 0.12);
+  --shadow-composer: var(--shadow-1), 0 3px 8px -3px rgba(32, 29, 25, 0.09);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+
+  --maxw: 880px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+::selection { background: var(--accent-wash); }
+
+/* ── Page chrome ─────────────────────────────────────────────────── */
+.page-head {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 48px 24px 8px;
+}
+.page-head .eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  margin: 0 0 10px;
+}
+.page-head h1 {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 1;
+  font-weight: 560;
+  font-size: clamp(1.9rem, 1.5rem + 1.6vw, 2.6rem);
+  line-height: 1.1;
+  letter-spacing: -0.012em;
+  color: var(--ink-strong);
+  margin: 0 0 12px;
+  text-wrap: balance;
+}
+.page-head p {
+  max-width: 62ch;
+  color: var(--ink-mute);
+  margin: 0;
+}
+.page-toc {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 18px 24px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.page-toc a {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-mute);
+  text-decoration: none;
+  border: 1px solid var(--line-mid);
+  border-radius: var(--r-pill);
+  padding: 4px 12px;
+  transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+.page-toc a:hover {
+  color: var(--ink-strong);
+  border-color: var(--line-strong);
+  background: var(--surface);
+}
+
+/* ── Section frame ───────────────────────────────────────────────── */
+.x-section {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 56px 24px 12px;
+}
+.x-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  border-top: 2px solid var(--ink-strong);
+  padding-top: 14px;
+}
+.x-num {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+}
+.x-name {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 1;
+  font-weight: 560;
+  font-size: 1.45rem;
+  letter-spacing: -0.01em;
+  color: var(--ink-strong);
+  margin: 0;
+}
+.x-tagline {
+  margin: 8px 0 20px;
+  color: var(--ink-mute);
+  max-width: 68ch;
+}
+
+/* Each stage reproduces the home hero habitat at a working scale. */
+.x-stage {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: clamp(28px, 6vw, 64px) clamp(20px, 5vw, 56px) clamp(28px, 5vw, 52px);
+  overflow: hidden;
+}
+.x-note {
+  margin: 12px 2px 0;
+  font-size: var(--text-md);
+  color: var(--ink-faint);
+}
+.x-note b { color: var(--ink-mute); font-weight: 600; }
+
+/* ── Hero habitat (kicker, headline, chips — constant across all) ── */
+.hero-kicker {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  margin: 0 0 6px;
+}
+.hero-headline {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 1;
+  font-weight: 560;
+  font-size: clamp(2.1rem, 1.5rem + 2.4vw, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--ink-strong);
+  text-wrap: balance;
+  margin: 0 0 26px;
+  max-width: 16ch;
+}
+.hero-chips {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin-top: 26px;
+}
+.hero-chips-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink-mute);
+}
+.hero-chips-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.chip {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--text-md);
+  color: var(--ink-mute);
+  background: transparent;
+  border: 1px solid var(--line-mid);
+  border-radius: var(--r-pill);
+  padding: 0.32rem 0.85rem;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease,
+    transform 140ms var(--ease-out-strong);
+}
+.chip:hover { background: var(--surface); border-color: var(--line-strong); color: var(--ink-strong); transform: translateY(-1px); }
+.chip:active { transform: translateY(0); }
+
+/* ── The Baseline structure (verbatim behavior from globals.css §9) ── */
+.bl { width: 100%; }
+.bl-box { position: relative; }
+.bl-field { position: relative; width: 100%; padding-top: 8px; }
+.bl-input {
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-serif);
+  font-size: clamp(1.1875rem, 1rem + 1.2vw, 1.75rem);
+  line-height: 1.35;
+  letter-spacing: -0.008em;
+  color: var(--ink-strong);
+  padding: 4px 2px 14px;
+}
+.bl-input:disabled { color: var(--ink-mute); opacity: 1; }
+.bl-ghost {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 12px;
+  pointer-events: none;
+  font-family: var(--font-serif);
+  font-size: clamp(1.1875rem, 1rem + 1.2vw, 1.75rem);
+  line-height: 1.35;
+  letter-spacing: -0.008em;
+  font-style: italic;
+  color: var(--ink-mute);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bl--has-text .bl-ghost { display: none; }
+
+.bl-rule {
+  position: relative;
+  width: 100%;
+  height: 1.5px;
+  background: var(--line-strong);
+  animation: bl-breathe 6s ease-in-out infinite;
+}
+.bl-rule::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 100%;
+  height: 1px;
+  background: var(--accent-wash);
+  transition: opacity 200ms var(--ease-out);
+}
+.bl:focus-within .bl-rule,
+.bl--busy .bl-rule { animation: none; opacity: 1; }
+.bl:focus-within .bl-rule::after,
+.bl--busy .bl-rule::after { opacity: 0; }
+.bl-rule-focus {
+  position: absolute;
+  left: 0; top: -0.5px;
+  width: 100%; height: 2px;
+  background: var(--ink-strong);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 260ms var(--ease-out);
+}
+.bl:focus-within .bl-rule-focus,
+.bl--busy .bl-rule-focus { transform: scaleX(1); }
+.bl-rule-sweep {
+  position: absolute;
+  left: 0; top: -0.5px;
+  width: 28%; height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: translateX(-110%);
+  opacity: 0;
+}
+.bl--busy .bl-rule-sweep { opacity: 1; animation: bl-sweep 1.1s ease-in-out infinite; }
+@keyframes bl-breathe { 0%, 100% { opacity: 0.75; } 50% { opacity: 1; } }
+@keyframes bl-sweep { 0% { transform: translateX(-110%); } 100% { transform: translateX(400%); } }
+
+.bl-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 34px;
+  padding-top: 10px;
+}
+.bl-control {
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-mute);
+  background: none;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 6px 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out),
+    color 150ms ease, background-color 150ms ease;
+  pointer-events: none;
+}
+.bl:focus-within .bl-control,
+.bl--has-text .bl-control,
+.bl--busy .bl-control {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.bl-fandom-btn { transition-delay: 0ms; }
+.bl-strict { transition-delay: 40ms; }
+.bl-submit { transition-delay: 80ms; }
+.bl-control.bl-submit { opacity: 0.55; transform: none; }
+.bl:focus-within .bl-submit,
+.bl--has-text .bl-submit,
+.bl--busy .bl-submit { opacity: 1; }
+.bl-control:hover:not(:disabled) { color: var(--ink-strong); background: var(--paper-3); }
+.bl-control:active:not(:disabled) { transform: translateY(1px); }
+.bl-control:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; opacity: 1; transform: translateY(0); pointer-events: auto; }
+.bl-control:disabled { cursor: default; color: var(--ink-faint); background: none; }
+.bl-spacer { flex: 1 1 auto; }
+
+.bl-caret { display: inline-flex; color: var(--ink-faint); }
+.bl-strict b { font-weight: 700; color: var(--ink-strong); font-style: normal; }
+.bl-strict[aria-checked="true"] b { color: var(--accent); }
+.bl-submit { color: var(--ink-strong); font-weight: 600; gap: 4px; }
+.bl-submit-arrow { display: inline-flex; transition: transform 150ms var(--ease-out); }
+.bl-submit:hover:not(:disabled) .bl-submit-arrow { transform: translateX(2px); }
+.bl-submit:disabled { color: var(--ink-faint); }
+
+/* On a white/tinted box, control hover pills need to read against the fill. */
+.v-surface .bl-control:hover:not(:disabled),
+.v-grain .bl-control:hover:not(:disabled),
+.v-slip .bl-control:hover:not(:disabled),
+.v-underlay .bl-control:hover:not(:disabled) { background: var(--paper-2); }
+.v-wash .bl-control:hover:not(:disabled),
+.v-well .bl-control:hover:not(:disabled) { background: color-mix(in oklab, var(--paper-3) 70%, #fff); }
+.v-wash.bl:focus-within .bl-control:hover:not(:disabled) { background: var(--paper-2); }
+
+/* ════════════════════════════════════════════════════════════════════
+   THE EIGHT BACKGROUNDS — ordered lightest → most committed.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* 01 · Frame — a hairline boundary, no fill. */
+.v-frame .bl-box {
+  border: 1px solid var(--line-mid);
+  border-radius: var(--r-md);
+  padding: 14px 20px 8px;
+  transition: border-color 200ms var(--ease-out);
+}
+.v-frame:focus-within .bl-box,
+.v-frame.bl--busy .bl-box { border-color: var(--line-strong); }
+
+/* 02 · Halo — an edgeless pool of white light behind the composer. */
+.v-halo .bl-box { padding: 18px 24px 10px; }
+.v-halo .bl-box::before {
+  content: "";
+  position: absolute;
+  inset: -14px -20px;
+  background: radial-gradient(
+    130% 150% at 28% 18%,
+    var(--surface) 0%,
+    color-mix(in oklab, var(--surface) 55%, transparent) 58%,
+    transparent 100%
+  );
+  border-radius: 24px;
+  opacity: 0.8;
+  transition: opacity 260ms var(--ease-out);
+  pointer-events: none;
+  z-index: 0;
+}
+.v-halo:focus-within .bl-box::before,
+.v-halo.bl--busy .bl-box::before { opacity: 1; }
+.v-halo .bl-field, .v-halo .bl-controls { position: relative; z-index: 1; }
+
+/* 03 · Underlay — a white slip hugging just the input line; controls
+   stay out on the paper. */
+.v-underlay .bl-field {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 14px 16px 0;
+  box-shadow: 0 0 0 1px var(--line), var(--shadow-1);
+  transition: box-shadow 200ms var(--ease-out);
+}
+.v-underlay .bl-ghost { left: 18px; right: 18px; top: 18px; }
+.v-underlay:focus-within .bl-field,
+.v-underlay.bl--busy .bl-field {
+  box-shadow: 0 0 0 1px var(--line-mid), var(--shadow-composer);
+}
+.v-underlay .bl-controls { padding-left: 8px; padding-right: 8px; }
+
+/* 04 · Wash — a flat tint pressed into the page; wakes to white on focus. */
+.v-wash .bl-box {
+  background: var(--paper-2);
+  border-radius: var(--r-md);
+  padding: 14px 20px 8px;
+  transition: background 240ms var(--ease-out), box-shadow 240ms var(--ease-out);
+}
+.v-wash:focus-within .bl-box,
+.v-wash.bl--busy .bl-box {
+  background: var(--surface);
+  box-shadow: var(--shadow-composer);
+}
+
+/* 05 · Well — recessed, letterpress: the field is pressed INTO the paper. */
+.v-well .bl-box {
+  background: color-mix(in oklab, var(--paper-3) 55%, var(--paper-2));
+  border-radius: var(--r-md);
+  padding: 14px 20px 8px;
+  box-shadow:
+    inset 0 1.5px 4px rgba(32, 29, 25, 0.09),
+    inset 0 0 0 1px rgba(32, 29, 25, 0.04);
+  transition: box-shadow 240ms var(--ease-out);
+}
+.v-well:focus-within .bl-box,
+.v-well.bl--busy .bl-box {
+  box-shadow:
+    inset 0 2px 6px rgba(32, 29, 25, 0.12),
+    inset 0 0 0 1px rgba(32, 29, 25, 0.06);
+}
+
+/* 06 · Grain — a sheet of stationery laid on the desk (baked paper grain). */
+.v-grain .bl-box {
+  background-color: var(--surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 14px 20px 8px;
+  box-shadow: var(--shadow-1);
+  transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+}
+.v-grain:focus-within .bl-box,
+.v-grain.bl--busy .bl-box {
+  border-color: var(--line-mid);
+  box-shadow: var(--shadow-composer);
+}
+
+/* 07 · Surface — the full composer-grade card: white, bordered, grounded. */
+.v-surface .bl-box {
+  background: var(--surface);
+  border: 1px solid var(--line-mid);
+  border-radius: var(--r-md);
+  padding: 14px 20px 8px;
+  box-shadow: var(--shadow-composer);
+  transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+}
+.v-surface:focus-within .bl-box,
+.v-surface.bl--busy .bl-box {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-2);
+}
+
+/* 08 · Slip — a white card whose BOTTOM EDGE is the baseline rule itself:
+   the box and the signature line fused into one object. */
+.v-slip .bl-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-bottom: none;
+  border-radius: var(--r-md) var(--r-md) 0 0;
+  padding: 14px 20px 0;
+  box-shadow: var(--shadow-composer);
+  transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+}
+.v-slip:focus-within .bl-box,
+.v-slip.bl--busy .bl-box { border-color: var(--line-mid); box-shadow: var(--shadow-2); }
+.v-slip .bl-rule--edge { margin: 10px -20px 0; width: auto; }
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .hero-chips-row { flex-direction: column; align-items: flex-start; }
+  .x-stage { padding: 24px 16px; }
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .bl-rule { animation: none; opacity: 1; }
+  .bl--busy .bl-rule-sweep {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    width: 100%;
+  }
+  .bl-control, .bl-rule-focus, .bl-box, .bl-field, .bl-box::before,
+  .bl-submit-arrow, .chip {
+    transition: none !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <p class="eyebrow">Ficwell dev · exploration</p>
+  <h1>Baseline × Backgrounds</h1>
+  <p>
+    The shipped hero keeps its Baseline structure — serif input, breathing rule,
+    controls that rise on engagement. One axis varies below: the background that
+    says <em>type here</em>. Ordered lightest to most committed. Click into each
+    to feel the focus state; submit to see the working sweep.
+  </p>
+</header>
+
+<nav class="page-toc" aria-label="Variations">
+  <a href="#b1">01 Frame</a>
+  <a href="#b2">02 Halo</a>
+  <a href="#b3">03 Underlay</a>
+  <a href="#b4">04 Wash</a>
+  <a href="#b5">05 Well</a>
+  <a href="#b6">06 Grain</a>
+  <a href="#b7">07 Surface</a>
+  <a href="#b8">08 Slip</a>
+</nav>
+
+<!-- ════════════════ 01 · FRAME ════════════════ -->
+<section class="x-section" id="b1">
+  <header class="x-head"><span class="x-num">01</span><h2 class="x-name">Frame</h2></header>
+  <p class="x-tagline">The lightest possible claim: a hairline boundary and nothing else. The paper stays the paper; the line just says "this region is yours."</p>
+  <div class="x-stage">
+    <p class="hero-kicker">Semantic fic search · AO3 · FFN · Wattpad</p>
+    <h1 class="hero-headline">Describe the fic you want.</h1>
+    <form class="bl v-frame" novalidate>
+      <div class="bl-box">
+        <div class="bl-field">
+          <input class="bl-input" type="text" aria-label="Search query" autocomplete="off" spellcheck="false" />
+          <span class="bl-ghost">post-war Drarry, slow burn…</span>
+          <div class="bl-rule" aria-hidden="true"><span class="bl-rule-focus"></span><span class="bl-rule-sweep"></span></div>
+        </div>
+        <div class="bl-controls">
+          <button type="button" class="bl-control bl-fandom-btn"><span>All Fandoms</span><span class="bl-caret" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+          <button type="button" class="bl-control bl-strict" role="switch" aria-checked="false">Strict: <b>off</b></button>
+          <span class="bl-spacer" aria-hidden="true"></span>
+          <button type="submit" class="bl-control bl-submit" disabled><span class="bl-submit-label">Search</span><span class="bl-submit-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
+        </div>
+      </div>
+    </form>
+    <div class="hero-chips">
+      <span class="hero-chips-label">Try one of these</span>
+      <div class="hero-chips-row">
+        <button type="button" class="chip">Drarry slow burn, enemies to lovers, no major character death</button>
+        <button type="button" class="chip">time-travel fix-it where Luffy remembers everything</button>
+      </div>
+    </div>
+  </div>
+  <p class="x-note"><b>Look for:</b> whether an edge alone is enough of an invitation, or whether the inside still reads as blank page.</p>
+</section>
+
+<!-- ════════════════ 02 · HALO ════════════════ -->
+<section class="x-section" id="b2">
+  <header class="x-head"><span class="x-num">02</span><h2 class="x-name">Halo</h2></header>
+  <p class="x-tagline">No box at all, still: a soft pool of white light gathers behind the composer and fades into the paper. Presence without an edge.</p>
+  <div class="x-stage">
+    <p class="hero-kicker">Semantic fic search · AO3 · FFN · Wattpad</p>
+    <h1 class="hero-headline">Describe the fic you want.</h1>
+    <form class="bl v-halo" novalidate>
+      <div class="bl-box">
+        <div class="bl-field">
+          <input class="bl-input" type="text" aria-label="Search query" autocomplete="off" spellcheck="false" />
+          <span class="bl-ghost">found family, slow healing…</span>
+          <div class="bl-rule" aria-hidden="true"><span class="bl-rule-focus"></span><span class="bl-rule-sweep"></span></div>
+        </div>
+        <div class="bl-controls">
+          <button type="button" class="bl-control bl-fandom-btn"><span>All Fandoms</span><span class="bl-caret" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+          <button type="button" class="bl-control bl-strict" role="switch" aria-checked="false">Strict: <b>off</b></button>
+          <span class="bl-spacer" aria-hidden="true"></span>
+          <button type="submit" class="bl-control bl-submit" disabled><span class="bl-submit-label">Search</span><span class="bl-submit-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
+        </div>
+      </div>
+    </form>
+    <div class="hero-chips">
+      <span class="hero-chips-label">Try one of these</span>
+      <div class="hero-chips-row">
+        <button type="button" class="chip">post-war Kakashi raises Naruto, found family, slow healing</button>
+        <button type="button" class="chip">quiet eighth-year Hogwarts fic, lots of pining, happy ending</button>
+      </div>
+    </div>
+  </div>
+  <p class="x-note"><b>Look for:</b> the glow brightens on focus. Judge whether "edgeless" reads as considered or just as a smudge.</p>
+</section>
+
+<!-- ════════════════ 03 · UNDERLAY ════════════════ -->
+<section class="x-section" id="b3">
+  <header class="x-head"><span class="x-num">03</span><h2 class="x-name">Underlay</h2></header>
+  <p class="x-tagline">A white slip hugs only the input line — the writing surface gets a page of its own while the controls stay out on the desk.</p>
+  <div class="x-stage">
+    <p class="hero-kicker">Semantic fic search · AO3 · FFN · Wattpad</p>
+    <h1 class="hero-headline">Describe the fic you want.</h1>
+    <form class="bl v-underlay" novalidate>
+      <div class="bl-box">
+        <div class="bl-field">
+          <input class="bl-input" type="text" aria-label="Search query" autocomplete="off" spellcheck="false" />
+          <span class="bl-ghost">time-travel fix-it, happy ending…</span>
+          <div class="bl-rule" aria-hidden="true"><span class="bl-rule-focus"></span><span class="bl-rule-sweep"></span></div>
+        </div>
+        <div class="bl-controls">
+          <button type="button" class="bl-control bl-fandom-btn"><span>All Fandoms</span><span class="bl-caret" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+          <button type="button" class="bl-control bl-strict" role="switch" aria-checked="false">Strict: <b>off</b></button>
+          <span class="bl-spacer" aria-hidden="true"></span>
+          <button type="submit" class="bl-control bl-submit" disabled><span class="bl-submit-label">Search</span><span class="bl-submit-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
+        </div>
+      </div>
+    </form>
+    <div class="hero-chips">
+      <span class="hero-chips-label">Try one of these</span>
+      <div class="hero-chips-row">
+        <button type="button" class="chip">Drarry slow burn, enemies to lovers, no major character death</button>
+        <button type="button" class="chip">post-war Kakashi raises Naruto, found family, slow healing</button>
+      </div>
+    </div>
+  </div>
+  <p class="x-note"><b>Look for:</b> the tightest possible "type HERE" — the box wraps exactly the thing you type into, nothing else.</p>
+</section>
+
+<!-- ════════════════ 04 · WASH ════════════════ -->
+<section class="x-section" id="b4">
+  <header class="x-head"><span class="x-num">04</span><h2 class="x-name">Wash</h2></header>
+  <p class="x-tagline">A flat tint pressed into the page — borderless, shadowless. On focus the sheet wakes: the tint lifts to white and picks up a grounded shadow.</p>
+  <div class="x-stage">
+    <p class="hero-kicker">Semantic fic search · AO3 · FFN · Wattpad</p>
+    <h1 class="hero-headline">Describe the fic you want.</h1>
+    <form class="bl v-wash" novalidate>
+      <div class="bl-box">
+        <div class="bl-field">
+          <input class="bl-input" type="text" aria-label="Search query" autocomplete="off" spellcheck="false" />
+          <span class="bl-ghost">quiet pining, eighth year…</span>
+          <div class="bl-rule" aria-hidden="true"><span class="bl-rule-focus"></span><span class="bl-rule-sweep"></span></div>
+        </div>
+        <div class="bl-controls">
+          <button type="button" class="bl-control bl-fandom-btn"><span>All Fandoms</span><span class="bl-caret" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+          <button type="button" class="bl-control bl-strict" role="switch" aria-checked="false">Strict: <b>off</b></button>
+          <span class="bl-spacer" aria-hidden="true"></span>
+          <button type="submit" class="bl-control bl-submit" disabled><span class="bl-submit-label">Search</span><span class="bl-submit-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
+        </div>
+      </div>
+    </form>
+    <div class="hero-chips">
+      <span class="hero-chips-label">Try one of these</span>
+      <div class="hero-chips-row">
+        <button type="button" class="chip">time-travel fix-it where Luffy remembers everything</button>
+        <button type="button" class="chip">quiet eighth-year Hogwarts fic, lots of pining, happy ending</button>
+      </div>
+    </div>
+  </div>
+  <p class="x-note"><b>Look for:</b> the rest→focus flip (tint→white) is the signature move here. Judge the resting tint: field or stain?</p>
+</section>
+
+<!-- ════════════════ 05 · WELL ════════════════ -->
+<section class="x-section" id="b5">
+  <header class="x-head"><span class="x-num">05</span><h2 class="x-name">Well</h2></header>
+  <p class="x-tagline">Letterpress: the field is pressed into the paper rather than laid on top of it. An inkwell you dip into, per the name on the door.</p>
+  <div class="x-stage">
+    <p class="hero-kicker">Semantic fic search · AO3 · FFN · Wattpad</p>
+    <h1 class="hero-headline">Describe the fic you want.</h1>
+    <form class="bl v-well" novalidate>
+      <div class="bl-box">
+        <div class="bl-field">
+          <input class="bl-input" type="text" aria-label="Search query" autocomplete="off" spellcheck="false" />
+          <span class="bl-ghost">post-war Drarry, slow burn…</span>
+          <div class="bl-rule" aria-hidden="true"><span class="bl-rule-focus"></span><span class="bl-rule-sweep"></span></div>
+        </div>
+        <div class="bl-controls">
+          <button type="button" class="bl-control bl-fandom-btn"><span>All Fandoms</span><span class="bl-caret" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+          <button type="button" class="bl-control bl-strict" role="switch" aria-checked="false">Strict: <b>off</b></button>
+          <span class="bl-spacer" aria-hidden="true"></span>
+          <button type="submit" class="bl-control bl-submit" disabled><span class="bl-submit-label">Search</span><span class="bl-submit-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
+        </div>
+      </div>
+    </form>
+    <div class="hero-chips">
+      <span class="hero-chips-label">Try one of these</span>
+      <div class="hero-chips-row">
+        <button type="button" class="chip">found family, slow healing, post-war</button>
+        <button type="button" class="chip">Drarry slow burn, enemies to lovers, no major character death</button>
+      </div>
+    </div>
+  </div>
+  <p class="x-note"><b>Look for:</b> recessed = "receptacle", which is semantically right for an input. Judge whether the inset shadow stays quiet enough for the print-shop voice.</p>
+</section>
+
+<!-- ════════════════ 06 · GRAIN ════════════════ -->
+<section class="x-section" id="b6">
+  <header class="x-head"><span class="x-num">06</span><h2 class="x-name">Grain</h2></header>
+  <p class="x-tagline">A sheet of stationery laid on the desk: white, hairline-edged, with a whisper of paper grain baked in. The one variation with texture.</p>
+  <div class="x-stage">
+    <p class="hero-kicker">Semantic fic search · AO3 · FFN · Wattpad</p>
+    <h1 class="hero-headline">Describe the fic you want.</h1>
+    <form class="bl v-grain" novalidate>
+      <div class="bl-box">
+        <div class="bl-field">
+          <input class="bl-input" type="text" aria-label="Search query" autocomplete="off" spellcheck="false" />
+          <span class="bl-ghost">found family, slow healing…</span>
+          <div class="bl-rule" aria-hidden="true"><span class="bl-rule-focus"></span><span class="bl-rule-sweep"></span></div>
+        </div>
+        <div class="bl-controls">
+          <button type="button" class="bl-control bl-fandom-btn"><span>All Fandoms</span><span class="bl-caret" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+          <button type="button" class="bl-control bl-strict" role="switch" aria-checked="false">Strict: <b>off</b></button>
+          <span class="bl-spacer" aria-hidden="true"></span>
+          <button type="submit" class="bl-control bl-submit" disabled><span class="bl-submit-label">Search</span><span class="bl-submit-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
+        </div>
+      </div>
+    </form>
+    <div class="hero-chips">
+      <span class="hero-chips-label">Try one of these</span>
+      <div class="hero-chips-row">
+        <button type="button" class="chip">quiet eighth-year Hogwarts fic, lots of pining, happy ending</button>
+        <button type="button" class="chip">time-travel fix-it where Luffy remembers everything</button>
+      </div>
+    </div>
+  </div>
+  <p class="x-note"><b>Look for:</b> the grain is nearly subliminal at arm's length — lean in. Judge whether texture earns its place or reads as noise.</p>
+</section>
+
+<!-- ════════════════ 07 · SURFACE ════════════════ -->
+<section class="x-section" id="b7">
+  <header class="x-head"><span class="x-num">07</span><h2 class="x-name">Surface</h2></header>
+  <p class="x-tagline">The full composer-grade card: white, bordered, grounded with the composer shadow. The home bar becomes an unmistakable sibling of the results-page box.</p>
+  <div class="x-stage">
+    <p class="hero-kicker">Semantic fic search · AO3 · FFN · Wattpad</p>
+    <h1 class="hero-headline">Describe the fic you want.</h1>
+    <form class="bl v-surface" novalidate>
+      <div class="bl-box">
+        <div class="bl-field">
+          <input class="bl-input" type="text" aria-label="Search query" autocomplete="off" spellcheck="false" />
+          <span class="bl-ghost">time-travel fix-it, happy ending…</span>
+          <div class="bl-rule" aria-hidden="true"><span class="bl-rule-focus"></span><span class="bl-rule-sweep"></span></div>
+        </div>
+        <div class="bl-controls">
+          <button type="button" class="bl-control bl-fandom-btn"><span>All Fandoms</span><span class="bl-caret" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+          <button type="button" class="bl-control bl-strict" role="switch" aria-checked="false">Strict: <b>off</b></button>
+          <span class="bl-spacer" aria-hidden="true"></span>
+          <button type="submit" class="bl-control bl-submit" disabled><span class="bl-submit-label">Search</span><span class="bl-submit-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
+        </div>
+      </div>
+    </form>
+    <div class="hero-chips">
+      <span class="hero-chips-label">Try one of these</span>
+      <div class="hero-chips-row">
+        <button type="button" class="chip">post-war Kakashi raises Naruto, found family, slow healing</button>
+        <button type="button" class="chip">Drarry slow burn, enemies to lovers, no major character death</button>
+      </div>
+    </div>
+  </div>
+  <p class="x-note"><b>Look for:</b> maximum affordance, minimum ambiguity. Judge whether the hero loses its typographic character once it's fully boxed.</p>
+</section>
+
+<!-- ════════════════ 08 · SLIP ════════════════ -->
+<section class="x-section" id="b8">
+  <header class="x-head"><span class="x-num">08</span><h2 class="x-name">Slip</h2></header>
+  <p class="x-tagline">The fusion: a white card whose bottom edge IS the baseline rule. The box gives you "type here"; the rule keeps its job as focus indicator and working line.</p>
+  <div class="x-stage">
+    <p class="hero-kicker">Semantic fic search · AO3 · FFN · Wattpad</p>
+    <h1 class="hero-headline">Describe the fic you want.</h1>
+    <form class="bl v-slip" novalidate>
+      <div class="bl-box">
+        <div class="bl-field">
+          <input class="bl-input" type="text" aria-label="Search query" autocomplete="off" spellcheck="false" />
+          <span class="bl-ghost">quiet pining, eighth year…</span>
+        </div>
+        <div class="bl-controls">
+          <button type="button" class="bl-control bl-fandom-btn"><span>All Fandoms</span><span class="bl-caret" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+          <button type="button" class="bl-control bl-strict" role="switch" aria-checked="false">Strict: <b>off</b></button>
+          <span class="bl-spacer" aria-hidden="true"></span>
+          <button type="submit" class="bl-control bl-submit" disabled><span class="bl-submit-label">Search</span><span class="bl-submit-arrow" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
+        </div>
+        <div class="bl-rule bl-rule--edge" aria-hidden="true"><span class="bl-rule-focus"></span><span class="bl-rule-sweep"></span></div>
+      </div>
+    </form>
+    <div class="hero-chips">
+      <span class="hero-chips-label">Try one of these</span>
+      <div class="hero-chips-row">
+        <button type="button" class="chip">found family, slow healing, post-war</button>
+        <button type="button" class="chip">quiet eighth-year Hogwarts fic, lots of pining, happy ending</button>
+      </div>
+    </div>
+  </div>
+  <p class="x-note"><b>Look for:</b> the rule now underlines the whole object — focus sweep and vermilion working line run the card's full bottom edge. The most "Ficwell" answer of the eight.</p>
+</section>
+
+<footer class="x-section" style="padding-bottom:64px">
+  <p class="x-note">All eight keep the shipped Baseline behavior: controls rise on focus/typing, Search hints at rest, the rule breathes idle and carries the ink focus sweep + vermilion busy sweep. Backgrounds stay in the paper/ink family — vermilion remains reserved for the working line and commitment moments.</p>
+</footer>
+
+<script>
+document.querySelectorAll("form.bl").forEach((form) => {
+  const input = form.querySelector(".bl-input");
+  const submit = form.querySelector(".bl-submit");
+  const submitLabel = form.querySelector(".bl-submit-label");
+  const strict = form.querySelector(".bl-strict");
+  const fandomBtn = form.querySelector(".bl-fandom-btn");
+  const fandoms = ["All Fandoms", "Harry Potter", "Naruto", "One Piece", "Genshin Impact"];
+  let fi = 0;
+
+  input.addEventListener("input", () => {
+    form.classList.toggle("bl--has-text", input.value.length > 0);
+    submit.disabled = input.value.trim().length === 0;
+  });
+
+  strict.addEventListener("click", () => {
+    const on = strict.getAttribute("aria-checked") !== "true";
+    strict.setAttribute("aria-checked", String(on));
+    strict.querySelector("b").textContent = on ? "on" : "off";
+  });
+
+  fandomBtn.addEventListener("click", () => {
+    fi = (fi + 1) % fandoms.length;
+    fandomBtn.querySelector("span").textContent = fandoms[fi];
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!input.value.trim() || form.classList.contains("bl--busy")) return;
+    form.classList.add("bl--busy");
+    input.disabled = true;
+    submitLabel.textContent = "Searching…";
+    setTimeout(() => {
+      form.classList.remove("bl--busy");
+      input.disabled = false;
+      submitLabel.textContent = "Search";
+      submitLabel.parentElement.disabled = input.value.trim().length === 0;
+      input.focus();
+    }, 2600);
+  });
+
+  // Chips prefill the nearest composer, like the real hero.
+  form.closest(".x-stage").querySelectorAll(".chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      input.value = chip.textContent.trim();
+      form.classList.add("bl--has-text");
+      submit.disabled = false;
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    });
+  });
+});
+</script>
+</body>
+</html>

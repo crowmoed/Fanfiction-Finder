@@ -1,0 +1,81 @@
+/* Community vote board (VoteBoard.tsx) — the ballot section of /sponsor.
+   Reuses .card/.stack/.alert/.muted; this file styles the option rows (a
+   horizontal tally bar behind each choice). Colors + radii map to tokens. */
+
+.vote-signin {
+  gap: 0.75rem;
+  padding: 1.25rem;
+}
+
+.vote-options {
+  gap: 0.6rem;
+}
+
+.vote-option {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line-mid);
+  border-radius: var(--r-sm);
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  transition: border-color 160ms var(--ease-out);
+}
+
+.vote-option:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.vote-option:disabled {
+  cursor: default;
+}
+
+.vote-option--mine {
+  border-color: var(--accent);
+}
+
+/* The tally bar sits behind the label, growing with the fandom's vote share. */
+.vote-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  height: 100%;
+  background: var(--accent-wash);
+  z-index: 0;
+  transition: width 320ms var(--ease-out);
+}
+
+.vote-option-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.vote-option-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+}
+
+.vote-option-count {
+  color: var(--ink-mute);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.vote-total {
+  font-size: var(--text-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vote-bar {
+    transition: none;
+  }
+}

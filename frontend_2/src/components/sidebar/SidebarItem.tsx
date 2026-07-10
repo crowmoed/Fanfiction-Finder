@@ -12,12 +12,22 @@ import { usePathname } from "next/navigation";
 
 import { Icon, type IconName } from "@/components/Icon";
 
-type Variant = "cta" | "link" | "dev";
+type Variant = "cta" | "link" | "dev" | "util";
 
 const CLASS: Record<Variant, string> = {
   cta: "sidebar-cta",
   link: "sidebar-link",
   dev: "sidebar-dev",
+  util: "sidebar-util",
+};
+
+/* The quiet registers (foot utilities, dev) run a step smaller than nav so
+   their icons don't outweigh their 13px labels. */
+const ICON_SIZE: Record<Variant, number> = {
+  cta: 16,
+  link: 16,
+  dev: 14,
+  util: 14,
 };
 
 export function SidebarItem({
@@ -42,7 +52,7 @@ export function SidebarItem({
   const body = (
     <>
       <span className="sidebar-ic" aria-hidden>
-        <Icon name={icon} size={16} />
+        <Icon name={icon} size={ICON_SIZE[variant]} />
       </span>
       <span className="sidebar-label truncate">{label}</span>
     </>

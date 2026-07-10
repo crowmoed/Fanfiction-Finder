@@ -252,6 +252,17 @@ never two busy indicators side by side); menus exit the way they enter
   for the fic-page and modal Read CTA only — nowhere else. On coarse pointers
   (`@media (pointer: coarse)`), `.chip`, `.seg-btn`, and `.btn-sm` all raise to
   `min-height: 2.5rem`, and `.icon-btn` grows to 2.5rem square.
+- **Hero composer ("Slip")**: the home search bar keeps the Baseline structure
+  (serif input, rising controls, breathing rule) but sits on a white
+  `--surface` card — hairline `--line` border, `--r-md` top corners only,
+  `--shadow-composer` — whose **bottom edge is the baseline rule itself**
+  (full-bleed, no border-bottom). The rule keeps both of its jobs: the ink
+  focus sweep on `:focus-within` and the vermilion working sweep while busy
+  now run the card's full bottom edge. Focus/busy also nudges the card
+  (border `--line` → `--line-mid`, shadow → `--shadow-2`); control hover
+  pills tint `--paper-2` against the white fill. Chosen from the
+  `public/dev/baseline-backgrounds.html` exploration (08 "Slip"); the boxed
+  composer on /results is unchanged.
 - **Seal (MatchScore)** — three real scale steps, not one shape reused
   everywhere:
   - `size="sm"` (table cells, via the `compact` back-compat alias): compact

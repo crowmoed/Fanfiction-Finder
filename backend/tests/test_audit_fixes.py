@@ -5,6 +5,7 @@ One section per audited domain (AUTH / LLM / PAY / SQL / OPS). These assert the
 """
 
 import importlib
+import json
 import os
 import types
 
@@ -151,80 +152,6 @@ def test_pay1_mark_event_processed_idempotent(monkeypatch, fake_table):
     assert US.user_store.mark_event_processed("evt_2") is True   # new
 
 
-def test_pay1_handle_webhook_applies_once_then_noops(monkeypatch, fake_table):
-    import stripe
-    import auth.user_store as US
-    import auth.stripe_handler as SH
-
-    importlib.reload(US)
-    importlib.reload(SH)
-    SH.user_store._table = fake_table
-
-    calls = {"create": 0}
-    SH.user_store.create_fandom_request = lambda **kw: calls.__setitem__(
-        "create", calls["create"] + 1
-    )
-
-    event = {
-        "id": "evt_100",
-        "type": "checkout.session.completed",
-        "data": {"object": {"id": "cs_1", "metadata": {"kind": "fandom_sponsorship", "fandom": "Bleach"}}},
-    }
-    monkeypatch.setattr(stripe.Webhook, "construct_event", lambda payload, sig, secret: event)
-
-    SH.handle_webhook(b"{}", "sig")
-    assert calls == {"create": 1}
-    SH.handle_webhook(b"{}", "sig")  # retry of same event.id
-    assert calls == {"create": 1}  # no double-fulfillment
-
-
-def test_pay1_handle_webhook_failure_leaves_event_unmarked(monkeypatch, fake_table):
-    # If processing fails mid-way, the event must NOT be marked processed — so
-    # Stripe's retry re-runs the side effect instead of silently dropping the
-    # order. Guards against a mark-before-process ordering.
-    import stripe
-    import auth.user_store as US
-    import auth.stripe_handler as SH
-
-    importlib.reload(US)
-    importlib.reload(SH)
-    SH.user_store._table = fake_table
-
-    calls = {"create": 0}
-
-    def boom_then_ok(**kw):
-        calls["create"] += 1
-        if calls["create"] == 1:
-            raise RuntimeError("transient DynamoDB error")
-
-    SH.user_store.create_fandom_request = boom_then_ok
-
-    event = {
-        "id": "evt_fail",
-        "type": "checkout.session.completed",
-        "data": {"object": {"id": "cs_1", "metadata": {"kind": "fandom_sponsorship", "fandom": "Bleach"}}},
-    }
-    monkeypatch.setattr(stripe.Webhook, "construct_event", lambda payload, sig, secret: event)
-
-    # First delivery fails mid-processing — event stays unmarked.
-    with pytest.raises(RuntimeError):
-        SH.handle_webhook(b"{}", "sig")
-    assert SH.user_store.is_event_processed("evt_fail") is False
-
-    # Stripe's retry re-runs the side effect (not skipped) and then marks it done.
-    SH.handle_webhook(b"{}", "sig")
-    assert calls["create"] == 2
-    assert SH.user_store.is_event_processed("evt_fail") is True
-
-
-def test_pay2_signature_error_is_not_value_error():
-    import stripe
-
-    # The webhook route relies on this ordering: ValueError -> 400 payload,
-    # SignatureVerificationError -> 400 signature (distinct), else -> 500.
-    assert not issubclass(stripe.error.SignatureVerificationError, ValueError)
-
-
 # ──────────────────────────────────────────────────────────────────────────────
 # 04 — SQL
 # ──────────────────────────────────────────────────────────────────────────────
@@ -334,13 +261,6 @@ def test_ops1_postgres_engine_sets_statement_timeout():
     assert "connect_timeout" in src
 
 
-def test_ops1_stripe_bounds_network_retries():
-    import stripe
-    import auth.stripe_handler  # noqa: F401 — import sets stripe.max_network_retries
-
-    assert stripe.max_network_retries == 2
-
-
 @pytest.fixture
 def client(monkeypatch):
     monkeypatch.delenv("ENABLE_DOCS", raising=False)
@@ -437,19 +357,6 @@ def test_concurrency_search_route_offloads_blocking_work():
         assert blocking not in src, (
             f"blocking call {blocking}...) must go through run_in_threadpool"
         )
-
-
-def test_concurrency_webhook_offloads_blocking_work():
-    """/webhooks/stripe must stay async (needs `await request.body()`) but offload
-    the blocking handle_webhook via run_in_threadpool."""
-    import inspect
-    import api
-
-    importlib.reload(api)
-    src = inspect.getsource(api.stripe_webhook)
-    assert "run_in_threadpool(handle_webhook" in src, (
-        "stripe webhook must offload blocking handle_webhook to a thread"
-    )
 
 
 def test_concurrency_slow_sync_route_does_not_block_health(client):

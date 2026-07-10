@@ -28,6 +28,7 @@ import numpy as np
 
 from data.schema import Fic
 from data.fandoms import FANDOMS
+from data.vote_candidates import VOTE_CANDIDATES
 from ai.embedder import embed_query
 from ai.query_enhancer import enhance_query
 from ai.ranker import rank
@@ -42,8 +43,7 @@ from db.postgres import (
 from auth.auth import verify_google_token, create_jwt
 from auth.user_store import user_store
 from auth.dependencies import get_current_user, get_optional_user
-from auth.stripe_handler import create_sponsorship_checkout, handle_webhook
-import stripe
+import notify
 
 
 # Interactive API docs (/docs, /redoc, /openapi.json) are disabled by default so the
@@ -204,9 +204,14 @@ class LoginRequest(BaseModel):
     id_token: str
 
 
-class SponsorRequest(BaseModel):
+class FandomRequestBody(BaseModel):
     fandom_name: str
     notes: str = ""
+    email: str = ""
+
+
+class VoteRequest(BaseModel):
+    fandom: str
 
 
 # ── Auth endpoints ────────────────────────────────────────────────
@@ -242,50 +247,77 @@ def me(user: dict = Depends(get_current_user)):
     return user
 
 
-def _stripe_url(fn, *args) -> str:
-    """Call a Stripe session-creating fn, mapping StripeError → HTTP 502."""
-    try:
-        return fn(*args)
-    except stripe.error.StripeError as e:
-        msg = getattr(e, "user_message", None) or str(e)
-        raise HTTPException(status_code=502, detail=f"Stripe error: {msg}")
+@app.post("/request")
+def request_fandom(body: FandomRequestBody):
+    """Free 'request a fandom' — records the request and emails the operator.
 
-
-@app.post("/checkout")
-def sponsor_checkout(body: SponsorRequest):
-    """Create a one-time Stripe Checkout to sponsor vectorizing a fandom.
-
-    Anonymous — no login required; Stripe collects the buyer's email. Returns the
-    hosted-checkout URL the frontend redirects to.
+    Anonymous; no payment. The email is best-effort: the request is still recorded
+    (and visible via fandom_orders.py / /admin/requests) even if the email fails.
     """
     fandom = body.fandom_name.strip()
     if not fandom:
         raise HTTPException(status_code=400, detail="Fandom name is required.")
-    return {"url": _stripe_url(create_sponsorship_checkout, fandom, body.notes.strip())}
-
-
-@app.post("/webhooks/stripe")
-async def stripe_webhook(request: Request):
-    """Stripe webhook endpoint — no auth, raw body for signature verification."""
-    payload = await request.body()
-    sig_header = request.headers.get("Stripe-Signature", "")
+    req = user_store.create_fandom_request(
+        fandom=fandom, email=body.email.strip(), notes=body.notes.strip()
+    )
     try:
-        # handle_webhook is blocking (Stripe SDK + DynamoDB writes, plus a table
-        # scan on subscription.deleted). This route must stay async for
-        # `await request.body()`, so offload the blocking work to a thread rather
-        # than running it on the event loop and freezing concurrent requests.
-        await run_in_threadpool(handle_webhook, payload, sig_header)
-    except ValueError:
-        # Malformed payload — Stripe should not retry an unparseable body.
-        raise HTTPException(status_code=400, detail="Invalid payload")
-    except stripe.error.SignatureVerificationError:
-        # Bad/forged signature — reject; no side effects ran.
-        raise HTTPException(status_code=400, detail="Invalid signature")
+        notify.send_request_email(fandom, body.notes.strip(), body.email.strip())
+    except Exception as e:
+        _log("request_email_failed", fandom=fandom, error=str(e)[:200])
+    return {"ok": True, "id": req["id"]}
+
+
+# ── Community vote — free, sign-in-gated: pick 1 of 4 fandoms to index next ──────
+
+def _eligible_vote_candidates() -> list[str]:
+    """Ballot candidates minus fandoms already indexed — no point voting to add
+    what's already searchable. Best-effort: any DB hiccup (or all candidates
+    already indexed) falls back to the full curated list rather than breaking /vote."""
+    try:
+        indexed = get_indexed_fandoms()
     except Exception:
-        # Signature was valid but processing failed (e.g. transient DynamoDB error).
-        # Return 500 so Stripe retries; the idempotency guard makes the retry safe.
-        raise HTTPException(status_code=500, detail="Webhook processing error")
-    return {"status": "ok"}
+        return list(VOTE_CANDIDATES)
+    eligible = [c for c in VOTE_CANDIDATES if c not in indexed]
+    return eligible or list(VOTE_CANDIDATES)
+
+
+def _vote_state(ballot: dict, user: Optional[dict], known_vote: Optional[str] = None) -> dict:
+    """Public ballot state: the 4 fandoms, 0-filled tallies, total, and (if signed
+    in) the caller's own current pick.
+
+    `known_vote` lets the POST path report the vote it just cast directly, rather
+    than a follow-up read that DynamoDB's eventual consistency could answer stale."""
+    raw = user_store.tally_votes(ballot["ballot_id"])
+    tallies = {f: raw.get(f, 0) for f in ballot["fandoms"]}
+    if known_vote is not None:
+        your_vote = known_vote
+    else:
+        your_vote = user_store.get_user_vote(ballot["ballot_id"], user["id"]) if user else None
+    return {
+        "fandoms": ballot["fandoms"],
+        "tallies": tallies,
+        "total": sum(tallies.values()),
+        "your_vote": your_vote,
+    }
+
+
+@app.get("/vote")
+def get_vote(user: Optional[dict] = Depends(get_optional_user)):
+    """The current 4-fandom ballot + tallies (public). Includes the caller's own
+    vote when signed in."""
+    ballot = user_store.get_or_create_ballot(_eligible_vote_candidates())
+    return _vote_state(ballot, user)
+
+
+@app.post("/vote")
+def cast_vote(body: VoteRequest, user: dict = Depends(get_current_user)):
+    """Cast (or change) the signed-in user's one vote. Sign-in is required —
+    get_current_user 401s otherwise."""
+    ballot = user_store.get_or_create_ballot(_eligible_vote_candidates())
+    if body.fandom not in ballot["fandoms"]:
+        raise HTTPException(status_code=400, detail="That fandom isn't on the current ballot.")
+    user_store.cast_vote(ballot["ballot_id"], user["id"], body.fandom)
+    return _vote_state(ballot, user, known_vote=body.fandom)
 
 
 def _blend_embeddings(hyde_emb: list[float], raw_emb: list[float], hyde_weight: float = 0.7) -> list[float]:
@@ -552,6 +584,22 @@ def require_admin(x_admin_token: str = Header(None)) -> None:
         raise HTTPException(status_code=403, detail="Admin authorization required")
 
 
+def require_admin_strict(x_admin_token: str = Header(None)) -> None:
+    """Fail-CLOSED admin gate for DESTRUCTIVE actions.
+
+    require_admin is open-by-default when ADMIN_API_TOKEN is unset — acceptable for
+    read-only stats, but not for a route that wipes state. This variant treats an
+    unconfigured token as not-found, so ballot reset can never run without a
+    configured, matching token (no anonymous internet caller can DoS the vote).
+    """
+    if not ADMIN_API_TOKEN:
+        raise HTTPException(status_code=404, detail="Not found")
+    import hmac
+
+    if not x_admin_token or not hmac.compare_digest(x_admin_token, ADMIN_API_TOKEN):
+        raise HTTPException(status_code=403, detail="Admin authorization required")
+
+
 @app.get("/admin/stats")
 def admin_stats(_: None = Depends(require_admin)):
     """Internal endpoint — per-fandom DB stats for the ops dashboard."""
@@ -567,3 +615,10 @@ def admin_requests(
 ):
     """Internal endpoint — fandom-sponsorship orders for the operator to fulfill."""
     return {"requests": user_store.list_fandom_requests(status)}
+
+
+@app.post("/admin/vote/reset")
+def admin_reset_vote(_: None = Depends(require_admin_strict)):
+    """Internal endpoint — start a fresh voting round with a new random 4
+    (run after indexing the previous round's winner). Destructive → fail-closed auth."""
+    return user_store.reset_ballot(_eligible_vote_candidates())

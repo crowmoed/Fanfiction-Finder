@@ -1,14 +1,14 @@
 "use client";
 
-import { useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import { ALL_FANDOMS, type SearchParams } from "@/lib/contracts";
-import { SearchForm } from "@/components/SearchForm";
+import { type SearchParams } from "@/lib/contracts";
+import { SearchForm, type SearchPrefill } from "@/components/SearchForm";
 
-// Example cravings for the one-click chips. Deliberately a SEPARATE pool from
-// SearchForm's rotating placeholders: the ghost text in the box and a chip
-// below it must never show the same sentence at the same moment.
+// Example queries: clicking one loads it into the composer for editing (it
+// does NOT search). A separate pool from SearchForm's rotating placeholders so
+// the ghost text and a chip never show the same line at once.
 const SUGGESTIONS = [
   "Drarry slow burn, enemies to lovers, no major character death",
   "post-war Kakashi raises Naruto, found family, slow healing",
@@ -25,6 +25,11 @@ export default function HomePage() {
   // for the brief window before /results takes over. Reduced-motion is handled
   // inside the baseline CSS (globals.css §18).
   const [pending, startTransition] = useTransition();
+
+  // Chips prefill the composer (editable) instead of firing a search. The
+  // nonce lets the same chip re-fill after the user edited or cleared it.
+  const [prefill, setPrefill] = useState<SearchPrefill | null>(null);
+  const prefillSeq = useRef(0);
 
   const go = (params: SearchParams) => {
     const qs = new URLSearchParams({
@@ -52,14 +57,14 @@ export default function HomePage() {
         className="t-display-hero home-headline rise-in"
         style={{ "--rise-delay": "60ms" } as React.CSSProperties}
       >
-        Name your craving.
+        Describe the fic you want.
       </h1>
 
       <div
         className="home-composer rise-in"
         style={{ "--rise-delay": "120ms" } as React.CSSProperties}
       >
-        <SearchForm onSubmit={go} variant="hero" busy={pending} />
+        <SearchForm onSubmit={go} variant="hero" busy={pending} prefill={prefill} />
       </div>
 
       <div className="hero-suggestions">
@@ -67,7 +72,7 @@ export default function HomePage() {
           className="hero-suggestions-label rise-in"
           style={{ "--rise-delay": "200ms" } as React.CSSProperties}
         >
-          Try a craving
+          Try one of these
         </span>
         <div className="hero-suggestions-row">
           {SUGGESTIONS.map((s, i) => (
@@ -78,7 +83,7 @@ export default function HomePage() {
               style={
                 { "--rise-delay": `${240 + i * 40}ms` } as React.CSSProperties
               }
-              onClick={() => go({ q: s, fandom: ALL_FANDOMS, strict: false })}
+              onClick={() => setPrefill({ q: s, nonce: ++prefillSeq.current })}
             >
               {s}
             </button>

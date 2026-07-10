@@ -1,13 +1,14 @@
 "use client";
 
 /**
- * SidebarProvider — the single owner of sidebar UI state (the collapse flag), so
- * the shell chrome and the sidebar tree read one source instead of prop-drilling
- * a boolean. Collapse is persisted to localStorage; hydration is deferred to an
- * effect to avoid an SSR mismatch, and kept in sync across tabs.
+ * SidebarProvider — the single owner of sidebar UI state, so the shell chrome
+ * and the sidebar tree read one source instead of prop-drilling booleans:
  *
- * (There is no mobile-drawer state: narrow screens collapse the sidebar into a
- * static top strip purely via CSS — see the max-width media query in globals.css.)
+ * - `collapsed` (desktop rail): persisted to localStorage; hydration is
+ *   deferred to an effect to avoid an SSR mismatch, and kept in sync across tabs.
+ * - `mobileOpen` (≤720px drawer, claude.ai-style): the sidebar is off-canvas
+ *   behind a hamburger; never persisted, force-closed when the viewport leaves
+ *   mobile, and body scroll locks while it's open.
  */
 import {
   createContext,
@@ -27,6 +28,12 @@ interface SidebarContextValue {
   collapsed: boolean;
   toggleCollapsed: () => void;
   setCollapsed: (value: boolean) => void;
+  /** True while the viewport is ≤720px (SSR/first paint: false). */
+  isMobile: boolean;
+  /** Mobile drawer visibility. Always false on desktop. */
+  mobileOpen: boolean;
+  openMobile: () => void;
+  closeMobile: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextValue | null>(null);
@@ -47,6 +54,34 @@ function persist(collapsed: boolean) {
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsedState] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Track the drawer breakpoint; leaving mobile always closes the drawer so a
+  // resize never strands an invisible open-drawer state (scroll lock included).
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 720px)");
+    const apply = () => {
+      setIsMobile(mq.matches);
+      if (!mq.matches) setMobileOpen(false);
+    };
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  const openMobile = useCallback(() => setMobileOpen(true), []);
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
+
+  // Body scroll lock while the drawer is open (restores the previous value).
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mobileOpen]);
 
   useEffect(() => {
     const hydrate = () => {
@@ -97,8 +132,16 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   }, [toggleCollapsed]);
 
   const value = useMemo<SidebarContextValue>(
-    () => ({ collapsed, toggleCollapsed, setCollapsed }),
-    [collapsed, toggleCollapsed, setCollapsed]
+    () => ({
+      collapsed,
+      toggleCollapsed,
+      setCollapsed,
+      isMobile,
+      mobileOpen,
+      openMobile,
+      closeMobile,
+    }),
+    [collapsed, toggleCollapsed, setCollapsed, isMobile, mobileOpen, openMobile, closeMobile]
   );
 
   return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>;

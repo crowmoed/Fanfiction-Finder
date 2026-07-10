@@ -1,10 +1,10 @@
-"""Fandom-sponsorship: the one-time "pay $20 to vectorize a fandom" flow that
-replaced the subscription.
+"""Free "request a fandom" flow: records the request + emails the operator.
 
-Covers the request store (create/list/get/update on the shared users table) and
-the Stripe webhook → request mapping. Uses the in-memory FakeDynamoTable from
-conftest; no AWS/Stripe network.
+Covers the request store and the POST /request endpoint. Uses the in-memory
+FakeDynamoTable from conftest; the email send is monkeypatched (no SMTP).
 """
+
+import importlib
 
 import pytest
 
@@ -23,52 +23,36 @@ def store():
 
 # ── Request store ──────────────────────────────────────────────────────────────
 
-def test_create_fandom_request_stores_paid_item(store):
-    req = store.create_fandom_request(
-        fandom="Bleach",
-        email="buyer@example.com",
-        notes="the AO3 one",
-        stripe_session_id="cs_test_123",
-        stripe_payment_intent="pi_test_123",
-        amount=2000,
-    )
+def test_create_fandom_request_defaults_to_requested(store):
+    req = store.create_fandom_request(fandom="Bleach", email="a@x.com", notes="the AO3 one")
     assert req["id"].startswith("fandom_request:")
     assert req["fandom"] == "Bleach"
-    assert req["email"] == "buyer@example.com"
+    assert req["email"] == "a@x.com"
     assert req["notes"] == "the AO3 one"
-    assert req["status"] == "paid"
-    assert req["stripe_session_id"] == "cs_test_123"
-    assert req["stripe_payment_intent"] == "pi_test_123"
-    assert req["amount"] == 2000
+    assert req["status"] == "requested"
     assert req["created_at"]
 
 
-def test_list_and_filter_fandom_requests(store):
-    a = store.create_fandom_request(fandom="Bleach", email="a@x.com", stripe_session_id="cs_a")
-    b = store.create_fandom_request(fandom="Fairy Tail", email="b@x.com", stripe_session_id="cs_b")
+def test_list_and_filter_requests(store):
+    store.create_fandom_request(fandom="Bleach", email="a@x.com")
+    b = store.create_fandom_request(fandom="Fairy Tail", email="b@x.com")
     store.update_fandom_request(b["id"], status="fulfilled")
     # An unrelated user row must NOT show up in the request listing.
     store._table.put_item(Item={"id": "google-sub-1", "tier": "free"})
 
-    all_reqs = store.list_fandom_requests()
-    assert {r["fandom"] for r in all_reqs} == {"Bleach", "Fairy Tail"}
-
-    paid_only = store.list_fandom_requests(status="paid")
-    assert [r["fandom"] for r in paid_only] == ["Bleach"]
+    assert {r["fandom"] for r in store.list_fandom_requests()} == {"Bleach", "Fairy Tail"}
+    assert [r["fandom"] for r in store.list_fandom_requests(status="requested")] == ["Bleach"]
 
 
-def test_get_and_update_fandom_request_roundtrip(store):
-    req = store.create_fandom_request(fandom="Bleach", email="a@x.com", stripe_session_id="cs_a")
+def test_get_and_update_request_roundtrip(store):
+    req = store.create_fandom_request(fandom="Bleach", email="a@x.com")
     rid = req["id"]
 
-    got = store.get_fandom_request(rid)
-    assert got["fandom"] == "Bleach"
+    assert store.get_fandom_request(rid)["fandom"] == "Bleach"
+    # Also resolvable by the bare uuid (what the operator CLI passes).
+    assert store.get_fandom_request(rid.split(":", 1)[1])["id"] == rid
 
-    # Also resolvable by the bare id (what the operator CLI passes).
-    short = rid.split(":", 1)[1]
-    assert store.get_fandom_request(short)["id"] == rid
-
-    updated = store.update_fandom_request(rid, status="fulfilled", note="indexed 2026-07-09")
+    updated = store.update_fandom_request(rid, status="fulfilled", note="indexed")
     assert updated["status"] == "fulfilled"
     assert updated["updated_at"]
     assert store.get_fandom_request(rid)["status"] == "fulfilled"
@@ -78,77 +62,52 @@ def test_update_unknown_request_returns_none(store):
     assert store.update_fandom_request("fandom_request:nope", status="fulfilled") is None
 
 
-# ── Webhook → request ───────────────────────────────────────────────────────────
-
-def _sponsorship_event(event_id="evt_1", session_id="cs_1"):
-    return {
-        "id": event_id,
-        "type": "checkout.session.completed",
-        "data": {
-            "object": {
-                "id": session_id,
-                "payment_intent": "pi_1",
-                "amount_total": 2000,
-                "customer_details": {"email": "buyer@example.com"},
-                "metadata": {"kind": "fandom_sponsorship", "fandom": "Bleach", "notes": "AO3"},
-            }
-        },
-    }
-
+# ── Endpoint: POST /request ──────────────────────────────────────────────────────
 
 @pytest.fixture
-def webhook(monkeypatch):
-    """handle_webhook with a fake Stripe event + the singleton store on a fake table.
+def client():
+    import api
 
-    Reload user_store + stripe_handler first so we get a clean singleton — other
-    webhook tests in the suite reassign store methods on the module singleton and
-    reload at their start rather than restoring, so a fresh reload here isolates us.
-    """
-    import importlib
-    import stripe
-    import auth.user_store as US
-    import auth.stripe_handler as sh
+    importlib.reload(api)
+    api.user_store._table = FakeDynamoTable()
+    from fastapi.testclient import TestClient
 
-    importlib.reload(US)
-    importlib.reload(sh)
-    sh.user_store._table = FakeDynamoTable()
-    holder = {"event": None}
+    yield TestClient(api.app, raise_server_exceptions=False)
+    api.app.dependency_overrides.clear()
+
+
+def test_request_records_and_emails(client, monkeypatch):
+    import api
+
+    sent = {}
     monkeypatch.setattr(
-        stripe.Webhook, "construct_event", lambda payload, sig, secret: holder["event"]
+        api.notify, "send_request_email",
+        lambda fandom, notes="", requester_email="": sent.update(
+            fandom=fandom, notes=notes, email=requester_email
+        ),
     )
-    return sh, holder
+    r = client.post("/request", json={"fandom_name": "Bleach", "notes": "AO3", "email": "me@x.com"})
+    assert r.status_code == 200
+    assert r.json()["ok"] is True
+    assert sent == {"fandom": "Bleach", "notes": "AO3", "email": "me@x.com"}
 
-
-def test_webhook_sponsorship_creates_request(webhook):
-    sh, holder = webhook
-    holder["event"] = _sponsorship_event()
-
-    sh.handle_webhook(b"{}", "sig")
-
-    reqs = sh.user_store.list_fandom_requests()
+    reqs = api.user_store.list_fandom_requests()
     assert len(reqs) == 1
     assert reqs[0]["fandom"] == "Bleach"
-    assert reqs[0]["email"] == "buyer@example.com"
-    assert reqs[0]["status"] == "paid"
-    assert reqs[0]["stripe_session_id"] == "cs_1"
+    assert reqs[0]["status"] == "requested"
 
 
-def test_webhook_is_idempotent(webhook):
-    sh, holder = webhook
-    holder["event"] = _sponsorship_event(event_id="evt_dupe")
-
-    sh.handle_webhook(b"{}", "sig")
-    sh.handle_webhook(b"{}", "sig")  # Stripe retry of the same event
-
-    assert len(sh.user_store.list_fandom_requests()) == 1
+def test_request_rejects_empty_fandom(client):
+    assert client.post("/request", json={"fandom_name": "   "}).status_code == 400
 
 
-def test_webhook_ignores_non_sponsorship_sessions(webhook):
-    sh, holder = webhook
-    ev = _sponsorship_event(event_id="evt_other")
-    ev["data"]["object"]["metadata"] = {}  # some other checkout, not a sponsorship
-    holder["event"] = ev
+def test_request_records_even_if_email_fails(client, monkeypatch):
+    import api
 
-    sh.handle_webhook(b"{}", "sig")
+    def boom(*a, **k):
+        raise RuntimeError("smtp down")
 
-    assert sh.user_store.list_fandom_requests() == []
+    monkeypatch.setattr(api.notify, "send_request_email", boom)
+    r = client.post("/request", json={"fandom_name": "Naruto"})
+    assert r.status_code == 200  # email failure is swallowed
+    assert len(api.user_store.list_fandom_requests()) == 1  # still recorded

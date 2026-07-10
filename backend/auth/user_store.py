@@ -11,6 +11,7 @@ permissions on the users table:
 """
 
 import os
+import random
 import uuid
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
@@ -245,7 +246,7 @@ class UserStore:
 
     REQUEST_PREFIX = "fandom_request:"
     VALID_REQUEST_STATUSES = (
-        "paid", "confirmed", "indexing", "fulfilled", "refunded", "rejected",
+        "requested", "confirmed", "indexing", "fulfilled", "rejected",
     )
 
     def _request_key(self, request_id: str) -> str:
@@ -260,11 +261,8 @@ class UserStore:
         fandom: str,
         email: str = "",
         notes: str = "",
-        stripe_session_id: str = "",
-        stripe_payment_intent: str | None = None,
-        amount: int | None = None,
     ) -> dict:
-        """Record a paid sponsorship order awaiting operator fulfillment."""
+        """Record a free fandom request awaiting operator fulfillment."""
         now = datetime.now(timezone.utc).isoformat()
         item = {
             "id": f"{self.REQUEST_PREFIX}{uuid.uuid4().hex}",
@@ -272,26 +270,40 @@ class UserStore:
             "fandom": fandom,
             "email": email or "",
             "notes": notes or "",
-            "status": "paid",
-            "stripe_session_id": stripe_session_id or "",
+            "status": "requested",
             "created_at": now,
             "updated_at": now,
         }
-        if stripe_payment_intent:
-            item["stripe_payment_intent"] = stripe_payment_intent
-        if amount is not None:
-            item["amount"] = int(amount)
         self._table.put_item(Item=item)
         return _item_to_dict(item)
 
+    def _scan_all(self, **scan_kwargs) -> list[dict]:
+        """Scan the whole table, following pagination.
+
+        boto3's ``Table.scan()`` is a SINGLE Scan request: DynamoDB reads at most
+        ~1MB of raw items and applies the FilterExpression AFTER that page, so
+        matching items past the first page are silently missed unless we loop on
+        ``LastEvaluatedKey``. Every filtered scan in this store must go through
+        here — the shared table grows without bound (a search_event per search),
+        so the 1MB boundary is a real, near-term condition, not a theoretical one.
+        """
+        items: list[dict] = []
+        while True:
+            resp = self._table.scan(**scan_kwargs)
+            items.extend(resp.get("Items", []))
+            start_key = resp.get("LastEvaluatedKey")
+            if not start_key:
+                break
+            scan_kwargs = {**scan_kwargs, "ExclusiveStartKey": start_key}
+        return items
+
     def list_fandom_requests(self, status: str | None = None) -> list[dict]:
         """All sponsorship requests (optionally filtered by status), oldest first."""
-        resp = self._table.scan(
-            FilterExpression=Attr("id").begins_with(self.REQUEST_PREFIX)
-        )
         items = [
             _item_to_dict(i)
-            for i in resp.get("Items", [])
+            for i in self._scan_all(
+                FilterExpression=Attr("id").begins_with(self.REQUEST_PREFIX)
+            )
             if str(i.get("id", "")).startswith(self.REQUEST_PREFIX)
         ]
         if status:
@@ -316,6 +328,77 @@ class UserStore:
             item["operator_note"] = note
         self._table.put_item(Item=item)
         return item
+
+    # ── Community fandom vote ───────────────────────────────────────────────────
+    # A free, sign-in-gated vote: signed-in users pick 1 of 4 randomly-balloted
+    # candidate fandoms to be indexed next. The current ballot is one item
+    # `vote_ballot:current`; each vote is `vote:<ballot_id>:<user_id>` (one per
+    # user, overwrite-to-change). Same table, same item-type-by-prefix trick.
+
+    VOTE_BALLOT_KEY = "vote_ballot:current"
+
+    def _new_ballot_item(self, candidates: list[str]) -> dict:
+        picks = random.sample(candidates, min(4, len(candidates)))
+        return {
+            "id": self.VOTE_BALLOT_KEY,
+            "ballot_id": uuid.uuid4().hex,
+            "fandoms": picks,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+
+    def get_or_create_ballot(self, candidates: list[str]) -> dict:
+        """Return the current 4-fandom ballot, creating one (random pick) if absent."""
+        existing = self._table.get_item(Key={"id": self.VOTE_BALLOT_KEY}).get("Item")
+        if existing:
+            return _item_to_dict(existing)
+        item = self._new_ballot_item(candidates)
+        try:
+            self._table.put_item(
+                Item=item, ConditionExpression="attribute_not_exists(id)"
+            )
+        except ClientError as e:
+            if e.response["Error"]["Code"] != "ConditionalCheckFailedException":
+                raise
+            # Lost the create race — another request made the ballot. Return that one.
+            return _item_to_dict(
+                self._table.get_item(Key={"id": self.VOTE_BALLOT_KEY})["Item"]
+            )
+        return _item_to_dict(item)
+
+    def reset_ballot(self, candidates: list[str]) -> dict:
+        """Start a fresh round with a new random 4. Old votes (keyed by the old
+        ballot_id) are simply orphaned, so the new round tallies from zero."""
+        item = self._new_ballot_item(candidates)
+        self._table.put_item(Item=item)
+        return _item_to_dict(item)
+
+    def cast_vote(self, ballot_id: str, user_id: str, fandom: str) -> None:
+        """Record (or change) a user's single vote in the current round."""
+        self._table.put_item(
+            Item={
+                "id": f"vote:{ballot_id}:{user_id}",
+                "ballot_id": ballot_id,
+                "user_id": user_id,
+                "fandom": fandom,
+                "voted_at": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+
+    def get_user_vote(self, ballot_id: str, user_id: str) -> str | None:
+        item = self._table.get_item(Key={"id": f"vote:{ballot_id}:{user_id}"}).get("Item")
+        return item.get("fandom") if item else None
+
+    def tally_votes(self, ballot_id: str) -> dict:
+        """Count votes per fandom for a round (paginated scan — see _scan_all)."""
+        prefix = f"vote:{ballot_id}:"
+        counts: dict = {}
+        for item in self._scan_all(FilterExpression=Attr("id").begins_with(prefix)):
+            if not str(item.get("id", "")).startswith(prefix):
+                continue
+            fandom = item.get("fandom")
+            if fandom:
+                counts[fandom] = counts.get(fandom, 0) + 1
+        return counts
 
 
 user_store = UserStore()

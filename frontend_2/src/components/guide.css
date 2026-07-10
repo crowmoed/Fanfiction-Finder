@@ -1,0 +1,102 @@
+/*
+ * guide.css — the first-run welcome guide + the "?" About popup.
+ *
+ * Both are Modal surfaces, so enter/exit choreography, backdrop, and focus
+ * handling come from globals.css §14; this file only adds their layouts.
+ * Everything maps to tokens — no new colors, no new type sizes.
+ */
+
+/* ── Manual-framed popups (data-variant="guide") ───────────────────────
+   The guide and the About popup share a user-manual frame: a 2px grey
+   border, the same --line-strong grey as the composer/search-bar boundary
+   (not ink — the frame is furniture, not a statement). */
+.modal[data-variant="guide"] {
+  border: 2px solid var(--line-strong);
+}
+
+/* One table, label column + description column: --line-mid gridlines (the
+   table-gridline token) between rows and a vertical seam between the two
+   columns, so it reads as a single manual table rather than stacked lists. */
+.guide-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.guide-table th {
+  text-align: left;
+  vertical-align: top;
+  width: 6.75rem;
+  padding: 0.65rem 0.75rem 0.65rem 0;
+  border-right: 1px solid var(--line-mid);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink-strong);
+  white-space: nowrap;
+  line-height: 1.5;
+}
+.guide-table td {
+  padding: 0.65rem 0 0.65rem 0.75rem;
+  font-size: var(--text-md);
+  color: var(--ink);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.guide-table tr + tr th,
+.guide-table tr + tr td {
+  border-top: 1px solid var(--line-mid);
+}
+/* The seal legend rides at the end of the score row. */
+.guide-score-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.guide-score-cell > span:first-child {
+  flex: 1 1 auto;
+}
+.guide-seal {
+  flex: none;
+}
+
+.guide-cta {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Footer action in the About popup: reopen the guide on demand. */
+.about-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line);
+}
+
+/* ── About popup (the sidebar "?") ─────────────────────────────────────
+   A short letter from the maker: sans 600 section labels (NOT eyebrows —
+   DESIGN.md's budget), prose in the reading serif because a person is
+   speaking, not the tool. */
+.about {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+.about-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.about-h {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink-strong);
+}
+.about-section p {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--ink);
+  max-width: 60ch;
+  text-wrap: pretty;
+}

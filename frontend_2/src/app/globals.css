@@ -1470,29 +1470,51 @@ th[aria-sort] .xl-sort .icon {
   border-top: 1px solid var(--line);
 }
 
-/* Hero baseline: no box — an oversized serif line resting on an ink rule.
-   The rule carries all state: breathes at rest, sweeps on focus, runs an
-   indeterminate progress sweep while busy. */
+/* Hero baseline, "Slip" treatment (picked from /dev/baseline-backgrounds.html,
+   08): the serif line and its ink rule now sit on a white card whose BOTTOM
+   EDGE is the rule itself — the card says "type here", the rule keeps carrying
+   all state: breathes at rest, sweeps on focus, runs an indeterminate progress
+   sweep while busy. */
 .baseline {
   width: 100%;
+}
+.baseline-box {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-bottom: none; /* the rule closes the shape */
+  border-radius: var(--r-md) var(--r-md) 0 0;
+  padding: 14px 20px 0;
+  box-shadow: var(--shadow-composer);
+  transition: border-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out);
+}
+.baseline:focus-within .baseline-box,
+.baseline--busy .baseline-box {
+  border-color: var(--line-mid);
+  box-shadow: var(--shadow-2);
 }
 .baseline-field {
   position: relative;
   width: 100%;
   padding-top: 8px;
 }
-/* Parent-scoped to outrank the global input[type="text"] rule (0,1,1). The
-   hero input scales generously with the viewport so it reads as the room's one
-   input (REDESIGN-SPEC §2.3). */
+/* Parent-scoped to outrank the global textarea rule (0,0,1) and its :hover.
+   An auto-growing textarea (height set from JS, chatbox-style) so long queries
+   wrap onto new lines above the rule instead of scrolling off the side. Still
+   the room's one input (REDESIGN-SPEC §2.3), just quieter in size. */
 .baseline .baseline-input {
+  display: block;
   width: 100%;
   border: none;
   border-radius: 0;
   outline: none; /* the rule's focus sweep is the indicator */
   background: transparent;
+  resize: none;
+  overflow-y: auto;
   font-family: var(--font-serif);
-  font-size: clamp(1.1875rem, 1rem + 1.2vw, 1.75rem);
-  line-height: 1.35;
+  font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
+  line-height: 1.45;
   letter-spacing: -0.008em;
   color: var(--ink-strong);
   padding: 4px 2px 14px;
@@ -1515,8 +1537,8 @@ th[aria-sort] .xl-sort .icon {
   top: 12px; /* .baseline-field padding-top (8px) + input padding-top (4px) */
   pointer-events: none;
   font-family: var(--font-serif);
-  font-size: clamp(1.1875rem, 1rem + 1.2vw, 1.75rem);
-  line-height: 1.35;
+  font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
+  line-height: 1.45;
   letter-spacing: -0.008em;
   font-style: italic;
   color: var(--ink-mute);
@@ -1528,10 +1550,17 @@ th[aria-sort] .xl-sort .icon {
 
 .baseline-rule {
   position: relative;
-  width: 100%;
   height: 1.5px;
+  /* Bleeds across the box's side padding — the rule IS the card's bottom edge
+     (keep the -20px in sync with .baseline-box padding). */
+  margin: 10px -20px 0;
   background: var(--line-strong);
   animation: baseline-breathe 6s ease-in-out infinite;
+  /* The busy sweep travels from beyond the rule's ends; boxless that overhang
+     read as "entering the line", against the slip's hard edges it reads as a
+     glitch. Clip x only — y stays visible for the 2px sweep/focus lines and
+     the 1px accent under-edge. */
+  overflow-x: clip;
 }
 /* A 1px accent-wash under-edge at rest: idle still carries a whisper of the
    seal (REDESIGN-SPEC §2.3). It fades out once the rule takes focus/busy so it
@@ -1658,7 +1687,7 @@ th[aria-sort] .xl-sort .icon {
 }
 .baseline-control:hover:not(:disabled) {
   color: var(--ink-strong);
-  background: var(--paper-3);
+  background: var(--paper-2); /* against the slip's white fill */
 }
 .baseline-control:active:not(:disabled) {
   transform: translateY(1px);
@@ -1700,7 +1729,7 @@ th[aria-sort] .xl-sort .icon {
 }
 .baseline-fandom-btn:hover:not(:disabled) {
   color: var(--ink-strong);
-  background: var(--paper-3);
+  background: var(--paper-2); /* against the slip's white fill */
 }
 .baseline-fandom-btn:disabled {
   color: var(--ink-faint);
@@ -2942,98 +2971,120 @@ mark.hl {
    their labels, everything else collapses to 40px icon targets (native
    `title` tooltips still name them). Recents move out of the strip entirely
    (they live in History). Sticky so New search stays reachable mid-scroll. */
+/* ≤720px: the rail becomes an off-canvas drawer behind a hamburger topbar
+   (the claude.ai mobile pattern). The SAME .sidebar slides in over a scrim
+   with its full desktop layout — labels, recents ledger, foot register — and
+   the topbar carries hamburger + brand + new search. Sidebar.tsx owns the
+   open state, focus hand-off, inert, and body scroll lock. */
+.mobile-topbar,
+.sidebar-scrim {
+  display: none;
+}
 @media (max-width: 720px) {
-  .sidebar,
-  .app-shell.is-collapsed .sidebar {
-    width: auto;
-    height: auto;
+  .mobile-topbar {
+    display: flex;
     position: sticky;
     top: 0;
-    flex-direction: row;
-    flex-wrap: nowrap;
+    z-index: var(--z-sidebar);
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.4rem;
     min-height: 3.5rem;
-    padding: 0.5rem 0.75rem;
-    border-right: none;
+    padding: 0.4rem 0.6rem;
+    background: var(--paper-2);
     border-bottom: 1px solid var(--line);
   }
-  .sidebar-toggle {
-    display: none; /* collapse is meaningless in the top-bar layout (F052) */
+  .mobile-topbar .sidebar-brand {
+    margin-right: auto;
+    font-size: 1.05rem;
   }
-  .sidebar-scroll {
-    display: none;
-  }
-  .sidebar-top {
-    padding: 0;
-    margin-right: 0.25rem;
-  }
-  .sidebar-cta,
-  .sidebar-link,
-  .sidebar-account,
-  .sidebar-dev {
-    width: auto;
-    flex: none;
-  }
-  /* Icon-only nav/account/dev: hide the text labels (and the account caret,
-     which shares .sidebar-label), keep ≥40px square targets. */
-  .sidebar-link .sidebar-label,
-  .sidebar-account .sidebar-label,
-  .sidebar-dev .sidebar-label {
-    display: none;
-  }
-  .sidebar-link,
-  .sidebar-dev {
+  .mobile-topbar-btn {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    gap: 0;
     min-width: 2.5rem;
     min-height: 2.5rem;
     padding: 0.5rem;
+    border: none;
+    background: transparent;
+    border-radius: var(--r-sm);
+    color: var(--ink);
+    transition: background var(--t-fast) ease,
+      transform 140ms var(--ease-out-strong);
   }
-  .sidebar-account {
-    justify-content: center;
-    gap: 0;
-    min-width: 2.5rem;
-    min-height: 2.5rem;
-    padding: 0.45rem;
+  .mobile-topbar-btn:hover {
+    background: var(--paper-3);
   }
-  .sidebar-cta {
-    margin-bottom: 0;
-    min-height: 2.5rem;
-    padding: 0.4rem 0.8rem;
+  .mobile-topbar-btn:active {
+    transform: scale(0.9);
   }
-  .sidebar-nav {
-    flex-direction: row;
-    gap: 0.1rem;
-    margin-left: auto; /* brand+CTA left, nav/account/dev right */
+
+  /* The drawer: same fixed rail, off-canvas until .is-mobile-open. Width wins
+     over the desktop collapse state — the drawer is always the full rail. */
+  .sidebar,
+  .app-shell.is-collapsed .sidebar {
+    width: min(85vw, 300px);
+    transform: translateX(-103%);
+    transition: transform 260ms var(--ease-drawer);
+    z-index: calc(var(--z-scrim) + 1);
   }
+  /* Both selectors: the open rule must outrank the grouped closed rule above
+     even when the shell carries is-collapsed from desktop (0,3,0 vs 0,2,0). */
+  .sidebar.is-mobile-open,
+  .app-shell.is-collapsed .sidebar.is-mobile-open {
+    transform: translateX(0);
+    box-shadow: var(--shadow-4);
+  }
+  /* Neutralize desktop-collapse styling inside the drawer: a user who
+     collapsed the rail on desktop still gets the full drawer on mobile. */
+  .is-collapsed .sidebar-label {
+    opacity: 1;
+    max-width: 12rem;
+  }
+  .is-collapsed .sidebar-scroll {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+  }
+  .is-collapsed .sidebar-brand {
+    display: flex;
+  }
+  .is-collapsed .sidebar-cta,
+  .is-collapsed .sidebar-link,
+  .is-collapsed .sidebar-account,
+  .is-collapsed .sidebar-dev {
+    justify-content: flex-start;
+    gap: 0.6rem;
+  }
+  .is-collapsed .sidebar-top {
+    justify-content: flex-start;
+    border-bottom-color: var(--line);
+  }
+  .sidebar-toggle {
+    display: none; /* collapse is meaningless in the drawer (F052) */
+  }
+
+  .sidebar-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-scrim);
+    background: rgba(37, 33, 28, 0.42);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+  }
+  .sidebar-scrim.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   .app-main {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  .sidebar-foot {
-    margin-top: 0;
-    margin-left: 0;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.1rem;
-    border-top: none;
-    padding-top: 0;
-  }
   .home-hero {
     /* topbar (~3.5rem) + .app-main's tightened mobile padding. */
     min-height: calc(100dvh - 9rem);
-  }
-}
-
-/* The wordmark cedes to the hanko alone on true phone widths — the mark IS
-   the brand at favicon scale. */
-@media (max-width: 480px) {
-  .sidebar-brand .sidebar-label {
-    display: none;
-  }
-  .sidebar-brand {
-    gap: 0;
   }
 }
 
@@ -3116,10 +3167,15 @@ mark.hl {
   .sidebar,
   .sidebar-label,
   .sidebar-scroll,
+  .sidebar-scrim,
+  .mobile-topbar-btn,
   .app-main,
   .results-workspace,
   .skip-link {
     transition: none;
+  }
+  .mobile-topbar-btn:active {
+    transform: none;
   }
   .app-main,
   .xl-row-enter,
@@ -3164,6 +3220,7 @@ mark.hl {
   .baseline-control,
   .baseline-caret,
   .baseline-submit-arrow,
+  .baseline-box,
   .composer,
   .composer-send,
   .composer-rail select,

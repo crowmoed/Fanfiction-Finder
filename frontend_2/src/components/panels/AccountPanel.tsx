@@ -1,23 +1,9 @@
 "use client";
 
-import Link from "next/link";
-
 import { useAuth } from "@/lib/client/auth";
 import { GoogleSignIn } from "@/components/GoogleSignIn";
 import { Icon } from "@/components/Icon";
 import "./account-panel.css";
-
-/** A small CTA to the sponsor-a-fandom flow — the app's only paid surface. */
-function SponsorLink() {
-  return (
-    <Link href="/sponsor" className="account-sponsor-link">
-      <Icon name="sparkle" size={16} />
-      <span>
-        Want a fandom that isn&apos;t here? <strong>Sponsor it →</strong>
-      </span>
-    </Link>
-  );
-}
 
 /** Account panel (shown on the Account tab of Settings). */
 export function AccountPanel() {
@@ -51,7 +37,6 @@ export function AccountPanel() {
           Search is free and open — signing in just syncs your saved work. It&apos;s optional.
         </p>
         <GoogleSignIn />
-        <SponsorLink />
       </div>
     );
   }
@@ -69,8 +54,6 @@ export function AccountPanel() {
           <strong>{user?.email}</strong>
         </div>
       </div>
-
-      <SponsorLink />
 
       <div className="row">
         <button onClick={() => void refresh()}>Refresh</button>

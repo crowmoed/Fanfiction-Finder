@@ -12,7 +12,7 @@
  * vanishing instantly. Skipped under prefers-reduced-motion, where close() runs
  * immediately.
  */
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode, type RefObject } from "react";
 import { Icon } from "@/components/Icon";
 
 const CLOSE_MS = 150; // matches .modal[data-closing] / exit-pop in globals.css
@@ -25,6 +25,7 @@ export function Modal({
   variant,
   children,
   width = "560px",
+  closeRef,
 }: {
   open: boolean;
   onClose: () => void;
@@ -35,10 +36,17 @@ export function Modal({
    *  <strong>{title}</strong>. Optional — most callers just pass `title`. */
   titleContent?: ReactNode;
   /** Surface-specific header treatment. `"fic"` gets a heavier head rule and
-   *  a bigger serif title (REDESIGN-SPEC §5.5, styled in fic-detail.css). */
-  variant?: "fic";
+   *  a bigger serif title (REDESIGN-SPEC §5.5, styled in fic-detail.css).
+   *  `"guide"` is headless: the close button floats top-right and the body owns
+   *  the whole layout (guide.css). */
+  variant?: "fic" | "guide";
   children: ReactNode;
   width?: string;
+  /** Escape hatch for children that need to close with the exit choreography
+   *  (e.g. a CTA inside the body). Receives the same animated requestClose the
+   *  ✕ / Esc / backdrop paths use — flipping `open` from outside would close
+   *  instantly instead. */
+  closeRef?: RefObject<(() => void) | null>;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   // The element focused when the dialog opened, so focus returns there on close
@@ -84,6 +92,14 @@ export function Modal({
       dialog.close();
     }, CLOSE_MS);
   };
+
+  useEffect(() => {
+    if (!closeRef) return;
+    closeRef.current = requestClose;
+    return () => {
+      closeRef.current = null;
+    };
+  });
 
   return (
     <dialog

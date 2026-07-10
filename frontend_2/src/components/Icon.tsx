@@ -55,7 +55,8 @@ export type IconName =
   | "sign-out"
   | "sparkle"
   | "inbox"
-  | "menu";
+  | "menu"
+  | "help";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   search: (
@@ -224,6 +225,15 @@ const PATHS: Record<IconName, React.ReactNode> = {
     </>
   ),
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
+  // Question mark in the same ring as `info`/`clock` — hook curls into a short
+  // stem, dot below, so it reads at 15px in the sidebar foot.
+  help: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M9.55 9.4a2.5 2.5 0 1 1 3.63 2.23c-.73.37-1.18.9-1.18 1.77" />
+      <circle cx="12" cy="16.4" r="0.5" fill="currentColor" />
+    </>
+  ),
 };
 
 export function Icon({
