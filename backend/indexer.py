@@ -6,6 +6,7 @@ import traceback
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import config
+from content_filter import filter_fics
 from data.fandoms import FANDOMS
 from data import progress
 from ai.embedder import embed_fics_batch
@@ -87,6 +88,15 @@ class BrowserSession:
         time.sleep(self.interstitial_seconds)
 
 
+def _drop_blocked(fics, label: str):
+    """Content filter: remove fics with sexual-minor content before embedding."""
+    kept = filter_fics(fics)
+    dropped = len(fics) - len(kept)
+    if dropped:
+        print(f"[{label}] content-filter: dropped {dropped} blocked fic(s)")
+    return kept
+
+
 def _store_batch(fics, embeddings, fandom_name: str) -> int:
     """Store a batch of fics: try local storage first, fall back to Neon per-fic."""
     stored = 0
@@ -157,6 +167,14 @@ def scrape_and_embed_ao3(fandom_name: str, session: "BrowserSession", start_page
         if not fics:
             print(f"[AO3] Page {page}: no results after 3 attempts — done")
             break
+
+        fics = _drop_blocked(fics, "AO3")
+        if not fics:
+            # Whole page filtered out — checkpoint and keep paginating.
+            print(f"[AO3] Page {page}: all fics blocked by content filter — continuing")
+            progress.mark_progress(fandom_name, "ao3", min_words=min_words, page=page + 1)
+            page += 1
+            continue
 
         print(f"[AO3] Page {page}: scraped {len(fics)} fics — embedding now...")
         embeddings = embed_fics_batch(fics, fandom=fandom_name)
@@ -257,6 +275,8 @@ def scrape_and_embed_ffn(fandom_name: str, session: "BrowserSession",
             if dropped:
                 print(f"[FFN] Page {page} ({label}): dropped {dropped} fics under {min_words:,} words")
 
+        fics = _drop_blocked(fics, "FFN")
+
         if not fics:
             print(f"[FFN] Page {page} ({label}): all fics filtered out — continuing")
             progress.mark_progress(fandom_name, "ffn", word_len=word_len, page=page + 1)
@@ -296,6 +316,9 @@ def scrape_and_embed_wattpad(fandom_name: str, quality_offset: int = WATTPAD_QUA
         if not batch:
             continue
         found_any = True
+        batch = _drop_blocked(batch, "Wattpad")
+        if not batch:
+            continue
         print(f"[Wattpad] Embedding batch {batch_num} ({len(batch)} fics)...")
         embeddings = embed_fics_batch(batch, fandom=fandom_name)
         stored += _store_batch(batch, embeddings, fandom_name)

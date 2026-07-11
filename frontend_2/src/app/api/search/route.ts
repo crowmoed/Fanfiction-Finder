@@ -56,7 +56,9 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const q = url.searchParams.get("q") ?? "";
   const fandom = url.searchParams.get("fandom") ?? "";
-  const limit = url.searchParams.get("limit") ?? "20";
+  // No default cap — when the client doesn't ask for a limit, the backend
+  // returns every ranked candidate and the user sifts the full ranked set.
+  const limit = url.searchParams.get("limit");
   const strict = url.searchParams.get("strict") ?? "false";
   const includeVariants = url.searchParams.get("include_variants") === "true";
   const token = bearerFrom(req);
@@ -91,7 +93,8 @@ export async function GET(req: NextRequest) {
 
       const startedAt = Date.now();
       try {
-        const backendQs = new URLSearchParams({ q, fandom, limit, strict });
+        const backendQs = new URLSearchParams({ q, fandom, strict });
+        if (limit) backendQs.set("limit", limit);
         if (includeVariants) backendQs.set("include_variants", "true");
         const res = await backendFetch(`/search?${backendQs.toString()}`, {
           token,

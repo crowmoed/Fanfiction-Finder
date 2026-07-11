@@ -8,7 +8,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import {
-  DEFAULT_SEARCH_LIMIT,
   type Fic,
   type SearchParams,
   type SearchVariant,
@@ -346,9 +345,6 @@ export function ResultsView({
     );
   }
 
-  // At the cap, the archive may hold more matches than we asked for.
-  const atCap = results.length >= (params?.limit ?? DEFAULT_SEARCH_LIMIT);
-
   const boardMode = layout === "board" && Boolean(params);
 
   return (
@@ -476,16 +472,6 @@ export function ResultsView({
           </div>
         </div>
       </div>
-
-      {/* "Cached N ago · Refresh" now lives in the page head's folio line
-          (page.tsx). This note is JUST the at-cap caveat — not folio data, so
-          it stays down here as a secondary line rather than crowding the
-          masthead with a fact the folio format doesn't include. */}
-      {atCap && (
-        <p className="muted" style={{ margin: 0, fontSize: "0.85em" }}>
-          Showing the top {results.length} matches. Refine your search for more specific results.
-        </p>
-      )}
 
       {/* Board mode reaches Refine via the toolbar popover; the inline card
           would eat the workspace's vertical space. Below 720px, Table/Cards

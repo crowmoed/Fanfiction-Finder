@@ -191,6 +191,11 @@ export interface BackendError {
 export interface SearchParams {
   q: string;
   fandom: string;
+  /**
+   * Optional explicit cap on returned results. Unset (the normal case) means
+   * uncapped — the backend returns every ranked candidate and the user sifts
+   * the full ranked set.
+   */
   limit?: number;
   strict?: boolean;
   /**
@@ -200,13 +205,6 @@ export interface SearchParams {
    */
   includeVariants?: boolean;
 }
-
-/**
- * Default result cap requested from the backend when `SearchParams.limit` is
- * unset. The backend accepts 1–100 (api.py); we request this many. Shared so the
- * request and the "showing top N" UI note can't drift apart.
- */
-export const DEFAULT_SEARCH_LIMIT = 20;
 
 // ───────────────────────────────────────────────────────────────────────────
 // 3. The SSE pipeline protocol

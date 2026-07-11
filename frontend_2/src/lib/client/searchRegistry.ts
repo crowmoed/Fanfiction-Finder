@@ -33,7 +33,6 @@
 
 import {
   PIPELINE_STAGES,
-  DEFAULT_SEARCH_LIMIT,
   type Fic,
   type PipelineStageId,
   type SearchParams,
@@ -207,8 +206,9 @@ function finalizeSuccess(
   // page, log history, and update any followed search's "new since last check".
   cacheResults(params, fics, count, elapsedMs, variants);
   saveFics(fics);
-  // Variant lists can carry fics that didn't make the merged top-N; save them
-  // too so the board's quick view → /fic/[id] path works for every row.
+  // When an explicit limit caps the merged list, variant lists can still carry
+  // fics that didn't make it; save them too so the board's quick view →
+  // /fic/[id] path works for every row.
   if (variants?.length) saveFics(variants.flatMap((v) => v.fics));
   addHistory(params, count);
   recordCheck(params, fics);
@@ -218,9 +218,11 @@ async function runSSE(key: string, params: SearchParams, controller: AbortContro
   const qs = new URLSearchParams({
     q: params.q,
     fandom: params.fandom,
-    limit: String(params.limit ?? DEFAULT_SEARCH_LIMIT),
     strict: String(params.strict ?? false),
   });
+  // Only cap when explicitly asked — unset means the backend returns every
+  // ranked candidate.
+  if (params.limit != null) qs.set("limit", String(params.limit));
   if (params.includeVariants) qs.set("include_variants", "true");
 
   const headers = new Headers({ accept: "text/event-stream" });

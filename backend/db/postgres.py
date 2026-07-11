@@ -9,6 +9,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import declarative_base, Session
 from pgvector.sqlalchemy import Vector
 import config
+from content_filter import is_blocked, fic_is_blocked
 from data.schema import Fic
 
 Base = declarative_base()
@@ -243,7 +244,15 @@ def add_meta_column():
 
 
 def upsert_fic(fic: Fic, fandom: str, embedding: list[float]):
-    """Insert or update a fic record with its embedding."""
+    """Insert or update a fic record with its embedding.
+
+    Backstop: refuses content-filter-blocked fics so no write path can put one
+    in the index (the indexer already drops them before embedding).
+    """
+    if fic_is_blocked(fic):
+        print(f"[content-filter] refused blocked fic: {fic.title!r} ({fic.url})")
+        return
+
     fic_id = f"{fic.platform}:{fic.url}"
 
     with Session(engine) as session:
@@ -324,8 +333,47 @@ def search_rrf(
         filters: optional dict of hard filters applied to each ranked CTE. Recognized keys:
             min_word_count (int), max_word_count (int), excluded_tags (list[str]).
     """
+    fics, _ = _search_rrf(
+        embeddings, fandom, per_platform_limit, total_limit, filters, with_variants=False
+    )
+    return fics
+
+
+def search_rrf_with_variants(
+    embeddings: list[list[float]],
+    fandom: str | None,
+    per_platform_limit: int = 40,
+    total_limit: int | None = None,
+    filters: dict | None = None,
+) -> tuple[list[Fic], list[list[Fic]]]:
+    """`search_rrf`, plus the pre-fusion per-embedding retrieval lists.
+
+    Returns `(fused, variants)` where `variants[i]` is the candidate list retrieved
+    by `embeddings[i]`, ordered by that embedding's cosine distance across all
+    platforms (each platform still contributes at most `per_platform_limit` rows).
+    The inner `Fic` objects are the SAME objects as in `fused`, so scoring the
+    fused list (the LLM ranker mutates `match_score` in place) also scores every
+    variant list.
+
+    Variant lists only cover fics present in the fused result, so callers should
+    keep `total_limit=None` (the default here) — a truncated fusion pool would
+    silently drop tail entries from the variant lists.
+    """
+    return _search_rrf(
+        embeddings, fandom, per_platform_limit, total_limit, filters, with_variants=True
+    )
+
+
+def _search_rrf(
+    embeddings: list[list[float]],
+    fandom: str | None,
+    per_platform_limit: int,
+    total_limit: int | None,
+    filters: dict | None,
+    with_variants: bool,
+) -> tuple[list[Fic], list[list[Fic]]]:
     if not embeddings:
-        return []
+        return [], []
 
     fandom_clause = "AND fandom = :fandom" if fandom is not None else ""
     params: dict = {"per_limit": per_platform_limit}
@@ -352,15 +400,21 @@ def search_rrf(
 
     # Build one ranked CTE per (embedding, platform) pair, UNION them, then RRF-score.
     # pgvector's <=> is cosine distance; ORDER BY distance asc → lower rank number = better match.
+    # In variant mode each CTE also carries the raw distance, and the union tags every
+    # row with its embedding index (a loop counter, not user data) so the per-variant
+    # lists can be reassembled after fusion.
     ranked_ctes = []
     for e_idx, emb in enumerate(embeddings):
         params[f"emb{e_idx}"] = str(emb)  # pgvector accepts "[0.1, 0.2, ...]" text form
+        dist_select = (
+            f", embedding <=> CAST(:emb{e_idx} AS vector) AS dist" if with_variants else ""
+        )
         for platform in PLATFORMS:
             cte_name = f"r_{e_idx}_{platform}"
             params[f"plat_{e_idx}_{platform}"] = platform
             ranked_ctes.append(f"""
                 {cte_name} AS (
-                    SELECT id, ROW_NUMBER() OVER (ORDER BY embedding <=> CAST(:emb{e_idx} AS vector)) AS rnk
+                    SELECT id, ROW_NUMBER() OVER (ORDER BY embedding <=> CAST(:emb{e_idx} AS vector)) AS rnk{dist_select}
                     FROM fics
                     WHERE embedding IS NOT NULL
                       AND platform = :plat_{e_idx}_{platform}
@@ -371,9 +425,12 @@ def search_rrf(
                 )
             """)
 
-    union_parts = [f"SELECT id, rnk FROM r_{e_idx}_{platform}"
-                   for e_idx in range(len(embeddings))
-                   for platform in PLATFORMS]
+    variant_cols = ", eidx, dist" if with_variants else ""
+    union_parts = [
+        f"SELECT id, rnk{f', {e_idx} AS eidx, dist' if with_variants else ''} FROM r_{e_idx}_{platform}"
+        for e_idx in range(len(embeddings))
+        for platform in PLATFORMS
+    ]
     union_sql = " UNION ALL ".join(union_parts)
 
     if total_limit is not None:
@@ -382,26 +439,61 @@ def search_rrf(
     else:
         limit_clause = ""
 
-    sql = f"""
-        WITH {", ".join(ranked_ctes)},
-        fused AS (
-            SELECT id, SUM(1.0 / ({RRF_K} + rnk)) AS rrf_score
-            FROM ({union_sql}) ranked
-            GROUP BY id
-        )
-        SELECT f.id, f.title, f.url, f.platform, f.fandom, f.summary, f.tags,
-               f.word_count, f.kudos, f.hits, f.meta, fused.rrf_score
-        FROM fused
-        JOIN fics f ON f.id = fused.id
-        ORDER BY fused.rrf_score DESC
-        {limit_clause}
-    """
+    if with_variants:
+        sql = f"""
+            WITH {", ".join(ranked_ctes)},
+            all_ranked AS (
+                SELECT id, rnk{variant_cols} FROM ({union_sql}) u
+            ),
+            fused AS (
+                SELECT id, SUM(1.0 / ({RRF_K} + rnk)) AS rrf_score
+                FROM all_ranked
+                GROUP BY id
+            ),
+            variant_hits AS (
+                SELECT id, json_agg(json_build_object('eidx', eidx, 'dist', dist)) AS hits
+                FROM all_ranked
+                GROUP BY id
+            )
+            SELECT f.id, f.title, f.url, f.platform, f.fandom, f.summary, f.tags,
+                   f.word_count, f.kudos, f.hits, f.meta, fused.rrf_score,
+                   vh.hits AS variant_hits
+            FROM fused
+            JOIN fics f ON f.id = fused.id
+            LEFT JOIN variant_hits vh ON vh.id = fused.id
+            ORDER BY fused.rrf_score DESC
+            {limit_clause}
+        """
+    else:
+        sql = f"""
+            WITH {", ".join(ranked_ctes)},
+            fused AS (
+                SELECT id, SUM(1.0 / ({RRF_K} + rnk)) AS rrf_score
+                FROM ({union_sql}) ranked
+                GROUP BY id
+            )
+            SELECT f.id, f.title, f.url, f.platform, f.fandom, f.summary, f.tags,
+                   f.word_count, f.kudos, f.hits, f.meta, fused.rrf_score
+            FROM fused
+            JOIN fics f ON f.id = fused.id
+            ORDER BY fused.rrf_score DESC
+            {limit_clause}
+        """
 
     with engine.connect() as conn:
         rows = conn.execute(text(sql), params).all()
 
-    return [
-        Fic(
+    fics: list[Fic] = []
+    # variant_pairs[i] collects (cosine distance, fic) for embedding i; sorted below.
+    variant_pairs: list[list[tuple[float, Fic]]] = [[] for _ in embeddings]
+    for r in rows:
+        # Hard content gate: blocked fics never become candidates, no matter
+        # how they got into the table (old index runs, devtool raw INSERTs).
+        # With a non-None total_limit this can return slightly fewer rows than
+        # the limit; the live API passes total_limit=None.
+        if is_blocked(tags=r.tags, title=r.title, summary=r.summary, meta=r.meta):
+            continue
+        fic = Fic(
             title=r.title,
             url=r.url,
             platform=r.platform,
@@ -413,8 +505,20 @@ def search_rrf(
             hits=r.hits,
             meta=r.meta,
         )
-        for r in rows
+        fics.append(fic)
+        if with_variants:
+            # json_agg comes back as a parsed list of {"eidx": int, "dist": float}.
+            # A fic appears at most once per embedding (platforms are disjoint).
+            hits = r.variant_hits if isinstance(r.variant_hits, list) else json.loads(r.variant_hits or "[]")
+            for hit in hits:
+                eidx = hit.get("eidx")
+                if isinstance(eidx, int) and 0 <= eidx < len(variant_pairs):
+                    variant_pairs[eidx].append((float(hit.get("dist", 0.0)), fic))
+
+    variants = [
+        [fic for _, fic in sorted(pairs, key=lambda p: p[0])] for pairs in variant_pairs
     ]
+    return fics, variants
 
 
 def ensure_vector_index():

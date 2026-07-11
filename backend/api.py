@@ -394,7 +394,7 @@ async def search(
     request: Request,
     q: str = Query(..., max_length=1000, description="Natural language search query"),
     fandom: Optional[str] = Query(None, description="Fandom name from /fandoms"),
-    limit: int = Query(20, ge=1, le=100, description="Number of results to return"),
+    limit: Optional[int] = Query(None, ge=1, description="Optional cap on results; omit to return every ranked candidate"),
     strict: bool = Query(False, description="Apply enhancer-extracted filters as hard SQL WHERE clauses (debug toggle)"),
     include_variants: bool = Query(
         False,
@@ -507,7 +507,7 @@ async def search(
         return Response(status_code=499)
     ranked = await run_in_threadpool(rank, fics=candidates, query=q)
 
-    results = ranked[:limit]
+    results = ranked if limit is None else ranked[:limit]
 
     # Increment the per-user weekly counter only for signed-in users — an
     # anonymous search has no account to count against.
@@ -546,12 +546,15 @@ async def search(
         # query_embeddings = [raw] + one HyDE blend per description, so
         # variant_lists[0] belongs to the raw query and variant_lists[i] to
         # descriptions[i-1]. Each list is capped like the merged results.
+        def cap(fics: list[Fic]) -> list[Fic]:
+            return fics if limit is None else fics[:limit]
+
         return SearchWithVariantsResponse(
             results=results,
             variants=[
-                SearchVariant(key="raw", label=q, fics=variant_lists[0][:limit]),
+                SearchVariant(key="raw", label=q, fics=cap(variant_lists[0])),
                 *[
-                    SearchVariant(key=f"hyde-{i}", label=desc, fics=v[:limit])
+                    SearchVariant(key=f"hyde-{i}", label=desc, fics=cap(v))
                     for i, (desc, v) in enumerate(zip(descriptions, variant_lists[1:]), start=1)
                 ],
             ],

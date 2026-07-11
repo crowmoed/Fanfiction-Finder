@@ -2574,6 +2574,12 @@ mark.hl {
   max-height: calc(100dvh - 4rem);
   overflow: auto;
   overflow-wrap: anywhere;
+  /* A native <dialog> escapes layout into the top layer but still INHERITS
+     styles from its DOM position. Quick-view modals mount inside truncating
+     table cells (td.xl-truncate is white-space: nowrap), so reset text flow
+     here or the fic title paints as one unwrappable line straight under the
+     seal and the close button. */
+  white-space: normal;
   transform-origin: center;
   animation: enter-pop 200ms var(--ease-out-strong) both;
 }
