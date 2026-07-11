@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { ALL_FANDOMS, type SearchParams } from "@/lib/contracts";
 import { useFandoms } from "@/lib/client/useFandoms";
@@ -136,6 +137,11 @@ function HeroForm({
   const [focused, setFocused] = useState(false);
   const rootRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  // Anchor for the fandom list: an in-box element FandomListbox portals its
+  // <ul> into, so the list positions against the composer box and hangs off its
+  // bottom edge as an overlay (seamless with the bar, but out of flow — it does
+  // NOT push the suggestions below it).
+  const fandomSlotRef = useRef<HTMLDivElement>(null);
 
   // Grow with the content, same chatbox behavior as the boxed composer: reset,
   // then take scrollHeight up to the cap. Runs on every q change (incl. prefill).
@@ -242,6 +248,7 @@ function HeroForm({
             value={fandom}
             disabled={busy}
             onChange={setFandom}
+            inlineSlot={fandomSlotRef}
           />
           <button
             type="button"
@@ -265,6 +272,11 @@ function HeroForm({
             )}
           </button>
         </div>
+
+        {/* Anchor for the fandom list overlay: the list is portaled here and
+            positioned against the box, hanging off its bottom edge in front of
+            the page — the "seamless" picker. Out of flow, so nothing moves. */}
+        <div ref={fandomSlotRef} className="baseline-fandom-slot" />
 
         {/* The slip's bottom edge IS the baseline rule — it closes the card and
             keeps both of its jobs: ink focus sweep, vermilion working line
@@ -295,12 +307,18 @@ function FandomListbox({
   value,
   disabled,
   onChange,
+  inlineSlot,
 }: {
   fandoms: ReturnType<typeof useFandoms>["fandoms"];
   loading: boolean;
   value: string;
   disabled?: boolean;
   onChange: (v: string) => void;
+  /** When provided, the list is portaled into this element and positioned as an
+   *  overlay hanging off the composer box's bottom edge (the "seamless" hero
+   *  picker). Omit (boxed variant) to render the floating dropdown off the
+   *  button instead. Either way it's an out-of-flow overlay. */
+  inlineSlot?: React.RefObject<HTMLDivElement | null>;
 }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -340,15 +358,20 @@ function FandomListbox({
     if (i >= 0 && i < options.length) setActive(i);
   };
 
-  // Outside click closes.
+  // Outside click closes. The inline list is portaled outside wrapRef (into the
+  // composer slot), so its own clicks must also count as "inside" — otherwise
+  // mousedown on an option would close the list before the click selects it.
   useEffect(() => {
     if (!open) return;
     const onDocClick = (e: MouseEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) close();
+      const t = e.target as Node;
+      if (wrapRef.current?.contains(t)) return;
+      if (inlineSlot?.current?.contains(t)) return;
+      close();
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
-  }, [open]);
+  }, [open, inlineSlot]);
 
   // Move focus into the listbox on open (autoFocus isn't honored on <ul>),
   // so arrow keys work immediately; keep the active option scrolled into view.
@@ -410,41 +433,50 @@ function FandomListbox({
           <Icon name="chevron-down" size={12} />
         </span>
       </button>
-      {open && (
-        <ul
-          ref={listRef}
-          className="baseline-fandom-list"
-          role="listbox"
-          tabIndex={-1}
-          aria-label="Fandom"
-          aria-activedescendant={`baseline-fandom-opt-${active}`}
-          onKeyDown={onListKeyDown}
-        >
-          {options.map((o, i) => (
-            <li
-              key={o.name}
-              id={`baseline-fandom-opt-${i}`}
-              role="option"
-              aria-selected={o.name === value}
-              aria-disabled={!o.enabled}
-              className={[
-                "baseline-fandom-option",
-                i === active ? "baseline-fandom-option--active" : "",
-                !o.enabled ? "baseline-fandom-option--disabled" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              onMouseEnter={() => o.enabled && setActive(i)}
-              onClick={() => choose(i)}
-            >
-              {o.name}
-              {!o.enabled && <span className="muted"> (not indexed)</span>}
-            </li>
-          ))}
-        </ul>
-      )}
+      {open && renderList()}
     </div>
   );
+
+  function renderList() {
+    const list = (
+      <ul
+        ref={listRef}
+        className={`baseline-fandom-list${
+          inlineSlot ? " baseline-fandom-list--inline" : ""
+        }`}
+        role="listbox"
+        tabIndex={-1}
+        aria-label="Fandom"
+        aria-activedescendant={`baseline-fandom-opt-${active}`}
+        onKeyDown={onListKeyDown}
+      >
+        {options.map((o, i) => (
+          <li
+            key={o.name}
+            id={`baseline-fandom-opt-${i}`}
+            role="option"
+            aria-selected={o.name === value}
+            aria-disabled={!o.enabled}
+            className={[
+              "baseline-fandom-option",
+              i === active ? "baseline-fandom-option--active" : "",
+              !o.enabled ? "baseline-fandom-option--disabled" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            onMouseEnter={() => o.enabled && setActive(i)}
+            onClick={() => choose(i)}
+          >
+            {o.name}
+            {!o.enabled && <span className="muted"> (not indexed)</span>}
+          </li>
+        ))}
+      </ul>
+    );
+    // Hero: portal into the in-box slot so the overlay anchors to the box and
+    // hangs off its bottom edge. Boxed: render in place (dropdown off the button).
+    return inlineSlot?.current ? createPortal(list, inlineSlot.current) : list;
+  }
 }
 
 /* ────────────────────────────────────────────────────────────────────

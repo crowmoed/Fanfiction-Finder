@@ -1806,6 +1806,51 @@ th[aria-sort] .xl-sort .icon {
   cursor: default;
 }
 
+/* ── Fandom list — the hero picker ────────────────────────────────────
+   Portaled (from FandomListbox) into an in-box slot so it anchors to the
+   composer box, then positioned as a COMPACT dropdown hanging just below the
+   bar's bottom edge, aligned under the fandom button — content-width (like the
+   original), only as tall as it needs (capped, then scrolls), in front of and
+   NOT displacing the suggestion chips below. */
+.baseline-fandom-slot {
+  display: block; /* zero-height portal anchor; the overlay is out of flow */
+}
+.baseline-fandom-list--inline {
+  position: absolute;
+  top: calc(100% + 6px); /* a compact menu just below the bar's bottom edge */
+  left: 20px; /* aligns under the fandom button (box side padding) */
+  right: auto;
+  min-width: 220px;
+  width: max-content;
+  max-width: calc(100% - 40px);
+  margin: 0;
+  padding: 6px;
+  max-height: 288px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--line-mid);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-3);
+  z-index: var(--z-float);
+  transform-origin: top left;
+  animation: baseline-fandom-drop 160ms var(--ease-out) both;
+}
+@keyframes baseline-fandom-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .baseline-fandom-list--inline {
+    animation: none;
+  }
+}
+
 .baseline-strict {
   white-space: nowrap;
 }
@@ -1872,6 +1917,13 @@ th[aria-sort] .xl-sort .icon {
 }
 .home-composer {
   width: 100%;
+  /* The fandom list opens as an overlay attached to the bar's bottom edge
+     (position: absolute inside .baseline-box). This composer keeps a retained
+     .rise-in transform → its own stacking context, which would trap that overlay
+     *below* the later .rise-in suggestion chips. Promote it to an explicit layer
+     so the list paints in front of everything below the bar. */
+  position: relative;
+  z-index: 1;
 }
 
 /* The hanko — Ficwell's mark (HankoMark.tsx draws the carved seal). This
